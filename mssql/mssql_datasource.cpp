@@ -999,18 +999,19 @@ boost::optional<mapnik::datasource::geometry_t> mssql_datasource::get_geometry_t
 				shared_ptr<ResultSet> rs = conn->executeQuery(s.str());
 				while (rs->next() && !rs->isNull(0))
 				{
-					const char* data = rs->getValue(0);
-					if (boost::algorithm::icontains(data, "line"))
+					//const char* data = rs->getValue(0);
+					std::string data = rs->getString(0);
+					if (boost::algorithm::contains(data, "line"))
 					{
 						g_type = "linestring";
 						result.reset(mapnik::datasource::LineString);
 					}
-					else if (boost::algorithm::icontains(data, "point"))
+					else if (boost::algorithm::contains(data, "point"))
 					{
 						g_type = "point";
 						result.reset(mapnik::datasource::Point);
 					}
-					else if (boost::algorithm::icontains(data, "polygon"))
+					else if (boost::algorithm::contains(data, "polygon"))
 					{
 						g_type = "polygon";
 						result.reset(mapnik::datasource::Polygon);

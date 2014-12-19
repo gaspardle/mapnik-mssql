@@ -52,8 +52,8 @@ public:
 	virtual const float getFloat(int index) const = 0;
 	virtual const std::string getString(int index) const = 0;
 	virtual const std::vector<const char> getBinary(int index) const = 0;
-	virtual const char* getValue(int index) const = 0;
-	virtual const char* getValue(const char* name) const = 0;
+	//virtual const char* getValue(int index) const = 0;
+	//virtual const char* getValue(const char* name) const = 0;
 };
 
 class ResultSet : public IResultSet, private mapnik::noncopyable
@@ -197,9 +197,11 @@ public:
 	{
 		SQLLEN length;
 		SQLRETURN retcode;
-		unsigned char *value = new unsigned char[1];
+		//unsigned char *value = new unsigned char[1];
+		unsigned char value[1];
 
 		retcode = SQLGetData(res_, index + 1, SQL_C_BINARY, value, 0, &length);
+
 		return static_cast<bool>(length == SQL_NULL_DATA);
 	}
 
@@ -229,15 +231,25 @@ public:
 	{
 		SQLLEN length = 0;
 		SQLRETURN retcode;
-		char value[255];
+		char buffer[255];
 
-		retcode = SQLGetData(res_, index + 1, SQL_C_CHAR, &value, sizeof(value), &length);
-		if (retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO){
-			if (length != SQL_NULL_DATA){
-				return std::string(value);
+		retcode = SQLGetData(res_, index + 1, SQL_C_CHAR, &buffer, sizeof(buffer), &length);
+
+		if (retcode == SQL_SUCCESS && length != SQL_NULL_DATA){			
+			return std::string(buffer);			
+
+		}else if (retcode == SQL_SUCCESS_WITH_INFO && length != SQL_NULL_DATA){
+			auto str = std::string();
+			str.reserve(length);
+			str.append(buffer);
+			
+			while ((retcode = SQLGetData(res_, index + 1, SQL_C_CHAR, &buffer, sizeof(buffer),
+					&length)) != SQL_NO_DATA) {			
+				str.append(buffer);
 			}
+			return str;
 		}
-
+		
 		return std::string();
 
 		// return PQgetvalue(res_, pos_, index);
@@ -253,7 +265,7 @@ public:
 		if (retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO){
 			if (length != SQL_NULL_DATA){
 				// char* binvalue = new char[length*2];
-
+								
 				std::vector<const char> binvalue(length, 0);
 				retcode = SQLGetData(res_, index + 1, SQL_C_BINARY, &binvalue[0], length, &length);
 
@@ -269,14 +281,14 @@ public:
 
 		// return PQgetvalue(res_, pos_, index);
 	}
-	virtual const char* getValue(int index) const
+	virtual const char* getValue4(int index) const
 	{
 		throw mapnik::datasource_exception("ResultSet getValue(intindex) not implemented");
 		return "novalue";
 		// return PQgetvalue(res_, pos_, index);
 	}
 
-	virtual const char* getValue(const char* name) const
+	virtual const char* getValue5(const char* name) const
 	{
 		std::string a = "ResultSet getValue([const char* name]";
 		a += ((char*)name);

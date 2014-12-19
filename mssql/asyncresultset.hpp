@@ -169,7 +169,7 @@ public:
 	{
 	    return rs_->getBinary(index);
 	}
-
+	/*
 	virtual const char* getValue(int index) const
 	{
 		return rs_->getValue(index);
@@ -178,7 +178,7 @@ public:
 	virtual const char* getValue(const char* name) const
 	{
 		return rs_->getValue(name);
-	}
+	}*/
 
 private:
 	mssql_processor_context_ptr ctx_;

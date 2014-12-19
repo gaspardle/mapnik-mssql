@@ -129,17 +129,18 @@ public:
 	{
 		return rs_->getDouble(index);
 	}
-	virtual const char* getValue(int index) const
-	{
-		return rs_->getValue(index);
-	}
+
 	virtual const std::vector<const char> getBinary(int index) const{
 		return rs_->getBinary(index);
+	}
+	/*virtual const char* getValue(int index) const
+	{
+		return rs_->getValue(index);
 	}
 	virtual const char* getValue(const char* name) const
 	{
 		return rs_->getValue(name);
-	}
+	}*/
 
 private:
 	void getNextResultSet()
