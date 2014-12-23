@@ -45,6 +45,9 @@
     <ClInclude Include="asyncresultset.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="transition.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="mssql_datasource.cpp">

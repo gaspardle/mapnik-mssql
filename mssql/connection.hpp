@@ -307,11 +307,20 @@ public:
 
 	bool isOK() const
 	{
+		if (closed_){
+			return false;
+		}
 
 		SQLINTEGER dead;
 		//SQL_COPT_SS_CONNECTION_DEAD
-		SQLGetConnectAttr(sqlconnectionhandle, SQL_ATTR_CONNECTION_DEAD, &dead, 0, NULL);
-		return (!closed_) && (dead != SQL_CD_TRUE);
+		SQLRETURN retcode = SQLGetConnectAttr(sqlconnectionhandle, SQL_ATTR_CONNECTION_DEAD, &dead, 0, NULL);
+		if (retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO){
+			return (!closed_) && (dead != SQL_CD_TRUE);
+		}
+		else{
+			return false;
+		}
+		
 		//return (!closed_) && (PQstatus(conn_) != CONNECTION_BAD);
 	}
 
