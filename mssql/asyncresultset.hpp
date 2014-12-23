@@ -28,17 +28,19 @@
 
 #include "connection_manager.hpp"
 #include "resultset.hpp"
+#include <memory>
 #include <queue>
+#include "transition.h"
 
 class mssql_processor_context;
-typedef boost::shared_ptr<mssql_processor_context> mssql_processor_context_ptr;
+using mssql_processor_context_ptr = std::shared_ptr<mssql_processor_context>;
 
 class AsyncResultSet : public IResultSet, private mapnik::noncopyable
 {
 public:
 	AsyncResultSet(mssql_processor_context_ptr const& ctx,
-		boost::shared_ptr< Pool<Connection, ConnectionCreator> > const& pool,
-		boost::shared_ptr<Connection> const& conn, std::string const& sql)
+		std::shared_ptr< Pool<Connection, ConnectionCreator> > const& pool,
+		std::shared_ptr<Connection> const& conn, std::string const& sql)
 		: ctx_(ctx),
 		pool_(pool),
 		conn_(conn),
@@ -182,15 +184,15 @@ public:
 
 private:
 	mssql_processor_context_ptr ctx_;
-	boost::shared_ptr< Pool<Connection, ConnectionCreator> > pool_;
-	boost::shared_ptr<Connection> conn_;
+	std::shared_ptr< Pool<Connection, ConnectionCreator> > pool_;
+	std::shared_ptr<Connection> conn_;
 	std::string sql_;
-	boost::shared_ptr<ResultSet> rs_;
+	std::shared_ptr<ResultSet> rs_;
 	bool is_closed_;
 
 	void prepare()
-	{
-		conn_ = pool_->borrowObject();
+	{ 
+		conn_ = make_shared_ptr(pool_->borrowObject());
 		if (conn_ && conn_->isOK())
 		{
 			conn_->executeAsyncQuery(sql_, 1);
@@ -213,14 +215,14 @@ public:
 		: num_async_requests_(0) {}
 	~mssql_processor_context() {}
 
-	void add_request(boost::shared_ptr<AsyncResultSet> const& req)
+	void add_request(std::shared_ptr<AsyncResultSet> const& req)
 	{
 		q_.push(req);
 	}
 
-	boost::shared_ptr<AsyncResultSet> pop_next_request()
+	std::shared_ptr<AsyncResultSet> pop_next_request()
 	{
-		boost::shared_ptr<AsyncResultSet> r;
+		std::shared_ptr<AsyncResultSet> r;
 		if (!q_.empty())
 		{
 			r = q_.front();
@@ -232,7 +234,7 @@ public:
 	int num_async_requests_;
 
 private:
-	typedef std::queue<boost::shared_ptr<AsyncResultSet> > async_queue;
+	using async_queue = std::queue<std::shared_ptr<AsyncResultSet> >;
 	async_queue q_;
 
 };
@@ -240,7 +242,7 @@ private:
 inline void AsyncResultSet::prepare_next()
 {
 	// ensure cnx pool has unused cnx
-	boost::shared_ptr<AsyncResultSet> next = ctx_->pop_next_request();
+	std::shared_ptr<AsyncResultSet> next = ctx_->pop_next_request();
 	if (next)
 	{
 		next->prepare();

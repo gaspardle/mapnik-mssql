@@ -28,14 +28,10 @@
 #include <mapnik/datasource.hpp>
 #include <mapnik/timer.hpp>
 
-// boost
-#include <boost/make_shared.hpp>
-
 // std
+#include <memory>
 #include <sstream>
 #include <iostream>
-
-
 
 #include <sql.h>
 #include <sqlext.h>
@@ -126,7 +122,7 @@ public:
 		//return ok;
 	}
 
-	boost::shared_ptr<ResultSet> executeQuery(std::string const& sql, int type = 0)
+	std::shared_ptr<ResultSet> executeQuery(std::string const& sql, int type = 0)
 	{
 #ifdef MAPNIK_STATS
 		mapnik::progress_timer __stats__(std::clog, std::string("mssql_connection::execute_query ") + sql);
@@ -167,7 +163,7 @@ public:
 			throw mapnik::datasource_exception(err_msg);
 		}
 
-		return boost::make_shared<ResultSet>(hstmt);
+		return std::make_shared<ResultSet>(hstmt);
 	}
 
 	std::string status() const
@@ -268,7 +264,7 @@ public:
 		return retcode;
 	}
 
-	boost::shared_ptr<ResultSet> getNextAsyncResult()
+	std::shared_ptr<ResultSet> getNextAsyncResult()
 	{
 		SQLRETURN result = getResult();
 		if (result != SQL_SUCCESS && result != SQL_SUCCESS_WITH_INFO)
@@ -282,10 +278,10 @@ public:
 			close();
 			throw mapnik::datasource_exception(err_msg);
 		}
-		return boost::make_shared<ResultSet>(async_hstmt);
+		return std::make_shared<ResultSet>(async_hstmt);
 	}
 
-	boost::shared_ptr<ResultSet> getAsyncResult()
+	std::shared_ptr<ResultSet> getAsyncResult()
 	{
 		SQLRETURN result = getResult();
 		if (result != SQL_SUCCESS && result != SQL_SUCCESS_WITH_INFO)
@@ -300,7 +296,7 @@ public:
 			close();
 			throw mapnik::datasource_exception(err_msg);
 		}
-		return boost::make_shared<ResultSet>(async_hstmt);
+		return std::make_shared<ResultSet>(async_hstmt);
 	}
 	std::string client_encoding() const
 	{

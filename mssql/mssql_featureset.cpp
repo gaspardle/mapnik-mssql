@@ -43,6 +43,7 @@
 // stl
 #include <sstream>
 #include <string>
+#include <memory>
 
 using mapnik::geometry_type;
 using mapnik::byte;
@@ -50,7 +51,7 @@ using mapnik::geometry_utils;
 using mapnik::feature_factory;
 using mapnik::context_ptr;
 
-mssql_featureset::mssql_featureset(boost::shared_ptr<IResultSet> const& rs,
+mssql_featureset::mssql_featureset(std::shared_ptr<IResultSet> const& rs,
                                        context_ptr const& ctx,
                                        std::string const& encoding,
                                        bool key_field)
