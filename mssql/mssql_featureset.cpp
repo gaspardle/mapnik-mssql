@@ -133,6 +133,7 @@ feature_ptr mssql_featureset::next()
             {
                 //const char* buf = rs_->getValue(pos);
                 const int oid = rs_->getTypeOID(pos);
+				
                 switch (oid)
                 {
                     case SQL_BIT:
@@ -151,15 +152,14 @@ feature_ptr mssql_featureset::next()
                     case SQL_DOUBLE:
                         feature->put(name, rs_->getDouble(pos));               
                         break;
-                    case SQL_VARCHAR:
-                    case SQL_LONGVARCHAR:
+					case SQL_VARCHAR:
+                    case SQL_LONGVARCHAR:						
                          feature->put(name, (UnicodeString)tr_->transcode(rs_->getString(pos).c_str()));
                          break;
                     case SQL_WVARCHAR:
-                    case SQL_WLONGVARCHAR:
-                         feature->put(name, (UnicodeString)tr_->transcode(rs_->getString(pos).c_str()));
-                         break;
-  
+					case SQL_WLONGVARCHAR:						
+						feature->put(name, (UnicodeString)tr_->transcode(rs_->getString(pos).c_str()));
+						break;						 
                     default:
                     {
                         MAPNIK_LOG_WARN(mssql) << "mssql_featureset: Unknown type=" << oid;

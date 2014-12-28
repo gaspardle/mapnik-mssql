@@ -35,6 +35,7 @@
 
 #include <sql.h>
 #include <sqlext.h>
+#include <sqlucode.h>
 
 #include "resultset.hpp"
 
@@ -47,7 +48,9 @@ public:
 		closed_(false),
 		pending_(false)
 	{
-		std::string connect_with_pass = connection_str;
+		//XXX  string to wstring conversion
+		std::wstring connect_with_pass;
+		connect_with_pass.assign(connection_str.begin(), connection_str.end());
 		/*if (password && !password->empty())
 		{
 		connect_with_pass += " password=" + *password;
@@ -62,11 +65,11 @@ public:
 		if (SQL_SUCCESS != SQLAllocHandle(SQL_HANDLE_DBC, sqlenvhandle, &sqlconnectionhandle))
 			throw mapnik::datasource_exception("Mssql Plugin: SQLAllocHandle");// goto FINISHED;
 
-		SQLCHAR  retconstring[1024];
+		SQLWCHAR  retconstring[1024];
 		SQLSMALLINT OutConnStrLen;
 		SQLRETURN retcode = SQLDriverConnect(sqlconnectionhandle,
 			NULL,
-			(SQLCHAR*)connect_with_pass.c_str(),
+			(SQLWCHAR*)connect_with_pass.c_str(),
 			SQL_NTS,
 			retconstring,
 			1024,
@@ -79,20 +82,9 @@ public:
 			err_msg += "\nConnection string: '";
 			err_msg += connection_str;
 			err_msg += "'\n";
+			close();
 			throw mapnik::datasource_exception(err_msg);
 		}
-
-		/*conn_ = PQconnectdb(connect_with_pass.c_str());
-		if (PQstatus(conn_) != CONNECTION_OK)
-		{
-		std::string err_msg = "Mssql Plugin: ";
-		err_msg += status();
-		err_msg += "\nConnection string: '";
-		err_msg += connection_str;
-		err_msg += "'\n";
-		throw mapnik::datasource_exception(err_msg);
-		}*/
-
 	}
 
 	~Connection()
@@ -122,30 +114,18 @@ public:
 		//return ok;
 	}
 
-	std::shared_ptr<ResultSet> executeQuery(std::string const& sql, int type = 0)
+	std::shared_ptr<ResultSet> executeQuery(std::string const& sql)
 	{
 #ifdef MAPNIK_STATS
 		mapnik::progress_timer __stats__(std::clog, std::string("mssql_connection::execute_query ") + sql);
 #endif
-
+		debug_current_sql = sql;
 		SQLHANDLE hstmt = NULL;
 		SQLRETURN retcode;
 		if (SQL_SUCCESS != SQLAllocHandle(SQL_HANDLE_STMT, sqlconnectionhandle, &hstmt))
 			throw mapnik::datasource_exception("cant SQLAllocHandle");
 
-		//PGresult* result = 0;
-		if (type == 1)
-		{
-			//binary
-			//result = PQexecParams(conn_,sql.c_str(), 0, 0, 0, 0, 0, 1);
-			retcode = SQLExecDirect(hstmt, (SQLCHAR*)sql.c_str(), SQL_NTS);
-		}
-		else
-		{
-			//text
-			// result = PQexec(conn_, sql.c_str());
-			retcode = SQLExecDirect(hstmt, (SQLCHAR*)sql.c_str(), SQL_NTS);
-		}
+		retcode = SQLExecDirectA(hstmt, (SQLCHAR*)sql.c_str(), SQL_NTS);
 
 
 		if (!(retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO))
@@ -173,10 +153,10 @@ public:
 	std::string status(unsigned int handletype, const SQLHANDLE& handle) const
 	{
 
-		std::string  status = "{Status}";
+		std::wstring  status = L"{Status}";
 
-		SQLCHAR  sqlstate[6];
-		SQLCHAR  message[SQL_MAX_MESSAGE_LENGTH];
+		SQLWCHAR  sqlstate[6];
+		SQLWCHAR  message[SQL_MAX_MESSAGE_LENGTH];
 		SQLINTEGER  NativeError;
 		SQLSMALLINT   i, MsgLen;
 		SQLRETURN     rc2;
@@ -187,13 +167,13 @@ public:
 		i = 1;
 		while ((rc2 = SQLGetDiagRec(handletype, handle, i, sqlstate, &NativeError,
 			message, sizeof(message), &MsgLen)) != SQL_NO_DATA) {
-			status += "(" + std::to_string((LONGLONG)i) + ")";
-			status += "\nSQLState: ";
-			status += ((char*)&sqlstate[0]);
-			status += "\nNativeError: " + std::to_string((LONGLONG)NativeError);
-			status += "\nMessage: ";
-			status += (char*)&message[0];
-			status += "\nMsgLen: " + std::to_string((LONGLONG)MsgLen);
+			status += L"(" + std::to_wstring((LONGLONG)i) + L")";
+			status += L"\nSQLState: ";
+			status += ((wchar_t*)&sqlstate[0]);
+			status += L"\nNativeError: " + std::to_wstring((LONGLONG)NativeError);
+			status += L"\nMessage: ";
+			status += (wchar_t*)&message[0];
+			status += L"\nMsgLen: " + std::to_wstring((LONGLONG)MsgLen);
 
 			i++;
 		}
@@ -207,13 +187,13 @@ public:
 		status = "Uninitialized connection";
 		}*/
 
-		status += "{status end}";
+		status += L"{status end}";
 
-
-		return status;
+		return mapnik::utf16_to_utf8(status);
 	}
-	bool executeAsyncQuery(std::string const& sql, int type = 0)
+	bool executeAsyncQuery(std::string const& sql)
 	{
+		debug_current_sql = sql;
 		//SQLHANDLE hstmt = NULL;
 		SQLRETURN retcode;
 
@@ -221,22 +201,15 @@ public:
 			throw mapnik::datasource_exception("cant SQLAllocHandle");
 
 		SQLSetStmtAttr(async_hstmt, SQL_ATTR_ASYNC_ENABLE, (SQLPOINTER)SQL_ASYNC_ENABLE_ON, 0);
-				
-		if (type == 1)
-		{
-			retcode = SQLExecDirect(async_hstmt, (SQLCHAR*)sql.c_str(), SQL_NTS);
-			//result = PQsendQueryParams(conn_, sql.c_str(), 0, 0, 0, 0, 0, 1);
-		}
-		else
-		{
-			retcode = SQLExecDirect(async_hstmt, (SQLCHAR*)sql.c_str(), SQL_NTS);
-			//result = PQsendQuery(conn_, sql.c_str());
-		}
+
+
+		retcode = SQLExecDirectA(async_hstmt, (SQLCHAR*)sql.c_str(), SQL_NTS);
+
 
 		//if (result != 1)
 		if (!(retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO || retcode == SQL_STILL_EXECUTING))
 		{
-			std::string err_msg = "Postgis Plugin: ";
+			std::string err_msg = "Mssql Plugin: ";
 			err_msg += status();
 			err_msg += "\nin executeAsyncQuery Full sql was: '";
 			err_msg += sql;
@@ -251,25 +224,25 @@ public:
 
 	SQLRETURN getResult()
 	{
-		
+
 		SQLRETURN retcode;
-		while ((retcode = SQLExecDirect(async_hstmt, (SQLCHAR*)"", SQL_NTS)) == SQL_STILL_EXECUTING) {
+		while ((retcode = SQLExecDirectA(async_hstmt, (SQLCHAR*)"", SQL_NTS)) == SQL_STILL_EXECUTING) {
 
 			if (retcode != SQL_STILL_EXECUTING)
 				break;
 			Sleep(1);
 		}
-		
-		//PGresult *result = PQgetResult(conn_);
+
 		return retcode;
 	}
 
+	//XXX not used??
 	std::shared_ptr<ResultSet> getNextAsyncResult()
 	{
 		SQLRETURN result = getResult();
 		if (result != SQL_SUCCESS && result != SQL_SUCCESS_WITH_INFO)
 		{
-			std::string err_msg = "Postgis Plugin: ";
+			std::string err_msg = "Mssql Plugin: ";
 			std::string err_status = status(SQL_HANDLE_STMT, async_hstmt);
 			err_msg += err_status + "\n in getNextAsyncResult";
 			clearAsyncResult(async_hstmt);
@@ -281,14 +254,15 @@ public:
 		return std::make_shared<ResultSet>(async_hstmt);
 	}
 
+
 	std::shared_ptr<ResultSet> getAsyncResult()
 	{
 		SQLRETURN result = getResult();
 		if (result != SQL_SUCCESS && result != SQL_SUCCESS_WITH_INFO)
 		{
 
-			std::string err_msg = "Postgis Plugin: ";
-			std::string err_status= status(SQL_HANDLE_STMT, async_hstmt);
+			std::string err_msg = "Mssql Plugin: ";
+			std::string err_status = status(SQL_HANDLE_STMT, async_hstmt);
 			err_msg += err_status + "\n in getAsyncResult";
 			clearAsyncResult(async_hstmt);
 			// We need to be guarded against losing the connection
@@ -320,7 +294,7 @@ public:
 		else{
 			return false;
 		}
-		
+
 		//return (!closed_) && (PQstatus(conn_) != CONNECTION_BAD);
 	}
 
@@ -358,16 +332,12 @@ private:
 	int cursorId;
 	bool closed_;
 	bool pending_;
+	std::string debug_current_sql;
+	std::wstring debug_current_wsql;
 
 	void clearAsyncResult(SQLHANDLE hstmt)
 	{
 		SQLFreeHandle(SQL_HANDLE_STMT, hstmt);
-		// Clear all pending results
-		//while (result)
-		//{
-		//	PQclear(result);
-		//	result = PQgetResult(conn_);
-		//}
 		pending_ = false;
 	}
 };

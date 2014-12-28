@@ -148,7 +148,7 @@ private:
 		std::ostringstream s;
 		s << "FETCH FORWARD " << fetch_size_ << " FROM " << cursorName_;
 
-		MAPNIK_LOG_DEBUG(postgis) << "postgis_cursor_resultset: " << s.str();
+		MAPNIK_LOG_DEBUG(mssql) << "mssql_cursor_resultset: " << s.str();
 
 		rs_ = conn_->executeQuery(s.str());
 		is_closed_ = false;

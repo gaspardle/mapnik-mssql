@@ -61,7 +61,7 @@ public:
 	{
 		if (conn_ && conn_->isPending())
 		{
-			MAPNIK_LOG_DEBUG(postgis) << "AsyncResultSet: aborting pending connection - " << conn_.get();
+			MAPNIK_LOG_DEBUG(mssql) << "AsyncResultSet: aborting pending connection - " << conn_.get();
 			// there is no easy way to abort a pending connection, so we close it : this will ensure that
 			// the connection will be recycled in the pool
 			conn_->close();
@@ -171,16 +171,7 @@ public:
 	{
 	    return rs_->getBinary(index);
 	}
-	/*
-	virtual const char* getValue(int index) const
-	{
-		return rs_->getValue(index);
-	}
 
-	virtual const char* getValue(const char* name) const
-	{
-		return rs_->getValue(name);
-	}*/
 
 private:
 	mssql_processor_context_ptr ctx_;
@@ -195,7 +186,7 @@ private:
 		conn_ = make_shared_ptr(pool_->borrowObject());
 		if (conn_ && conn_->isOK())
 		{
-			conn_->executeAsyncQuery(sql_, 1);
+			conn_->executeAsyncQuery(sql_);
 		}
 		else
 		{

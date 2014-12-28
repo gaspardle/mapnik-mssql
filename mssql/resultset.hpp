@@ -116,8 +116,8 @@ public:
 		else{
 			return false;
 			//XXX
-			SQLCHAR  sqlstate[6];
-			SQLCHAR  message[SQL_MAX_MESSAGE_LENGTH];
+			SQLWCHAR  sqlstate[6];
+			SQLWCHAR  message[SQL_MAX_MESSAGE_LENGTH];
 			SQLINTEGER  NativeError;
 			SQLSMALLINT   i, MsgLen;
 			SQLRETURN rc2 = SQLGetDiagRec(SQL_HANDLE_STMT, res_, 1, sqlstate, &NativeError,
@@ -134,7 +134,7 @@ public:
 		SQLSMALLINT name_length;
 		SQLRETURN retcode;
 
-		retcode = SQLColAttribute(
+		retcode = SQLColAttributeA(
 			res_,
 			index + 1,                    /* the Column number */
 			SQL_DESC_NAME,        /* the field identifier, = 1011 */
@@ -231,26 +231,39 @@ public:
 	{
 		SQLLEN length = 0;
 		SQLRETURN retcode;
-		char buffer[255];
 
-		retcode = SQLGetData(res_, index + 1, SQL_C_CHAR, &buffer, sizeof(buffer), &length);
+#ifdef _WINDOWS
+		auto str = std::wstring();
+		wchar_t buffer[255];
+#else
+		auto str = std::string();
+		char buffer[255];
+#endif			
+
+		retcode = SQLGetData(res_, index + 1, SQL_C_WCHAR, &buffer, sizeof(buffer), &length);
 
 		if (retcode == SQL_SUCCESS && length != SQL_NULL_DATA){			
-			return std::string(buffer);			
-
+#ifdef _WINDOWS
+			return mapnik::utf16_to_utf8(buffer);			
+#else
+			return buffer;
+#endif	
 		}else if (retcode == SQL_SUCCESS_WITH_INFO && length != SQL_NULL_DATA){
-			auto str = std::string();
+			
 			str.reserve(length);
 			str.append(buffer);
 			
-			while ((retcode = SQLGetData(res_, index + 1, SQL_C_CHAR, &buffer, sizeof(buffer),
+			while ((retcode = SQLGetData(res_, index + 1, SQL_C_WCHAR, &buffer, sizeof(buffer),
 					&length)) != SQL_NO_DATA) {			
 				str.append(buffer);
 			}
-			return str;
 		}
 		
-		return std::string();
+#ifdef _WINDOWS
+		return mapnik::utf16_to_utf8(str);
+#else
+		return str;
+#endif	
 
 		// return PQgetvalue(res_, pos_, index);
 	}

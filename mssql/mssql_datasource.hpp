@@ -120,6 +120,7 @@ private:
 	bool asynchronous_request_;
 	int intersect_min_scale_;
 	int intersect_max_scale_;
+	std::string order_by_;
 };
 
 #endif // MSSQL_DATASOURCE_HPP

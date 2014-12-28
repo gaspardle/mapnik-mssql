@@ -63,6 +63,7 @@ mssql_datasource::mssql_datasource(parameters const& params)
 	: datasource(params),
 	table_(*params.get<std::string>("table", "")),
 	schema_(""),
+	order_by_(*params.get<std::string>("order_by", "")),
 	geometry_table_(*params.get<std::string>("geometry_table", "")),
 	geometry_field_(*params.get<std::string>("geometry_field", "")),
 	key_field_(*params.get<std::string>("key_field", "")),
@@ -500,12 +501,10 @@ std::string mssql_datasource::populate_tokens(std::string const& sql, double sca
 	else
 	{
 		std::ostringstream s;
-
+		//XXX makeValid
 		if (intersect_min_scale_ > 0 && (scale_denom <= intersect_min_scale_))
-		{
-			//s << " WHERE ST_Intersects(\"" << geometryColumn_ << "\"," << box << ")";
-			s << " WHERE \"" << geometryColumn_ << "\".STIntersects(" << box << ") = 1";
-
+		{			
+			s << " WHERE \"" << geometryColumn_ << "\".STIsValid() = 1 AND \"" << geometryColumn_ << "\".STIntersects(" << box << ") = 1";
 		}
 		else if (intersect_max_scale_ > 0 && (scale_denom >= intersect_max_scale_))
 		{
@@ -513,8 +512,7 @@ std::string mssql_datasource::populate_tokens(std::string const& sql, double sca
 		}
 		else
 		{
-			s << " WHERE \"" << geometryColumn_ << "\".STIntersects(" << box << ") = 1";
-			//s << " WHERE \"" << geometryColumn_ << "\" && " << box;
+			s << " WHERE \"" << geometryColumn_ << "\".STIsValid() = 1 AND \"" << geometryColumn_ << "\".STIntersects(" << box << ") = 1";			
 		}
 
 		return populated_sql + s.str();
@@ -550,7 +548,7 @@ std::shared_ptr<IResultSet> mssql_datasource::get_resultset(std::shared_ptr<Conn
 		else*/
 		{
 			// no cursor
-			return conn->executeQuery(sql, 1);
+			return conn->executeQuery(sql);
 		}
 	}
 	else
@@ -560,7 +558,7 @@ std::shared_ptr<IResultSet> mssql_datasource::get_resultset(std::shared_ptr<Conn
 		if (conn)
 		{
 			// lauch async req & create asyncresult with conn
-			conn->executeAsyncQuery(sql, 1);
+			conn->executeAsyncQuery(sql);
 			return std::make_shared<AsyncResultSet>(pgis_ctxt, pool, conn, sql);
 		}
 		else
@@ -722,6 +720,10 @@ featureset_ptr mssql_datasource::features_with_context(query const& q, processor
 
 		s << " FROM " << table_with_bbox;
 
+		if (!order_by_.empty())
+		{
+			s << " " << order_by_;
+		}
 
 		std::shared_ptr<IResultSet> rs = get_resultset(conn, s.str(), pool, proc_ctx);
 		return make_shared_ptr(std::make_shared<mssql_featureset>(rs, ctx, desc_.get_encoding(), !key_field_.empty()));
@@ -998,6 +1000,7 @@ boost::optional<mapnik::datasource::geometry_t> mssql_datasource::get_geometry_t
 				{
 					//const char* data = rs->getValue(0);
 					std::string data = rs->getString(0);
+					
 					if (boost::algorithm::contains(data, "line"))
 					{
 						g_type = "linestring";
