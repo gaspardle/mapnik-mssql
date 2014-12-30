@@ -67,7 +67,7 @@ public:
 
 		SQLWCHAR  retconstring[1024];
 		SQLSMALLINT OutConnStrLen;
-		SQLRETURN retcode = SQLDriverConnect(sqlconnectionhandle,
+		SQLRETURN retcode = SQLDriverConnectW(sqlconnectionhandle,
 			NULL,
 			(SQLWCHAR*)connect_with_pass.c_str(),
 			SQL_NTS,
@@ -153,10 +153,10 @@ public:
 	std::string status(unsigned int handletype, const SQLHANDLE& handle) const
 	{
 
-		std::wstring  status = L"{Status}";
+		std::string  status;
 
-		SQLWCHAR  sqlstate[6];
-		SQLWCHAR  message[SQL_MAX_MESSAGE_LENGTH];
+		SQLCHAR  sqlstate[6];
+		SQLCHAR  message[SQL_MAX_MESSAGE_LENGTH];
 		SQLINTEGER  NativeError;
 		SQLSMALLINT   i, MsgLen;
 		SQLRETURN     rc2;
@@ -165,31 +165,20 @@ public:
 
 		// Get the status records.
 		i = 1;
-		while ((rc2 = SQLGetDiagRec(handletype, handle, i, sqlstate, &NativeError,
+		while ((rc2 = SQLGetDiagRecA(handletype, handle, i, sqlstate, &NativeError,
 			message, sizeof(message), &MsgLen)) != SQL_NO_DATA) {
-			status += L"(" + std::to_wstring((LONGLONG)i) + L")";
-			status += L"\nSQLState: ";
-			status += ((wchar_t*)&sqlstate[0]);
-			status += L"\nNativeError: " + std::to_wstring((LONGLONG)NativeError);
-			status += L"\nMessage: ";
-			status += (wchar_t*)&message[0];
-			status += L"\nMsgLen: " + std::to_wstring((LONGLONG)MsgLen);
+			status += "(" + std::to_string((short)i) + ")";
+			status += "\nSQLState: ";
+			status += ((char*)&sqlstate[0]);
+			status += "\nNativeError: " + std::to_string((long)NativeError);
+			status += "\nMessage: ";
+			status += (char*)&message[0];
+			status += "\nMsgLen: " + std::to_string((long)MsgLen);
 
 			i++;
 		}
 
-		/*if (conn_)
-		{
-		status = PQerrorMessage(conn_);
-		}
-		else
-		{
-		status = "Uninitialized connection";
-		}*/
-
-		status += L"{status end}";
-
-		return mapnik::utf16_to_utf8(status);
+		return status;
 	}
 	bool executeAsyncQuery(std::string const& sql)
 	{
@@ -230,7 +219,7 @@ public:
 
 			if (retcode != SQL_STILL_EXECUTING)
 				break;
-			Sleep(1);
+			sleep(1);
 		}
 
 		return retcode;

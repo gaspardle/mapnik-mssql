@@ -30,7 +30,6 @@
 #include "resultset.hpp"
 #include <memory>
 #include <queue>
-#include "transition.h"
 
 class mssql_processor_context;
 using mssql_processor_context_ptr = std::shared_ptr<mssql_processor_context>;
@@ -182,7 +181,7 @@ private:
 	bool is_closed_;
 
 	void prepare()
-	{ 
+	{
 		conn_ = make_shared_ptr(pool_->borrowObject());
 		if (conn_ && conn_->isOK())
 		{

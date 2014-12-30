@@ -32,6 +32,7 @@
 #include <sql.h>
 #include <sqlext.h>
 
+#include "transition.h"
 
 class IResultSet
 {
@@ -119,8 +120,8 @@ public:
 			SQLWCHAR  sqlstate[6];
 			SQLWCHAR  message[SQL_MAX_MESSAGE_LENGTH];
 			SQLINTEGER  NativeError;
-			SQLSMALLINT   i, MsgLen;
-			SQLRETURN rc2 = SQLGetDiagRec(SQL_HANDLE_STMT, res_, 1, sqlstate, &NativeError,
+			SQLSMALLINT MsgLen;
+			SQLRETURN rc2 = SQLGetDiagRecW(SQL_HANDLE_STMT, res_, 1, sqlstate, &NativeError,
 				message, sizeof(message), &MsgLen);
 
 			throw mapnik::datasource_exception("resultset next error");
@@ -175,7 +176,7 @@ public:
 
 	virtual int getTypeOID(int index) const
 	{
-		SQLINTEGER dataType;
+		SQLLEN dataType;
 		SQLColAttribute(res_, index + 1, SQL_DESC_TYPE, NULL, 0, NULL, &dataType);
 		return dataType;
 		//return PQftype(res_, index);
@@ -233,10 +234,10 @@ public:
 		SQLRETURN retcode;
 
 #ifdef _WINDOWS
-		auto str = std::wstring();
+		std::wstring str;
 		wchar_t buffer[255];
 #else
-		auto str = std::string();
+		std::string str;
 		char buffer[255];
 #endif			
 
@@ -280,7 +281,7 @@ public:
 				// char* binvalue = new char[length*2];
 								
 				std::vector<const char> binvalue(length, 0);
-				retcode = SQLGetData(res_, index + 1, SQL_C_BINARY, &binvalue[0], length, &length);
+				retcode = SQLGetData(res_, index + 1, SQL_C_BINARY, (SQLPOINTER)&binvalue[0], length, &length);
 
 				//char* binvalue = new char[80000];
 				//retcode = SQLGetData(res_, index + 1, SQL_C_BINARY, binvalue, length, &length);

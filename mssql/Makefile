@@ -1,6 +1,6 @@
 # To use clang, run:  make CXX=clang++
 
-CXXFLAGS = $(shell mapnik-config --cflags) -fPIC
+CXXFLAGS = $(shell mapnik-config --cflags) -fPIC -DUNICODE -std=c++11 -w
 
 LIBS = $(shell mapnik-config --libs --ldflags --dep-libs)
 
