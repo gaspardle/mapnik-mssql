@@ -52,7 +52,7 @@ public:
 	virtual const double getDouble(int index) const = 0;
 	virtual const float getFloat(int index) const = 0;
 	virtual const std::string getString(int index) const = 0;
-	virtual const std::vector<const char> getBinary(int index) const = 0;
+	virtual const std::vector<char> getBinary(int index) const = 0;
 	//virtual const char* getValue(int index) const = 0;
 	//virtual const char* getValue(const char* name) const = 0;
 };
@@ -268,7 +268,7 @@ public:
 
 		// return PQgetvalue(res_, pos_, index);
 	}
-	virtual const std::vector<const char> getBinary(int index) const
+	virtual const std::vector<char> getBinary(int index) const
 	{
 		SQLLEN length = 0;
 		SQLRETURN retcode;
@@ -280,7 +280,7 @@ public:
 			if (length != SQL_NULL_DATA){
 				// char* binvalue = new char[length*2];
 								
-				std::vector<const char> binvalue(length, 0);
+				std::vector<char> binvalue(length, 0);
 				retcode = SQLGetData(res_, index + 1, SQL_C_BINARY, (SQLPOINTER)&binvalue[0], length, &length);
 
 				//char* binvalue = new char[80000];
@@ -291,7 +291,7 @@ public:
 				// return std::vector<const char>(binvalue, binvalue + sizeof binvalue / sizeof binvalue[0]);
 			}
 		}
-		return std::vector<const char>();
+		return std::vector<char>();
 
 		// return PQgetvalue(res_, pos_, index);
 	}

@@ -114,7 +114,7 @@ feature_ptr mssql_featureset::next()
         }
 
         // parse geometry		
-        std::vector<const char> data = rs_->getBinary(0);    
+        std::vector<char> data = rs_->getBinary(0);    
         int size = data.size();       
 		
         if (!geometry_utils::from_wkb(feature->paths(), &data[0], data.size())){

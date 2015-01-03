@@ -166,7 +166,7 @@ public:
 	{
 		return rs_->getString(index);
 	}
-	virtual const std::vector<const char> getBinary(int index) const
+	virtual const std::vector<char> getBinary(int index) const
 	{
 	    return rs_->getBinary(index);
 	}
