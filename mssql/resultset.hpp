@@ -67,8 +67,7 @@ public:
 	}
 
 	virtual void close()
-	{
-		//PQclear(res_);
+	{	
 		// SQLDisconnect(res_);
 		SQLFreeHandle(SQL_HANDLE_STMT, res_);
 		res_ = 0;
@@ -142,6 +141,7 @@ public:
 			sizeof(fname),                 
 			&name_length,
 			0);
+		//XXX validation?
 		return std::string(fname);
 	}
 
@@ -157,40 +157,32 @@ public:
 			NULL,                  
 			NULL,
 			&length);
+		//XXX validation?
 		return length;
-		//return PQgetlength(res_, pos_, index);
+	
 	}
 
 	virtual int getFieldLength(const char* name) const
 	{
 
-		throw mapnik::datasource_exception("ResultSet getFieldLength not implemented");
-		/*int col = PQfnumber(res_, name);
-		if (col >= 0)
-		{
-		return PQgetlength(res_, pos_, col);
-		}*/
+		throw mapnik::datasource_exception("ResultSet getFieldLength not implemented");		
 		return 0;
 	}
 
 	virtual int getTypeOID(int index) const
 	{
 		SQLLEN dataType;
-		SQLColAttribute(res_, index + 1, SQL_DESC_TYPE, NULL, 0, NULL, &dataType);
+		SQLRETURN retcode;
+		retcode = SQLColAttribute(res_, index + 1, SQL_DESC_TYPE, NULL, 0, NULL, &dataType);
+		
+		//XXX validation?
 		return dataType;
-		//return PQftype(res_, index);
 	}
 
 	virtual int getTypeOID(const char* name) const
 	{
 		throw mapnik::datasource_exception("ResultSet getTypeOID(const char* name) not implemented");
-		return 0;
-		/* int col = PQfnumber(res_, name);
-		if (col >= 0)
-		{
-		return PQftype(res_, col);
-		}
-		return 0;*/
+		return 0;	
 	}
 
 	virtual bool isNull(int index) const
@@ -201,6 +193,7 @@ public:
 		unsigned char value[1];
 
 		retcode = SQLGetData(res_, index + 1, SQL_C_BINARY, value, 0, &length);
+		//XXX retcode validation?
 
 		return static_cast<bool>(length == SQL_NULL_DATA);
 	}
@@ -209,21 +202,28 @@ public:
 	virtual const int getInt(int index) const
 	{
 		SQLINTEGER intvalue;
-		SQLGetData(res_, index + 1, SQL_C_SLONG, &intvalue, 0, NULL);
-		return intvalue;
-		// return PQgetvalue(res_, pos_, index);
+		SQLRETURN retcode;
+
+		retcode = SQLGetData(res_, index + 1, SQL_C_SLONG, &intvalue, 0, NULL);
+
+		//XXX retcode validation?
+		return intvalue;		
 	}
 	virtual const double getDouble(int index) const
 	{
 		double value;
-		SQLGetData(res_, index + 1, SQL_C_DOUBLE, &value, 0, NULL);
+		SQLRETURN retcode;
+
+		retcode = SQLGetData(res_, index + 1, SQL_C_DOUBLE, &value, 0, NULL);
 		return value;
 		// return PQgetvalue(res_, pos_, index);
 	}
 	virtual const float getFloat(int index) const
 	{
 		float value;
-		SQLGetData(res_, index + 1, SQL_C_FLOAT, &value, 0, NULL);
+		SQLRETURN retcode;
+
+		retcode = SQLGetData(res_, index + 1, SQL_C_FLOAT, &value, 0, NULL);
 		return value;
 		// return PQgetvalue(res_, pos_, index);
 	}
@@ -263,10 +263,9 @@ public:
 		return mapnik::utf16_to_utf8(str);
 #else
 		return str;
-#endif	
-
-		// return PQgetvalue(res_, pos_, index);
+#endif		
 	}
+
 	virtual const std::vector<char> getBinary(int index) const
 	{
 		SQLLEN length = 0;
@@ -277,44 +276,14 @@ public:
 		retcode = SQLGetData(res_, index + 1, SQL_C_BINARY, bit, 0, &length);
 		if (retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO){
 			if (length != SQL_NULL_DATA){
-				// char* binvalue = new char[length*2];
-								
+												
 				std::vector<char> binvalue(length, 0);
 				retcode = SQLGetData(res_, index + 1, SQL_C_BINARY, (SQLPOINTER)&binvalue[0], length, &length);
-
-				//char* binvalue = new char[80000];
-				//retcode = SQLGetData(res_, index + 1, SQL_C_BINARY, binvalue, length, &length);
-
-
-				return binvalue;
-				// return std::vector<const char>(binvalue, binvalue + sizeof binvalue / sizeof binvalue[0]);
+				
+				return binvalue;				
 			}
 		}
 		return std::vector<char>();
-
-		// return PQgetvalue(res_, pos_, index);
-	}
-	virtual const char* getValue4(int index) const
-	{
-		throw mapnik::datasource_exception("ResultSet getValue(intindex) not implemented");
-		return "novalue";
-		// return PQgetvalue(res_, pos_, index);
-	}
-
-	virtual const char* getValue5(const char* name) const
-	{
-		std::string a = "ResultSet getValue([const char* name]";
-		a += ((char*)name);
-		a += ") not implemented";
-		throw mapnik::datasource_exception(a.c_str());
-		return "novalue";
-		/*
-		int col = PQfnumber(res_, name);
-		if (col >= 0)
-		{
-		return getValue(col);
-		}
-		return 0;*/
 	}
 
 private:

@@ -76,7 +76,7 @@ public:
 	inline std::string connection_string() const
 	{
 		std::string connect_str = connection_string_safe();
-		if (pass_   && !pass_->empty()) connect_str += " PWD=" + *pass_;
+		if (pass_   && !pass_->empty()) connect_str += "PWD=" + *pass_;
 		return connect_str;
 	}
 
@@ -97,11 +97,16 @@ public:
 				connect_str += "DRIVER={SQL Server Native Client 11.0};";
 			}
 			if (host_   && !host_->empty()) connect_str += "SERVER=" + *host_ + ";";
-			if (port_   && !port_->empty()) connect_str += " port=" + *port_ + ";";
-			if (dbname_ && !dbname_->empty()) connect_str += " DATABASE=" + *dbname_ + ";";
-			if (user_   && !user_->empty()) connect_str += " UID=" + *user_ + ";";
+			if (port_   && !port_->empty()) connect_str += "port=" + *port_ + ";";
+			if (dbname_ && !dbname_->empty()) connect_str += "DATABASE=" + *dbname_ + ";";
+			if (user_   && !user_->empty()) connect_str += "UID=" + *user_ + ";";
 			if (connect_timeout_ && !connect_timeout_->empty())
-				connect_str += " connect_timeout=" + *connect_timeout_ + ";";
+				connect_str += "connect_timeout=" + *connect_timeout_ + ";";
+			/*if (encrypt_ && !encrypt_->empty())
+				connect_str += "Encrypt=true;";
+			  if (trust_server_certificate_ && !trust_server_certificate_->empty())
+				connect_str += "TrustServerCertificate=no;";
+			*/
 		}
 
 		return connect_str;

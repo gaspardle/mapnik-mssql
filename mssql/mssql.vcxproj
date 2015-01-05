@@ -102,7 +102,6 @@
     <ClInclude Include="mssql_featureset.hpp" />
     <ClInclude Include="resultset.hpp" />
     <ClInclude Include="stdafx.h" />
-    <ClInclude Include="targetver.h" />
     <ClInclude Include="transition.h" />
   </ItemGroup>
   <ItemGroup>

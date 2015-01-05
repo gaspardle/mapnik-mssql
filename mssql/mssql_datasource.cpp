@@ -892,6 +892,8 @@ box2d<double> mssql_datasource::envelope() const
 
 boost::optional<mapnik::datasource::geometry_t> mssql_datasource::get_geometry_type() const
 {
+	//return boost::optional<mapnik::datasource::geometry_t>();
+
 	boost::optional<mapnik::datasource::geometry_t> result;
 
 	CnxPool_ptr pool = ConnectionManager::instance().getPool(creator_.id());
@@ -903,56 +905,7 @@ boost::optional<mapnik::datasource::geometry_t> mssql_datasource::get_geometry_t
 		{
 			std::ostringstream s;
 			std::string g_type;
-			/*try
-			{
-			s << "SELECT lower(type) as type FROM "
-			<< GEOMETRY_COLUMNS <<" WHERE f_table_name='"
-			<< mapnik::sql_utils::unquote_double(geometry_table_)
-			<< "'";
-			if (! schema_.empty())
-			{
-			s << " AND f_table_schema='"
-			<< mapnik::sql_utils::unquote_double(schema_)
-			<< "'";
-			}
-			if (! geometry_field_.empty())
-			{
-			s << " AND f_geometry_column='"
-			<< mapnik::sql_utils::unquote_double(geometry_field_)
-			<< "'";
-			}
-			shared_ptr<ResultSet> rs = conn->executeQuery(s.str());
-			if (rs->next())
-			{
-			g_type = rs->getValue("type");
-			if (boost::algorithm::contains(g_type, "line"))
-			{
-			result.reset(mapnik::datasource::LineString);
-			return result;
-			}
-			else if (boost::algorithm::contains(g_type, "point"))
-			{
-			result.reset(mapnik::datasource::Point);
-			return result;
-			}
-			else if (boost::algorithm::contains(g_type, "polygon"))
-			{
-			result.reset(mapnik::datasource::Polygon);
-			return result;
-			}
-			else // geometry
-			{
-			result.reset(mapnik::datasource::Collection);
-			return result;
-			}
-			}
-			}
-			catch (mapnik::datasource_exception const& ex) {
-			// let this pass on query error and use the fallback below
-			MAPNIK_LOG_WARN(mssql) << "mssql_datasource: metadata query failed: " << ex.what();
-			}*/
 
-			// fallback to querying first several features
 			if (g_type.empty() && !geometryColumn_.empty())
 			{
 				s.str("");
@@ -975,8 +928,7 @@ boost::optional<mapnik::datasource::geometry_t> mssql_datasource::get_geometry_t
 
 				shared_ptr<ResultSet> rs = conn->executeQuery(s.str());
 				while (rs->next() && !rs->isNull(0))
-				{
-					//const char* data = rs->getValue(0);
+				{					
 					std::string data = rs->getString(0);
 					
 					if (boost::algorithm::contains(data, "line"))

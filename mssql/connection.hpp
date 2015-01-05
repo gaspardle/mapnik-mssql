@@ -51,19 +51,22 @@ public:
 		//XXX  string to wstring conversion
 		std::wstring connect_with_pass;
 		connect_with_pass.assign(connection_str.begin(), connection_str.end());
-		/*if (password && !password->empty())
-		{
-		connect_with_pass += " password=" + *password;
-		}*/
 
-		if (SQL_SUCCESS != SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &sqlenvhandle))
-			throw mapnik::datasource_exception("Mssql Plugin: SQLAllocHandle");// goto FINISHED;
 
-		if (SQL_SUCCESS != SQLSetEnvAttr(sqlenvhandle, SQL_ATTR_ODBC_VERSION, (SQLPOINTER)SQL_OV_ODBC3, 0))
-			throw mapnik::datasource_exception("Mssql Plugin: SQLSetEnvAttr");// goto FINISHED;
+		if (SQL_SUCCESS != SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &sqlenvhandle)){
+			close();
+			throw mapnik::datasource_exception("Mssql Plugin: SQLAllocHandle");
+		}
 
-		if (SQL_SUCCESS != SQLAllocHandle(SQL_HANDLE_DBC, sqlenvhandle, &sqlconnectionhandle))
-			throw mapnik::datasource_exception("Mssql Plugin: SQLAllocHandle");// goto FINISHED;
+		if (SQL_SUCCESS != SQLSetEnvAttr(sqlenvhandle, SQL_ATTR_ODBC_VERSION, (SQLPOINTER)SQL_OV_ODBC3, 0)){
+			close();
+			throw mapnik::datasource_exception("Mssql Plugin: SQLSetEnvAttr");
+		}
+
+		if (SQL_SUCCESS != SQLAllocHandle(SQL_HANDLE_DBC, sqlenvhandle, &sqlconnectionhandle)){
+			close();
+			throw mapnik::datasource_exception("Mssql Plugin: SQLAllocHandle");
+		}
 
 		SQLWCHAR  retconstring[1024];
 		SQLSMALLINT OutConnStrLen;
@@ -79,7 +82,7 @@ public:
 		{
 			std::string err_msg = "Mssql Plugin: ";
 			err_msg += status(SQL_HANDLE_DBC, sqlconnectionhandle);
-			err_msg += "\nConnection string: '";
+			err_msg += "\nSQLDriverConnect Error, Connection string: '";
 			err_msg += connection_str;
 			err_msg += "'\n";
 			close();
@@ -107,11 +110,8 @@ public:
 #ifdef MAPNIK_STATS
 		mapnik::progress_timer __stats__(std::clog, std::string("mssql_connection::execute ") + sql);
 #endif
-		throw mapnik::datasource_exception("execute!");
-		//PGresult *result = PQexec(conn_, sql.c_str());
-		//bool ok = (result && (PQresultStatus(result) == PGRES_COMMAND_OK));
-		//PQclear(result);
-		//return ok;
+		throw mapnik::datasource_exception("not implemented");
+
 	}
 
 	std::shared_ptr<ResultSet> executeQuery(std::string const& sql)
@@ -122,14 +122,13 @@ public:
 		debug_current_sql = sql;
 		SQLHANDLE hstmt = NULL;
 		SQLRETURN retcode;
-		if (SQL_SUCCESS != SQLAllocHandle(SQL_HANDLE_STMT, sqlconnectionhandle, &hstmt))
-			throw mapnik::datasource_exception("cant SQLAllocHandle");
 
+		if (SQL_SUCCESS != SQLAllocHandle(SQL_HANDLE_STMT, sqlconnectionhandle, &hstmt)){
+			throw mapnik::datasource_exception("SQLAllocHandle error");
+		}
 		retcode = SQLExecDirectA(hstmt, (SQLCHAR*)sql.c_str(), SQL_NTS);
-
-
-		if (!(retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO))
-			// if (! result || (PQresultStatus(result) != PGRES_TUPLES_OK))
+		
+		if (!(retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO))			
 		{
 			std::string err_msg = status(SQL_HANDLE_STMT, hstmt);
 			err_msg += "\nFull sql was: '";
@@ -137,9 +136,6 @@ public:
 			err_msg += "'\n";
 
 			SQLFreeHandle(SQL_HANDLE_STMT, hstmt);
-			// PQclear(result);
-
-
 			throw mapnik::datasource_exception(err_msg);
 		}
 
@@ -219,7 +215,7 @@ public:
 
 			if (retcode != SQL_STILL_EXECUTING)
 				break;
-			sleep(1);
+			//sleep(1);
 		}
 
 		return retcode;
