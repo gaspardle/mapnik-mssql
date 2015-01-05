@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.30723.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mssql", "mssql\mssql.vcxproj", "{2B14B51F-015A-4912-8E0C-7E809673C2CE}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mssql", "mssql.vcxproj", "{2B14B51F-015A-4912-8E0C-7E809673C2CE}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "console-test", "console-test\console-test.vcxproj", "{A888160C-8DA9-40F0-8B54-8E9BAEAF71A3}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "console-test", "..\console-test\console-test.vcxproj", "{A888160C-8DA9-40F0-8B54-8E9BAEAF71A3}"
 	ProjectSection(ProjectDependencies) = postProject
 		{2B14B51F-015A-4912-8E0C-7E809673C2CE} = {2B14B51F-015A-4912-8E0C-7E809673C2CE}
 	EndProjectSection

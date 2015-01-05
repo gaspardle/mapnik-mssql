@@ -18,40 +18,43 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="connection.hpp">
+    <ClInclude Include="..\mssql\connection_manager.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="connection_manager.hpp">
+    <ClInclude Include="..\mssql\resultset.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="resultset.hpp">
+    <ClInclude Include="..\mssql\mssql_featureset.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="mssql_featureset.hpp">
+    <ClInclude Include="..\mssql\mssql_datasource.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="mssql_datasource.hpp">
+    <ClInclude Include="..\mssql\stdafx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="stdafx.h">
+    <ClInclude Include="..\mssql\asyncresultset.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="asyncresultset.hpp">
+    <ClInclude Include="..\mssql\transition.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="transition.h">
+    <ClInclude Include="..\mssql\connection.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="mssql_datasource.cpp">
+    <ClCompile Include="..\mssql\mssql_datasource.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="mssql_featureset.cpp">
+    <ClCompile Include="..\mssql\mssql_featureset.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="stdafx.cpp">
+    <ClCompile Include="..\mssql\stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\README.md" />
   </ItemGroup>
 </Project>
