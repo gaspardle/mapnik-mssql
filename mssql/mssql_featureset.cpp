@@ -24,7 +24,6 @@
 
 #include "mssql_featureset.hpp"
 #include "resultset.hpp"
-#include "cursorresultset.hpp"
 
 // mapnik
 /*#include <mapnik/global.hpp>

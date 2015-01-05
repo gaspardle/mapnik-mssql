@@ -27,9 +27,6 @@
     <ClInclude Include="connection_manager.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="cursorresultset.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="resultset.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>

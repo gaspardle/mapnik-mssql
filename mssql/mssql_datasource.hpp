@@ -46,7 +46,6 @@
 
 #include "connection_manager.hpp"
 #include "resultset.hpp"
-#include "cursorresultset.hpp"
 
 using mapnik::transcoder;
 using mapnik::datasource;
@@ -98,7 +97,7 @@ private:
 	std::string geometry_table_;
 	const std::string geometry_field_;
 	std::string key_field_;
-	mapnik::value_integer cursor_fetch_size_;
+	
 	mapnik::value_integer row_limit_;
 	std::string geometryColumn_;
 	mapnik::datasource::datasource_t type_;

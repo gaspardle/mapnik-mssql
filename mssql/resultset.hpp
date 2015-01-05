@@ -53,8 +53,7 @@ public:
 	virtual const float getFloat(int index) const = 0;
 	virtual const std::string getString(int index) const = 0;
 	virtual const std::vector<char> getBinary(int index) const = 0;
-	//virtual const char* getValue(int index) const = 0;
-	//virtual const char* getValue(const char* name) const = 0;
+
 };
 
 class ResultSet : public IResultSet, private mapnik::noncopyable
@@ -111,17 +110,17 @@ public:
 		if (retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO){
 			return true;
 		}
-		else if (retcode == SQL_NO_DATA || retcode == SQL_STILL_EXECUTING /*XXX i have no idea*/){
+		else if (retcode == SQL_NO_DATA || retcode == SQL_STILL_EXECUTING /*XXX */){
 			return false;
 		}
 		else{
 			return false;
 			//XXX
-			SQLWCHAR  sqlstate[6];
-			SQLWCHAR  message[SQL_MAX_MESSAGE_LENGTH];
+			SQLCHAR  sqlstate[6];
+			SQLCHAR  message[SQL_MAX_MESSAGE_LENGTH];
 			SQLINTEGER  NativeError;
 			SQLSMALLINT MsgLen;
-			SQLRETURN rc2 = SQLGetDiagRecW(SQL_HANDLE_STMT, res_, 1, sqlstate, &NativeError,
+			SQLRETURN rc2 = SQLGetDiagRecA(SQL_HANDLE_STMT, res_, 1, sqlstate, &NativeError,
 				message, sizeof(message), &MsgLen);
 
 			throw mapnik::datasource_exception("resultset next error");
@@ -137,10 +136,10 @@ public:
 
 		retcode = SQLColAttributeA(
 			res_,
-			index + 1,                    /* the Column number */
-			SQL_DESC_NAME,        /* the field identifier, = 1011 */
-			fname,                 /* this is where the name will go */
-			sizeof(fname),                   /* BufferLength -- too small! */
+			index + 1,
+			SQL_DESC_NAME,  
+			fname,              
+			sizeof(fname),                 
 			&name_length,
 			0);
 		return std::string(fname);
@@ -152,10 +151,10 @@ public:
 		SQLRETURN retcode;
 		retcode = SQLColAttribute(
 			res_,
-			index + 1,                    /* the Column number */
-			SQL_DESC_LENGTH,        /* the field identifier, = 1011 */
-			NULL,                 /* this is where the name will go */
-			NULL,                   /* BufferLength -- too small! */
+			index + 1,               
+			SQL_DESC_LENGTH,        
+			NULL,                
+			NULL,                  
 			NULL,
 			&length);
 		return length;

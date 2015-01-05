@@ -67,14 +67,14 @@ mssql_datasource::mssql_datasource(parameters const& params)
 	geometry_table_(*params.get<std::string>("geometry_table", "")),
 	geometry_field_(*params.get<std::string>("geometry_field", "")),
 	key_field_(*params.get<std::string>("key_field", "")),
-	cursor_fetch_size_(*params.get<mapnik::value_integer>("cursor_size", 0)),
+	
 	row_limit_(*params.get<mapnik::value_integer>("row_limit", 0)),
 	type_(datasource::Vector),
 	srid_(*params.get<mapnik::value_integer>("srid", 0)),
 	extent_initialized_(false),
 	simplify_geometries_(false),
-	desc_(*params.get<std::string>("type"), "utf-8"),
-	creator_(params.get<std::string>("dsn"),
+	desc_(mssql_datasource::name(), "utf-8"),
+	creator_(params.get<std::string>("connection_string"),
 	params.get<std::string>("driver"),
 	params.get<std::string>("host"),
 	params.get<std::string>("port"),
@@ -525,31 +525,9 @@ std::shared_ptr<IResultSet> mssql_datasource::get_resultset(std::shared_ptr<Conn
 
 	if (!ctx)
 	{
-		// ! asynchronous_request_
-		/* if (cursor_fetch_size_ > 0)
-		{
-		throw mapnik::datasource_exception("Mssql Plugin: get_resultset cursor_fetch_size_ > 0 " );
-		// cursor
-		std::ostringstream csql;
-		std::string cursor_name = conn->new_cursor_name();
-
-
-		csql << "DECLARE " << cursor_name << " BINARY INSENSITIVE NO SCROLL CURSOR WITH HOLD FOR " << sql << " FOR READ ONLY";
-
-		if (! conn->execute(csql.str()))
-		{
-		// TODO - better error
-		throw mapnik::datasource_exception("Mssql Plugin: error creating cursor for data select." );
-		}
-
-		return std::make_shared<CursorResultSet>(conn, cursor_name, cursor_fetch_size_);
-
-		}
-		else*/
-		{
-			// no cursor
-			return conn->executeQuery(sql);
-		}
+	
+		return conn->executeQuery(sql);
+		
 	}
 	else
 	{   // asynchronous requests
@@ -865,7 +843,7 @@ box2d<double> mssql_datasource::envelope() const
 					<< mapnik::sql_utils::unquote_double(geometryColumn_) << "') as ext) as tmp";
 			}
 			else
-			{
+			{ //XXX
 				s << "SELECT ext.STPointN(1).STX AS MinX, ext.STPointN(1).STY AS MinY,ext.STPointN(3).STX AS MaxX, ext.STPointN(3).STY AS MaxX"
 					<< " FROM (SELECT geometry::EnvelopeAggregate(" << geometryColumn_ << ") as ext from ";
 

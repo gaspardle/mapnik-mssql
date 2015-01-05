@@ -46,7 +46,7 @@ class ConnectionCreator
 {
 
 public:
-	ConnectionCreator(boost::optional<std::string> const& dsn,
+	ConnectionCreator(boost::optional<std::string> const& connection_string,
 		boost::optional<std::string> const& driver,
 		boost::optional<std::string> const& host,
 		boost::optional<std::string> const& port,
@@ -54,7 +54,7 @@ public:
 		boost::optional<std::string> const& user,
 		boost::optional<std::string> const& pass,
 		boost::optional<std::string> const& connect_timeout)
-		: dsn_(dsn),
+		: connection_string_(connection_string),
 		driver_(driver),
 		host_(host),
 		port_(port),
@@ -83,8 +83,8 @@ public:
 	inline std::string connection_string_safe() const
 	{
 		std::string connect_str;
-		if (dsn_   && !dsn_->empty()) {
-			connect_str += "" + *dsn_;
+		if (connection_string_   && !connection_string_->empty()) {
+			connect_str += "" + *connection_string_;
 		}
 		else{
 
@@ -92,6 +92,8 @@ public:
 				connect_str += "DRIVER=" + *driver_ + ";";
 			}
 			else{
+				//{ODBC Driver 11 for SQL Server}
+				//FreeTDS
 				connect_str += "DRIVER={SQL Server Native Client 11.0};";
 			}
 			if (host_   && !host_->empty()) connect_str += "SERVER=" + *host_ + ";";
@@ -106,7 +108,7 @@ public:
 	}
 
 private:
-	boost::optional<std::string> dsn_;
+	boost::optional<std::string> connection_string_;
 	boost::optional<std::string> driver_;
 	boost::optional<std::string> host_;
 	boost::optional<std::string> port_;

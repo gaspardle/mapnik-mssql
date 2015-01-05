@@ -98,7 +98,6 @@
     <ClInclude Include="asyncresultset.hpp" />
     <ClInclude Include="connection.hpp" />
     <ClInclude Include="connection_manager.hpp" />
-    <ClInclude Include="cursorresultset.hpp" />
     <ClInclude Include="mssql_datasource.hpp" />
     <ClInclude Include="mssql_featureset.hpp" />
     <ClInclude Include="resultset.hpp" />
