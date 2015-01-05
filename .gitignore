@@ -1,1 +1,11 @@
 *.o
+*.user
+*.suo
+*.sdf
+*.opensdf
+/ipch
+/Debug
+/Release
+/mssql/Debug
+/mssql/Release
+/mapnik
