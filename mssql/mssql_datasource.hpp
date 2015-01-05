@@ -59,7 +59,7 @@ using mapnik::query;
 using mapnik::parameters;
 using mapnik::coord2d;
 
-using CnxPool_ptr = std::shared_ptr< ConnectionManager::PoolType>;
+using CnxPool_ptr = SHARED_PTR_NAMESPACE::shared_ptr< ConnectionManager::PoolType>;
 
 class mssql_datasource : public datasource
 {
@@ -84,11 +84,11 @@ private:
 		double pixel_width,
 		double pixel_height) const;
 	std::string populate_tokens(std::string const& sql) const;
-	std::shared_ptr<IResultSet> get_resultset(std::shared_ptr<Connection> &conn, std::string const& sql, CnxPool_ptr const& pool, processor_context_ptr ctx = processor_context_ptr()) const;
+	SHARED_PTR_NAMESPACE::shared_ptr<IResultSet> get_resultset(SHARED_PTR_NAMESPACE::shared_ptr<Connection> &conn, std::string const& sql, CnxPool_ptr const& pool, processor_context_ptr ctx = processor_context_ptr()) const;
 	static const std::string GEOMETRY_COLUMNS;
 	static const std::string SPATIAL_REF_SYS;
 	static const double FMAX;
-
+	
 	const std::string uri_;
 	const std::string username_;
 	const std::string password_;

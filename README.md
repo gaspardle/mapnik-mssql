@@ -33,7 +33,7 @@ Parameters
 Installation
 ------------
 
-Copy mssql.input to the plugin directory.
+Copy mssql.input to the mapnik\input directory.
 
 Building instructions
 ---------------------

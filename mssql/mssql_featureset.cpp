@@ -50,7 +50,7 @@ using mapnik::geometry_utils;
 using mapnik::feature_factory;
 using mapnik::context_ptr;
 
-mssql_featureset::mssql_featureset(std::shared_ptr<IResultSet> const& rs,
+mssql_featureset::mssql_featureset(SHARED_PTR_NAMESPACE::shared_ptr<IResultSet> const& rs,
                                        context_ptr const& ctx,
                                        std::string const& encoding,
                                        bool key_field)

@@ -92,9 +92,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <Text Include="ReadMe.txt" />
-  </ItemGroup>
-  <ItemGroup>
+    <ClInclude Include="..\mssql\compat.h" />
     <ClInclude Include="..\mssql\connection.hpp" />
     <ClInclude Include="..\mssql\asyncresultset.hpp" />
     <ClInclude Include="..\mssql\connection_manager.hpp" />
@@ -102,7 +100,6 @@
     <ClInclude Include="..\mssql\mssql_featureset.hpp" />
     <ClInclude Include="..\mssql\resultset.hpp" />
     <ClInclude Include="..\mssql\stdafx.h" />
-    <ClInclude Include="..\mssql\transition.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\mssql\mssql_datasource.cpp">

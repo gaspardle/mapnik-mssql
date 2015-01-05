@@ -29,6 +29,7 @@
 #include <mapnik/datasource.hpp>
 #include <mapnik/feature.hpp>
 #include <mapnik/unicode.hpp>
+#include "compat.h"
 
 
 using mapnik::Featureset;
@@ -42,7 +43,7 @@ class IResultSet;
 class mssql_featureset : public mapnik::Featureset
 {
 public:
-	mssql_featureset(std::shared_ptr<IResultSet> const& rs,
+	mssql_featureset(SHARED_PTR_NAMESPACE::shared_ptr<IResultSet> const& rs,
                        context_ptr const& ctx,
                        std::string const& encoding,
                        bool key_field = false);
@@ -50,7 +51,7 @@ public:
     ~mssql_featureset();
 
 private:
-	std::shared_ptr<IResultSet> rs_;
+	SHARED_PTR_NAMESPACE::shared_ptr<IResultSet> rs_;
     context_ptr ctx_;
 	const std::unique_ptr<mapnik::transcoder> tr_;
     unsigned totalGeomSize_;

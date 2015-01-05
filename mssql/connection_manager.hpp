@@ -131,8 +131,8 @@ public:
 private:
 	friend class CreateStatic<ConnectionManager>;
 	
-	using ContType = std::map<std::string, std::shared_ptr<PoolType> >;
-	using HolderType = std::shared_ptr<Connection>;
+	using ContType = std::map<std::string, SHARED_PTR_NAMESPACE::shared_ptr<PoolType> >;
+	using HolderType = SHARED_PTR_NAMESPACE::shared_ptr<Connection>;
 	ContType pools_;
 
 public:
@@ -150,20 +150,20 @@ public:
 		{
 			return pools_.insert(
 				std::make_pair(creator.id(),
-				std::make_shared<PoolType>(creator, initialSize, maxSize))).second;
+				SHARED_PTR_NAMESPACE::make_shared<PoolType>(creator, initialSize, maxSize))).second;
 		}
 		return false;
 
 	}
-
-	std::shared_ptr<PoolType> getPool(std::string const& key)
+	
+	SHARED_PTR_NAMESPACE::shared_ptr<PoolType> getPool(std::string const& key)
 	{
 		ContType::const_iterator itr = pools_.find(key);
 		if (itr != pools_.end())
 		{
 			return itr->second;
 		}
-		static const std::shared_ptr<PoolType> emptyPool;
+		static const SHARED_PTR_NAMESPACE::shared_ptr<PoolType> emptyPool;
 		return emptyPool;
 	}
 

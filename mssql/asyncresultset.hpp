@@ -32,14 +32,14 @@
 #include <queue>
 
 class mssql_processor_context;
-using mssql_processor_context_ptr = std::shared_ptr<mssql_processor_context>;
+using mssql_processor_context_ptr = SHARED_PTR_NAMESPACE::shared_ptr<mssql_processor_context>;
 
 class AsyncResultSet : public IResultSet, private mapnik::noncopyable
 {
 public:
 	AsyncResultSet(mssql_processor_context_ptr const& ctx,
-		std::shared_ptr< Pool<Connection, ConnectionCreator> > const& pool,
-		std::shared_ptr<Connection> const& conn, std::string const& sql)
+		SHARED_PTR_NAMESPACE::shared_ptr< Pool<Connection, ConnectionCreator> > const& pool,
+		SHARED_PTR_NAMESPACE::shared_ptr<Connection> const& conn, std::string const& sql)
 		: ctx_(ctx),
 		pool_(pool),
 		conn_(conn),
@@ -174,15 +174,15 @@ public:
 
 private:
 	mssql_processor_context_ptr ctx_;
-	std::shared_ptr< Pool<Connection, ConnectionCreator> > pool_;
-	std::shared_ptr<Connection> conn_;
+	SHARED_PTR_NAMESPACE::shared_ptr< Pool<Connection, ConnectionCreator> > pool_;
+	SHARED_PTR_NAMESPACE::shared_ptr<Connection> conn_;
 	std::string sql_;
-	std::shared_ptr<ResultSet> rs_;
+	SHARED_PTR_NAMESPACE::shared_ptr<ResultSet> rs_;
 	bool is_closed_;
 
 	void prepare()
 	{
-		conn_ = make_shared_ptr(pool_->borrowObject());
+		conn_ = pool_->borrowObject();
 		if (conn_ && conn_->isOK())
 		{
 			conn_->executeAsyncQuery(sql_);
@@ -205,14 +205,14 @@ public:
 		: num_async_requests_(0) {}
 	~mssql_processor_context() {}
 
-	void add_request(std::shared_ptr<AsyncResultSet> const& req)
+	void add_request(SHARED_PTR_NAMESPACE::shared_ptr<AsyncResultSet> const& req)
 	{
 		q_.push(req);
 	}
 
-	std::shared_ptr<AsyncResultSet> pop_next_request()
+	SHARED_PTR_NAMESPACE::shared_ptr<AsyncResultSet> pop_next_request()
 	{
-		std::shared_ptr<AsyncResultSet> r;
+		SHARED_PTR_NAMESPACE::shared_ptr<AsyncResultSet> r;
 		if (!q_.empty())
 		{
 			r = q_.front();
@@ -224,7 +224,7 @@ public:
 	int num_async_requests_;
 
 private:
-	using async_queue = std::queue<std::shared_ptr<AsyncResultSet> >;
+	using async_queue = std::queue<SHARED_PTR_NAMESPACE::shared_ptr<AsyncResultSet> >;
 	async_queue q_;
 
 };
@@ -232,7 +232,7 @@ private:
 inline void AsyncResultSet::prepare_next()
 {
 	// ensure cnx pool has unused cnx
-	std::shared_ptr<AsyncResultSet> next = ctx_->pop_next_request();
+	SHARED_PTR_NAMESPACE::shared_ptr<AsyncResultSet> next = ctx_->pop_next_request();
 	if (next)
 	{
 		next->prepare();

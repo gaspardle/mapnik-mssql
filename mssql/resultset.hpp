@@ -32,7 +32,7 @@
 #include <sql.h>
 #include <sqlext.h>
 
-#include "transition.h"
+#include "compat.h"
 
 class IResultSet
 {
