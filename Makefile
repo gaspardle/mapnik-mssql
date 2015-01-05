@@ -4,7 +4,7 @@ CXXFLAGS = $(shell mapnik-config --cflags) -fPIC -DUNICODE -std=c++11 -w
 
 LIBS = $(shell mapnik-config --libs --ldflags --dep-libs) -lodbc 
 
-SRC = $(wildcard *.cpp)
+SRC = $(wildcard mssql/*.cpp)
 
 OBJ = $(SRC:.cpp=.o)
 
@@ -28,3 +28,6 @@ deploy : all
 	cp mssql.input $(shell mapnik-config --input-plugins)
 
 install: all deploy
+
+uninstall:
+	-rm $(shell mapnik-config --input-plugins)/mssql.input
