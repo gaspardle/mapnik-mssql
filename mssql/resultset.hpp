@@ -68,9 +68,7 @@ public:
 
 	virtual void close()
 	{	
-		// SQLDisconnect(res_);
-		SQLFreeHandle(SQL_HANDLE_STMT, res_);
-		res_ = 0;
+        SQLFreeHandle(SQL_HANDLE_STMT, res_);
 	}
 
 	virtual ~ResultSet()
@@ -240,8 +238,12 @@ public:
 		char buffer[255];
 #endif			
 
+#ifdef _WINDOWS
 		retcode = SQLGetData(res_, index + 1, SQL_C_WCHAR, &buffer, sizeof(buffer), &length);
-
+#else
+        retcode = SQLGetData(res_, index + 1, SQL_C_CHAR, &buffer, sizeof(buffer), &length);
+#endif
+        
 		if (retcode == SQL_SUCCESS && length != SQL_NULL_DATA){			
 #ifdef _WINDOWS
 			return mapnik::utf16_to_utf8(buffer);			

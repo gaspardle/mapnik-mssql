@@ -111,6 +111,7 @@ mssql_datasource::mssql_datasource(parameters const& params)
 
 	// NOTE: In multithread environment, pool_max_size_ should be
 	// max_async_connections_ * num_threads
+    max_async_connections_ = 5; //xxx
 	if (max_async_connections_ > 1)
 	{
 		if (max_async_connections_ > pool_max_size_)
@@ -523,12 +524,10 @@ std::string mssql_datasource::populate_tokens(std::string const& sql, double sca
 shared_ptr<IResultSet> mssql_datasource::get_resultset(shared_ptr<Connection> &conn, std::string const& sql, CnxPool_ptr const& pool, processor_context_ptr ctx) const
 {
 
-	if (!ctx)
-	{
-	
-		return conn->executeQuery(sql);
-		
-	}
+    if (!ctx)
+    {
+        return SHARED_PTR_NAMESPACE::make_shared<CursorResultSet>(conn, sql);
+    }
 	else
 	{   // asynchronous requests
 		

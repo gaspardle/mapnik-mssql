@@ -44,10 +44,11 @@ class Connection
 {
 public:
 	Connection(std::string const& connection_str, boost::optional<std::string> const& password)
-		: cursorId(0),
+		:
 		closed_(false),
 		pending_(false)
 	{
+       
 		//XXX  string to wstring conversion
 		std::wstring connect_with_pass;
 		connect_with_pass.assign(connection_str.begin(), connection_str.end());
@@ -68,11 +69,11 @@ public:
 			throw mapnik::datasource_exception("Mssql Plugin: SQLAllocHandle");
 		}
 
-		SQLWCHAR  retconstring[1024];
+		SQLCHAR  retconstring[1024];
 		SQLSMALLINT OutConnStrLen;
-		SQLRETURN retcode = SQLDriverConnectW(sqlconnectionhandle,
+		SQLRETURN retcode = SQLDriverConnectA(sqlconnectionhandle,
 			NULL,
-			(SQLWCHAR*)connect_with_pass.c_str(),
+			(SQLCHAR*)connection_str.c_str(),
 			SQL_NTS,
 			retconstring,
 			1024,
@@ -88,6 +89,7 @@ public:
 			close();
 			throw mapnik::datasource_exception(err_msg);
 		}
+  
 	}
 
 	~Connection()
@@ -103,6 +105,7 @@ public:
 
 			closed_ = true;
 		}
+        std::cout << "conn destr: " << debug_current_sql << std::endl;
 	}
 
 	bool execute(std::string const& sql)
@@ -209,7 +212,10 @@ public:
 
 	SQLRETURN getResult()
 	{
-
+#ifndef _WIN32
+        //freetds does not seem to support async
+        return SQL_SUCCESS;
+#endif
 		SQLRETURN retcode;
 		while ((retcode = SQLExecDirectA(async_hstmt, (SQLCHAR*)"", SQL_NTS)) == SQL_STILL_EXECUTING) {
 
@@ -242,13 +248,18 @@ public:
 
 	SHARED_PTR_NAMESPACE::shared_ptr<ResultSet> getAsyncResult()
 	{
+        
 		SQLRETURN result = getResult();
+        if(result == SQL_INVALID_HANDLE){
+            throw mapnik::datasource_exception("Mssql Plugin: invalid handle in getAsyncResult");
+        }
 		if (result != SQL_SUCCESS && result != SQL_SUCCESS_WITH_INFO)
 		{
 
 			std::string err_msg = "Mssql Plugin: ";
 			std::string err_status = status(SQL_HANDLE_STMT, async_hstmt);
 			err_msg += err_status + "\n in getAsyncResult";
+            err_msg += err_msg + "\n query: " + debug_current_sql;
 			clearAsyncResult(async_hstmt);
 			// We need to be guarded against losing the connection
 			// (i.e db restart), we invalidate the full connection
@@ -269,7 +280,8 @@ public:
 		if (closed_){
 			return false;
 		}
-
+        return true;
+        
 		SQLINTEGER dead;
 		//SQL_COPT_SS_CONNECTION_DEAD
 		SQLRETURN retcode = SQLGetConnectAttr(sqlconnectionhandle, SQL_ATTR_CONNECTION_DEAD, &dead, 0, NULL);
@@ -302,24 +314,18 @@ public:
 		}
 	}
 
-	std::string new_cursor_name()
-	{
-		std::ostringstream s;
-		s << "mapnik_" << (cursorId++);
-		return s.str();
-	}
 
 private:
 	SQLHANDLE sqlenvhandle;
 	SQLHANDLE sqlconnectionhandle;
 	SQLHANDLE async_hstmt;
-
-	int cursorId;
+    
 	bool closed_;
 	bool pending_;
+    
 	std::string debug_current_sql;
 	std::wstring debug_current_wsql;
-
+    
 	void clearAsyncResult(SQLHANDLE hstmt)
 	{
 		SQLFreeHandle(SQL_HANDLE_STMT, hstmt);
