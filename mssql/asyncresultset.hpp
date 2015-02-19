@@ -162,9 +162,13 @@ public:
 	{
 		return rs_->getFloat(index);
 	}
-	virtual const std::string getString(int index) const
+    virtual const std::string getString(int index) const
 	{
 		return rs_->getString(index);
+	}
+	virtual const std::wstring getWString(int index) const
+	{
+		return rs_->getWString(index);
 	}
 	virtual const std::vector<char> getBinary(int index) const
 	{

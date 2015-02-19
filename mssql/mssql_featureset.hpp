@@ -45,7 +45,6 @@ class mssql_featureset : public mapnik::Featureset
 public:
 	mssql_featureset(SHARED_PTR_NAMESPACE::shared_ptr<IResultSet> const& rs,
                        context_ptr const& ctx,
-                       std::string const& encoding,
                        bool key_field = false);
     feature_ptr next();
     ~mssql_featureset();

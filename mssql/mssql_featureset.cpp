@@ -52,11 +52,10 @@ using mapnik::context_ptr;
 
 mssql_featureset::mssql_featureset(SHARED_PTR_NAMESPACE::shared_ptr<IResultSet> const& rs,
                                        context_ptr const& ctx,
-                                       std::string const& encoding,
                                        bool key_field)
     : rs_(rs),
       ctx_(ctx),
-      tr_(new transcoder(encoding)),
+      tr_(new transcoder("UTF-16LE")),
       totalGeomSize_(0),
       feature_id_(1),
       key_field_(key_field)
@@ -152,13 +151,16 @@ feature_ptr mssql_featureset::next()
                         feature->put(name, rs_->getDouble(pos));               
                         break;
 					case SQL_VARCHAR:
-                    case SQL_LONGVARCHAR:						
+                    case SQL_LONGVARCHAR:
                          feature->put(name, (UnicodeString)tr_->transcode(rs_->getString(pos).c_str()));
                          break;
                     case SQL_WVARCHAR:
-					case SQL_WLONGVARCHAR:						
-						feature->put(name, (UnicodeString)tr_->transcode(rs_->getString(pos).c_str()));
-						break;						 
+					case SQL_WLONGVARCHAR:
+                    {
+                        auto stringbin = rs_->getBinary(pos);
+						feature->put(name, (UnicodeString)tr_->transcode(stringbin.data(), stringbin.size()));
+						break;
+                    }
                     default:
                     {
                         MAPNIK_LOG_WARN(mssql) << "mssql_featureset: Unknown type=" << oid;

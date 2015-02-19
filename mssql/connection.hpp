@@ -159,8 +159,6 @@ public:
 		SQLINTEGER  NativeError;
 		SQLSMALLINT   i, MsgLen;
 		SQLRETURN     rc2;
-		//mapnik::transcoder tr("wcs");
-
 
 		// Get the status records.
 		i = 1;
@@ -267,12 +265,6 @@ public:
 			throw mapnik::datasource_exception(err_msg);
 		}
 		return SHARED_PTR_NAMESPACE::make_shared<ResultSet>(async_hstmt);
-	}
-	std::string client_encoding() const
-	{
-
-		return "UTF8";
-		//return PQparameterStatus(conn_, "client_encoding");
 	}
 
 	bool isOK() const

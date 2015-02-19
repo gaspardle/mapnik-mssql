@@ -52,6 +52,7 @@ public:
 	virtual const double getDouble(int index) const = 0;
 	virtual const float getFloat(int index) const = 0;
 	virtual const std::string getString(int index) const = 0;
+    virtual const std::wstring getWString(int index) const = 0;
 	virtual const std::vector<char> getBinary(int index) const = 0;
 
 };
@@ -225,47 +226,69 @@ public:
 		return value;
 		// return PQgetvalue(res_, pos_, index);
 	}
-	virtual const std::string getString(int index) const
+    
+    virtual const std::wstring getWString(int index) const
 	{
-		SQLLEN length = 0;
+        SQLLEN length = 0;
 		SQLRETURN retcode;
-
-#ifdef _WINDOWS
-		std::wstring str;
-		wchar_t buffer[255];
-#else
-		std::string str;
-		char buffer[255];
-#endif			
-
-#ifdef _WINDOWS
-		retcode = SQLGetData(res_, index + 1, SQL_C_WCHAR, &buffer, sizeof(buffer), &length);
-#else
-        retcode = SQLGetData(res_, index + 1, SQL_C_CHAR, &buffer, sizeof(buffer), &length);
-#endif
         
-		if (retcode == SQL_SUCCESS && length != SQL_NULL_DATA){			
-#ifdef _WINDOWS
-			return mapnik::utf16_to_utf8(buffer);			
-#else
+  
+        std::wstring str;
+        wchar_t buffer[255];
+
+        
+		retcode = SQLGetData(res_, index + 1, SQL_C_WCHAR, &buffer, sizeof(buffer), &length);
+
+        
+		if (retcode == SQL_SUCCESS && length != SQL_NULL_DATA){
+
 			return buffer;
-#endif	
+
 		}else if (retcode == SQL_SUCCESS_WITH_INFO && length != SQL_NULL_DATA){
 			
 			str.reserve(length);
 			str.append(buffer);
 			
 			while ((retcode = SQLGetData(res_, index + 1, SQL_C_WCHAR, &buffer, sizeof(buffer),
-					&length)) != SQL_NO_DATA) {			
+                                         &length)) != SQL_NO_DATA) {
 				str.append(buffer);
 			}
 		}
 		
-#ifdef _WINDOWS
-		return mapnik::utf16_to_utf8(str);
-#else
 		return str;
-#endif		
+    }
+    
+	virtual const std::string getString(int index) const
+	{
+#ifdef _WINDOWS
+        return mapnik::utf16_to_utf8(getWString(index));
+#endif
+		SQLLEN length = 0;
+		SQLRETURN retcode;
+
+
+		std::string str;
+		char buffer[255];
+
+        retcode = SQLGetData(res_, index + 1, SQL_C_CHAR, &buffer, sizeof(buffer), &length);
+
+		if (retcode == SQL_SUCCESS && length != SQL_NULL_DATA){			
+
+			return buffer;
+
+		}else if (retcode == SQL_SUCCESS_WITH_INFO && length != SQL_NULL_DATA){
+			
+			str.reserve(length);
+			str.append(buffer);
+			
+			while ((retcode = SQLGetData(res_, index + 1, SQL_C_CHAR, &buffer, sizeof(buffer),
+					&length)) != SQL_NO_DATA) {			
+				str.append(buffer);
+			}
+		}
+
+		return str;
+
 	}
 
 	virtual const std::vector<char> getBinary(int index) const

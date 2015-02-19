@@ -141,8 +141,6 @@ mssql_datasource::mssql_datasource(parameters const& params)
 		if (conn->isOK())
 		{
 
-			desc_.set_encoding(conn->client_encoding());
-
 			if (geometry_table_.empty())
 			{
 				geometry_table_ = mapnik::sql_utils::table_from_sql(table_);
@@ -703,7 +701,7 @@ featureset_ptr mssql_datasource::features_with_context(query const& q, processor
 		}
 
 		shared_ptr<IResultSet> rs = get_resultset(conn, s.str(), pool, proc_ctx);
-		return SHARED_PTR_NAMESPACE::make_shared<mssql_featureset>(rs, ctx, desc_.get_encoding(), !key_field_.empty());
+		return SHARED_PTR_NAMESPACE::make_shared<mssql_featureset>(rs, ctx, !key_field_.empty());
 
 	}
 
@@ -787,7 +785,7 @@ featureset_ptr mssql_datasource::features_at_point(coord2d const& pt, double tol
 			s << " FROM " << table_with_bbox;
 
 			shared_ptr<IResultSet> rs = get_resultset(conn, s.str(), pool);
-			return SHARED_PTR_NAMESPACE::make_shared<mssql_featureset>(rs, ctx, desc_.get_encoding(), !key_field_.empty());
+			return SHARED_PTR_NAMESPACE::make_shared<mssql_featureset>(rs, ctx, !key_field_.empty());
 		}
 	}
 
