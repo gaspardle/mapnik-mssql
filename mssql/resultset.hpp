@@ -239,7 +239,6 @@ public:
         
 		retcode = SQLGetData(res_, index + 1, SQL_C_WCHAR, &buffer, sizeof(buffer), &length);
 
-        
 		if (retcode == SQL_SUCCESS && length != SQL_NULL_DATA){
 
 			return buffer;
@@ -261,7 +260,8 @@ public:
 	virtual const std::string getString(int index) const
 	{
 #ifdef _WINDOWS
-        return mapnik::utf16_to_utf8(getWString(index));
+		std::string s = mapnik::utf16_to_utf8(getWString(index));
+		return s;
 #endif
 		SQLLEN length = 0;
 		SQLRETURN retcode;

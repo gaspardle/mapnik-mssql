@@ -111,7 +111,7 @@ mssql_datasource::mssql_datasource(parameters const& params)
 
 	// NOTE: In multithread environment, pool_max_size_ should be
 	// max_async_connections_ * num_threads
-    max_async_connections_ = 5; //xxx
+	
 	if (max_async_connections_ > 1)
 	{
 		if (max_async_connections_ > pool_max_size_)
@@ -222,7 +222,7 @@ mssql_datasource::mssql_datasource(parameters const& params)
 					shared_ptr<ResultSet> rs = conn->executeQuery(s.str());
 					if (rs->next())
 					{
-						srid_ = rs->getInt(0); //getValue("srid")                        
+						srid_ = rs->getInt(0);                     
 					}
 					rs->close();
 				}
@@ -370,6 +370,16 @@ mssql_datasource::mssql_datasource(parameters const& params)
 		// Close explicitly the connection so we can 'fork()' without sharing open connections
 		conn->close();
 
+#if MAPNIK_VERSION >= 300000
+		// Finally, add unique metadata to layer descriptor
+		mapnik::parameters & extra_params = desc_.get_extra_parameters();
+		// explicitly make copies of values due to https://github.com/mapnik/mapnik/issues/2651
+		extra_params["srid"] = srid_;
+		if (!key_field_.empty())
+		{
+			extra_params["key_field"] = key_field_;
+		}
+#endif
 	}
 }
 
@@ -660,8 +670,7 @@ featureset_ptr mssql_datasource::features_with_context(query const& q, processor
 			s << tolerance << ")";
 		}
 
-		s << ".STAsBinary()";
-		s << "AS geom";
+		s << ".STAsBinary() AS geom";
 
 		mapnik::context_ptr ctx = SHARED_PTR_NAMESPACE::make_shared<mapnik::context_type>();
 		std::set<std::string> const& props = q.property_names();
@@ -700,6 +709,7 @@ featureset_ptr mssql_datasource::features_with_context(query const& q, processor
 			s << " " << order_by_;
 		}
 
+		//std::cout << "\n------------------\nReq: \n" << s.str() << "\n\n";
 		shared_ptr<IResultSet> rs = get_resultset(conn, s.str(), pool, proc_ctx);
 		return SHARED_PTR_NAMESPACE::make_shared<mssql_featureset>(rs, ctx, !key_field_.empty());
 

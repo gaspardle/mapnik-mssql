@@ -51,12 +51,6 @@ public:
 		{
 			rs_.reset();
             
-			//std::ostringstream s;
-			//s << "CLOSE " << cursorName_;
-            
-			//MAPNIK_LOG_DEBUG(mssql) << "mssql_cursor_resultset: " << s.str();
-            
-			//conn_->execute(s.str());
             conn_->close();
 			is_closed_ = true;
 			conn_.reset();
@@ -79,8 +73,7 @@ public:
         } else{
             close();
             return false;
-        }
-		//return rs_->next();
+        }	
     }
     
 	virtual const std::string getFieldName(int index) const
@@ -149,12 +142,10 @@ private:
 	}
     
 	SHARED_PTR_NAMESPACE::shared_ptr<Connection> conn_;
-	//std::string cursorName_;
 	SHARED_PTR_NAMESPACE::shared_ptr<ResultSet> rs_;
-	//int fetch_size_;
-    std::string sql_;
-	bool is_closed_;
-    
+
+	std::string sql_;
+	bool is_closed_;    
     
 };
 

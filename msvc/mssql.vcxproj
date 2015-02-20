@@ -46,7 +46,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <TargetExt>.input</TargetExt>
-    <OutDir>K:\luc\Dropbox\projets\carte\mapnik-mssql\mapnik-mssql\Release\ConsoleTest\mapnik\input</OutDir>
+    <OutDir>$(OutDir)ConsoleTest\mapnik\input</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -96,6 +96,7 @@
     <ClInclude Include="..\mssql\connection.hpp" />
     <ClInclude Include="..\mssql\asyncresultset.hpp" />
     <ClInclude Include="..\mssql\connection_manager.hpp" />
+    <ClInclude Include="..\mssql\cursorresultset.hpp" />
     <ClInclude Include="..\mssql\mssql_datasource.hpp" />
     <ClInclude Include="..\mssql\mssql_featureset.hpp" />
     <ClInclude Include="..\mssql\resultset.hpp" />

@@ -55,7 +55,8 @@ mssql_featureset::mssql_featureset(SHARED_PTR_NAMESPACE::shared_ptr<IResultSet> 
                                        bool key_field)
     : rs_(rs),
       ctx_(ctx),
-      tr_(new transcoder("UTF-16LE")),
+	  tr_ucs2_(new transcoder("UTF-16LE")),
+	  tr_(new transcoder("UTF-8")),
       totalGeomSize_(0),
       feature_id_(1),
       key_field_(key_field)
@@ -157,8 +158,11 @@ feature_ptr mssql_featureset::next()
                     case SQL_WVARCHAR:
 					case SQL_WLONGVARCHAR:
                     {
+						//feature->put(name, (UnicodeString)tr_->transcode(rs_->getString(pos).c_str()));
+
+						//easier than to deal with wchar on each platforms
                         auto stringbin = rs_->getBinary(pos);
-						feature->put(name, (UnicodeString)tr_->transcode(stringbin.data(), stringbin.size()));
+						feature->put(name, (UnicodeString)tr_ucs2_->transcode(stringbin.data(), stringbin.size()));
 						break;
                     }
                     default:

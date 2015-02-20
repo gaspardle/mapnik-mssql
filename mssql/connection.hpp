@@ -49,11 +49,6 @@ public:
 		pending_(false)
 	{
        
-		//XXX  string to wstring conversion
-		std::wstring connect_with_pass;
-		connect_with_pass.assign(connection_str.begin(), connection_str.end());
-
-
 		if (SQL_SUCCESS != SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &sqlenvhandle)){
 			close();
 			throw mapnik::datasource_exception("Mssql Plugin: SQLAllocHandle");
@@ -105,7 +100,7 @@ public:
 
 			closed_ = true;
 		}
-        std::cout << "conn destr: " << debug_current_sql << std::endl;
+
 	}
 
 	bool execute(std::string const& sql)

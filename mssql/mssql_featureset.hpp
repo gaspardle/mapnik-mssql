@@ -52,6 +52,7 @@ public:
 private:
 	SHARED_PTR_NAMESPACE::shared_ptr<IResultSet> rs_;
     context_ptr ctx_;
+	const std::unique_ptr<mapnik::transcoder> tr_ucs2_;
 	const std::unique_ptr<mapnik::transcoder> tr_;
     unsigned totalGeomSize_;
     mapnik::value_integer feature_id_;
