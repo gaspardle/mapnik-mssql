@@ -53,8 +53,8 @@
 DATASOURCE_PLUGIN(mssql_datasource)
 
 const double mssql_datasource::FMAX = std::numeric_limits<float>::max();
-const std::string mssql_datasource::GEOMETRY_COLUMNS = "geometry_columns";
-const std::string mssql_datasource::SPATIAL_REF_SYS = "spatial_ref_system";
+//const std::string mssql_datasource::GEOMETRY_COLUMNS = "geometry_columns";
+//const std::string mssql_datasource::SPATIAL_REF_SYS = "spatial_ref_system";
 
 using SHARED_PTR_NAMESPACE::shared_ptr;
 using mapnik::attribute_descriptor;
@@ -510,7 +510,7 @@ std::string mssql_datasource::populate_tokens(std::string const& sql, double sca
 	else
 	{
 		std::ostringstream s;
-		//XXX makeValid
+		//XXX makeValid?
 		if (intersect_min_scale_ > 0 && (scale_denom <= intersect_min_scale_))
 		{			
 			s << " WHERE \"" << geometryColumn_ << "\".STIsValid() = 1 AND \"" << geometryColumn_ << "\".STIntersects(" << box << ") = 1";
@@ -850,7 +850,7 @@ box2d<double> mssql_datasource::envelope() const
 					<< mapnik::sql_utils::unquote_double(geometryColumn_) << "') as ext) as tmp";
 			}
 			else
-			{ //XXX
+			{
 				s << "SELECT ext.STPointN(1).STX AS MinX, ext.STPointN(1).STY AS MinY,ext.STPointN(3).STX AS MaxX, ext.STPointN(3).STY AS MaxX"
 					<< " FROM (SELECT geometry::EnvelopeAggregate(" << geometryColumn_ << ") as ext from ";
 

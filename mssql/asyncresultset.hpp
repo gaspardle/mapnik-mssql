@@ -34,7 +34,7 @@
 class mssql_processor_context;
 using mssql_processor_context_ptr = SHARED_PTR_NAMESPACE::shared_ptr<mssql_processor_context>;
 
-class AsyncResultSet : public IResultSet, private mapnik::noncopyable
+class AsyncResultSet : public IResultSet, private mapnik::util::noncopyable
 {
 public:
 	AsyncResultSet(mssql_processor_context_ptr const& ctx,

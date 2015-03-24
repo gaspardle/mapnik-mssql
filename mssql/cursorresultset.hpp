@@ -28,79 +28,80 @@
 #include "connection.hpp"
 #include "resultset.hpp"
 #include <memory>
-class CursorResultSet : public IResultSet, private mapnik::noncopyable
+class CursorResultSet : public IResultSet, private mapnik::util::noncopyable
 {
 public:
 	CursorResultSet(SHARED_PTR_NAMESPACE::shared_ptr<Connection> const &conn, std::string const& sql)
-    : conn_(conn),
-    sql_(sql),
-    is_closed_(false)
+		: conn_(conn),
+		sql_(sql),
+		is_closed_(false)
 	{
 		//getNextResultSet();
 	}
-    
+
 	virtual ~CursorResultSet()
 	{
 		close();
 	}
-    
-    
+
+
 	virtual void close()
 	{
 		if (!is_closed_)
 		{
 			rs_.reset();
-            
-            conn_->close();
+
+			conn_->close();
 			is_closed_ = true;
 			conn_.reset();
 		}
 	}
-    
+
 	virtual int getNumFields() const
 	{
 		return rs_->getNumFields();
 	}
-    
+
 	virtual bool next()
 	{
-        if(!rs_){
-            getNextResultSet();
-        }
-        
-        if (rs_->next()) {
-            return true;
-        } else{
-            close();
-            return false;
-        }	
-    }
-    
+		if (!rs_){
+			getNextResultSet();
+		}
+
+		if (rs_->next()) {
+			return true;
+		}
+		else{
+			close();
+			return false;
+		}
+	}
+
 	virtual const std::string getFieldName(int index) const
 	{
 		return rs_->getFieldName(index);
 	}
-    
+
 	virtual int getFieldLength(int index) const
 	{
 		return rs_->getFieldLength(index);
 	}
-    
+
 	virtual int getFieldLength(const char* name) const
 	{
 		return rs_->getFieldLength(name);
 	}
-    
+
 	virtual int getTypeOID(int index) const
 	{
 		return rs_->getTypeOID(index);
 	}
-    
+
 	virtual int getTypeOID(const char* name) const
 	{
 		return rs_->getTypeOID(name);
 	}
-    
+
 	virtual bool isNull(int index) const
 	{
 		return rs_->isNull(index);

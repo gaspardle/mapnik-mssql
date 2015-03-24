@@ -57,7 +57,7 @@ public:
 
 };
 
-class ResultSet : public IResultSet, private mapnik::noncopyable
+class ResultSet : public IResultSet, private mapnik::util::noncopyable
 {
 public:
 	ResultSet(SQLHANDLE res)
@@ -93,35 +93,39 @@ public:
 		return pos_;
 	}
 
-	int size() const
-	{
-		return numTuples_;
-	}
 
 	virtual bool next()
 	{
-		//return (++pos_ < numTuples_);
-		
+
 		++pos_;
 		SQLRETURN retcode;
 		retcode = SQLFetch(res_);
+
+		if (retcode == SQL_STILL_EXECUTING)
+		{
+			while (retcode == SQL_STILL_EXECUTING)
+			{				
+				retcode = SQLFetch(res_);
+			}
+		}
+
 		if (retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO){
 			return true;
-		}
-		else if (retcode == SQL_NO_DATA || retcode == SQL_STILL_EXECUTING /*XXX */){
+		}		 
+		else if (retcode == SQL_NO_DATA){
 			return false;
 		}
 		else{
 			return false;
-			//XXX
+			
 			SQLCHAR  sqlstate[6];
 			SQLCHAR  message[SQL_MAX_MESSAGE_LENGTH];
 			SQLINTEGER  NativeError;
 			SQLSMALLINT MsgLen;
-			SQLRETURN rc2 = SQLGetDiagRecA(SQL_HANDLE_STMT, res_, 1, sqlstate, &NativeError,
+			retcode = SQLGetDiagRecA(SQL_HANDLE_STMT, res_, 1, sqlstate, &NativeError,
 				message, sizeof(message), &MsgLen);
-
-			throw mapnik::datasource_exception("resultset next error");
+			std::string errormsg((char*)&message[0]);
+			throw mapnik::datasource_exception("resultset next error: " + errormsg);
 		}
 
 	}
@@ -140,8 +144,14 @@ public:
 			sizeof(fname),                 
 			&name_length,
 			0);
-		//XXX validation?
-		return std::string(fname);
+
+		if (retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO){
+			return std::string(fname);
+		}
+		else{			
+			throw mapnik::datasource_exception("Error in Resultset getFieldName");
+		}
+		return 0;
 	}
 
 	virtual int getFieldLength(int index) const
@@ -156,9 +166,12 @@ public:
 			NULL,                  
 			NULL,
 			&length);
-		//XXX validation?
-		return length;
-	
+
+		if (retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO){
+			return length;
+		}
+
+		return 0;	
 	}
 
 	virtual int getFieldLength(const char* name) const
@@ -174,8 +187,11 @@ public:
 		SQLRETURN retcode;
 		retcode = SQLColAttribute(res_, index + 1, SQL_DESC_TYPE, NULL, 0, NULL, &dataType);
 		
-		//XXX validation?
-		return dataType;
+		if (retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO){
+			return dataType;
+		}
+
+		return 0;
 	}
 
 	virtual int getTypeOID(const char* name) const
@@ -188,13 +204,16 @@ public:
 	{
 		SQLLEN length;
 		SQLRETURN retcode;
-		//unsigned char *value = new unsigned char[1];
+		
 		unsigned char value[1];
 
 		retcode = SQLGetData(res_, index + 1, SQL_C_BINARY, value, 0, &length);
-		//XXX retcode validation?
+		
+		if (retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO){
+			return static_cast<bool>(length == SQL_NULL_DATA);
+		}
 
-		return static_cast<bool>(length == SQL_NULL_DATA);
+		return 0;
 	}
 
 
@@ -205,8 +224,11 @@ public:
 
 		retcode = SQLGetData(res_, index + 1, SQL_C_SLONG, &intvalue, 0, NULL);
 
-		//XXX retcode validation?
-		return intvalue;		
+		if (retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO){
+			return intvalue;
+		}
+
+		return 0;		
 	}
 	virtual const double getDouble(int index) const
 	{
@@ -214,8 +236,11 @@ public:
 		SQLRETURN retcode;
 
 		retcode = SQLGetData(res_, index + 1, SQL_C_DOUBLE, &value, 0, NULL);
-		return value;
-		// return PQgetvalue(res_, pos_, index);
+
+		if (retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO){
+			return value;
+		}
+		return 0;		
 	}
 	virtual const float getFloat(int index) const
 	{
@@ -223,8 +248,12 @@ public:
 		SQLRETURN retcode;
 
 		retcode = SQLGetData(res_, index + 1, SQL_C_FLOAT, &value, 0, NULL);
-		return value;
-		// return PQgetvalue(res_, pos_, index);
+
+		if (retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO){
+			return value;
+		}
+		
+		return 0;
 	}
     
     virtual const std::wstring getWString(int index) const
@@ -301,20 +330,20 @@ public:
 		retcode = SQLGetData(res_, index + 1, SQL_C_BINARY, bit, 0, &length);
 		if (retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO){
 			if (length != SQL_NULL_DATA){
-												
+
 				std::vector<char> binvalue(length, 0);
 				retcode = SQLGetData(res_, index + 1, SQL_C_BINARY, (SQLPOINTER)&binvalue[0], length, &length);
-				
-				return binvalue;				
+
+				return binvalue;
 			}
 		}
+		
 		return std::vector<char>();
 	}
 
 private:
 	SQLHANDLE res_;
 	int pos_;
-	int numTuples_;
 };
 
 #endif // MSSQL_RESULTSET_HPP

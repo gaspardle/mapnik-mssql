@@ -84,7 +84,7 @@ public:
 			close();
 			throw mapnik::datasource_exception(err_msg);
 		}
-  
+	
 	}
 
 	~Connection()
@@ -125,8 +125,8 @@ public:
 			throw mapnik::datasource_exception("SQLAllocHandle error");
 		}
 		retcode = SQLExecDirectA(hstmt, (SQLCHAR*)sql.c_str(), SQL_NTS);
-		
-		if (!(retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO))			
+
+		if (!(retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO))
 		{
 			std::string err_msg = status(SQL_HANDLE_STMT, hstmt);
 			err_msg += "\nFull sql was: '";
@@ -174,20 +174,20 @@ public:
 	}
 	bool executeAsyncQuery(std::string const& sql)
 	{
-		debug_current_sql = sql;
-		//SQLHANDLE hstmt = NULL;
+		debug_current_sql = sql;		
 		SQLRETURN retcode;
 
-		if (SQL_SUCCESS != SQLAllocHandle(SQL_HANDLE_STMT, sqlconnectionhandle, &async_hstmt))
+		if (SQL_SUCCESS != SQLAllocHandle(SQL_HANDLE_STMT, sqlconnectionhandle, &async_hstmt)){
 			throw mapnik::datasource_exception("cant SQLAllocHandle");
+		}
 
+#ifdef _WIN32
+		//freetds does not seem to support async
 		SQLSetStmtAttr(async_hstmt, SQL_ATTR_ASYNC_ENABLE, (SQLPOINTER)SQL_ASYNC_ENABLE_ON, 0);
-
+#endif
 
 		retcode = SQLExecDirectA(async_hstmt, (SQLCHAR*)sql.c_str(), SQL_NTS);
-
-
-		//if (result != 1)
+			
 		if (!(retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO || retcode == SQL_STILL_EXECUTING))
 		{
 			std::string err_msg = "Mssql Plugin: ";
@@ -210,21 +210,23 @@ public:
         return SQL_SUCCESS;
 #endif
 		SQLRETURN retcode;
-		while ((retcode = SQLExecDirectA(async_hstmt, (SQLCHAR*)"", SQL_NTS)) == SQL_STILL_EXECUTING) {
+
+		while (true) {
+
+			retcode = SQLExecDirectA(async_hstmt, (SQLCHAR*)"", SQL_NTS);
 
 			if (retcode != SQL_STILL_EXECUTING)
 				break;
-			//sleep(1);
 		}
-
+		
+		SQLSetStmtAttr(async_hstmt, SQL_ATTR_ASYNC_ENABLE, (SQLPOINTER)SQL_ASYNC_ENABLE_OFF, 0);
 		return retcode;
 	}
 
-	//XXX not used??
 	SHARED_PTR_NAMESPACE::shared_ptr<ResultSet> getNextAsyncResult()
 	{
 		SQLRETURN result = getResult();
-		if (result != SQL_SUCCESS && result != SQL_SUCCESS_WITH_INFO)
+		if (!(result == SQL_SUCCESS || result == SQL_SUCCESS_WITH_INFO))
 		{
 			std::string err_msg = "Mssql Plugin: ";
 			std::string err_status = status(SQL_HANDLE_STMT, async_hstmt);
@@ -246,7 +248,7 @@ public:
         if(result == SQL_INVALID_HANDLE){
             throw mapnik::datasource_exception("Mssql Plugin: invalid handle in getAsyncResult");
         }
-		if (result != SQL_SUCCESS && result != SQL_SUCCESS_WITH_INFO)
+		if (!(result == SQL_SUCCESS || result == SQL_SUCCESS_WITH_INFO))
 		{
 
 			std::string err_msg = "Mssql Plugin: ";
@@ -270,7 +272,8 @@ public:
         return true;
         
 		SQLINTEGER dead;
-		//SQL_COPT_SS_CONNECTION_DEAD
+		
+		//SQLRETURN retcode = SQLGetConnectAttr(sqlconnectionhandle, SQL_COPT_SS_CONNECTION_DEAD, &dead, SQL_IS_UINTEGER, NULL);
 		SQLRETURN retcode = SQLGetConnectAttr(sqlconnectionhandle, SQL_ATTR_CONNECTION_DEAD, &dead, 0, NULL);
 		if (retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO){
 			return (!closed_) && (dead != SQL_CD_TRUE);
@@ -278,8 +281,6 @@ public:
 		else{
 			return false;
 		}
-
-		//return (!closed_) && (PQstatus(conn_) != CONNECTION_BAD);
 	}
 
 	bool isPending() const

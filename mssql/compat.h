@@ -9,6 +9,14 @@
 #define SHARED_PTR_NAMESPACE boost
 #define TUPLE_NAMESPACE boost
 #define BOOLEAN_TYPE mapnik::boolean
+
+namespace mapnik{
+	namespace util {
+		using noncopyable = mapnik::noncopyable;
+	}	
+	using geometry_container = boost::ptr_vector<geometry_type>;
+}
+
 #else
 
 #define SHARED_PTR_NAMESPACE std
@@ -16,10 +24,5 @@
 #define BOOLEAN_TYPE mapnik::boolean_type
 
 #endif
-
-
-	//using SHARED_PTR_NAMESPACE::shared_ptr;
-	//using SHARED_PTR_NAMESPACE::make_shared;
-
 
 #endif // MSSQL_COMPAT_HPP
