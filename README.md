@@ -27,8 +27,8 @@ Parameters
 | initial_size          | integer      | initial size of the stateless connection pool | 1 |
 | max_size              | integer      | max size of the stateless connection pool | 10 |
 | simplify_geometries   | boolean      | whether to automatically [reduce input vertices](http://blog.cartodb.com/post/20163722809/speeding-up-tiles-rendering). Only effective when output projection matches (or is similar to) input projection. | false |
-| asynchronous_request  | boolean       | Queries are sent asynchronously : while rendering a layer, queries for further layers will run in parallel in the remote server. | false |
-| max_async_connection  | integer       | max number of queries for rendering one map in asynchronous mode. Used only when asynchronous_request=true. Default value (1) has no effect. | 1 |
+| asynchronous_request  | boolean      | Queries are sent asynchronously : while rendering a layer, queries for further layers will run in parallel in the remote server. | false |
+| max_async_connection  | integer      | max number of queries for rendering one map in asynchronous mode. Used only when asynchronous_request=true. Default value (1) has no effect. | 1 |
 
 Installation
 ------------
@@ -39,14 +39,18 @@ Building instructions
 ---------------------
 ### Windows
 
-Requirements for mapnik 2.3: 
- - Visual Studio 2013
+Requirements for mapnik 2.3:  
+ - Visual Studio 2013  
  - Mapnik SDK 2.3
 
-Requirements for mapnik 3.0: 
- - Visual Studio 2015
+Requirements for mapnik 3.0:  
+ - Visual Studio 2015  
  - [Mapnik SDK 3.0](http://mapnik.s3.amazonaws.com/dist/dev/mapnik-win-sdk-14.0-x64-v3.0.0-rc1-57-g2577a6c.7z)
 
-### Linux / OS X
-make
+### Linux / OS X (Tested with unixODBC / FreeTDS)
+make  
 make install
+
+Friendly notice
+---------------------
+Use at your own risk on production
