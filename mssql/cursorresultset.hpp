@@ -31,7 +31,7 @@
 class CursorResultSet : public IResultSet, private mapnik::util::noncopyable
 {
 public:
-	CursorResultSet(SHARED_PTR_NAMESPACE::shared_ptr<Connection> const &conn, std::string const& sql)
+	CursorResultSet(std::shared_ptr<Connection> const &conn, std::string const& sql)
 		: conn_(conn),
 		sql_(sql),
 		is_closed_(false)
@@ -142,8 +142,8 @@ private:
 	
 	}
     
-	SHARED_PTR_NAMESPACE::shared_ptr<Connection> conn_;
-	SHARED_PTR_NAMESPACE::shared_ptr<ResultSet> rs_;
+	std::shared_ptr<Connection> conn_;
+	std::shared_ptr<ResultSet> rs_;
 
 	std::string sql_;
 	bool is_closed_;    

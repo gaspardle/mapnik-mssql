@@ -174,7 +174,6 @@
     </Bscmake>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\mssql\compat.h" />
     <ClInclude Include="..\mssql\connection.hpp" />
     <ClInclude Include="..\mssql\asyncresultset.hpp" />
     <ClInclude Include="..\mssql\connection_manager.hpp" />

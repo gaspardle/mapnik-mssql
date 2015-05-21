@@ -112,7 +112,7 @@ public:
 
 	}
 
-	SHARED_PTR_NAMESPACE::shared_ptr<ResultSet> executeQuery(std::string const& sql)
+	std::shared_ptr<ResultSet> executeQuery(std::string const& sql)
 	{
 #ifdef MAPNIK_STATS
 		mapnik::progress_timer __stats__(std::clog, std::string("mssql_connection::execute_query ") + sql);
@@ -137,7 +137,7 @@ public:
 			throw mapnik::datasource_exception(err_msg);
 		}
 
-		return SHARED_PTR_NAMESPACE::make_shared<ResultSet>(hstmt);
+		return std::make_shared<ResultSet>(hstmt);
 	}
 
 	std::string status() const
@@ -223,7 +223,7 @@ public:
 		return retcode;
 	}
 
-	SHARED_PTR_NAMESPACE::shared_ptr<ResultSet> getNextAsyncResult()
+	std::shared_ptr<ResultSet> getNextAsyncResult()
 	{
 		SQLRETURN result = getResult();
 		if (!(result == SQL_SUCCESS || result == SQL_SUCCESS_WITH_INFO))
@@ -237,11 +237,11 @@ public:
 			close();
 			throw mapnik::datasource_exception(err_msg);
 		}
-		return SHARED_PTR_NAMESPACE::make_shared<ResultSet>(async_hstmt);
+		return std::make_shared<ResultSet>(async_hstmt);
 	}
 
 
-	SHARED_PTR_NAMESPACE::shared_ptr<ResultSet> getAsyncResult()
+	std::shared_ptr<ResultSet> getAsyncResult()
 	{
         
 		SQLRETURN result = getResult();
@@ -261,7 +261,7 @@ public:
 			close();
 			throw mapnik::datasource_exception(err_msg);
 		}
-		return SHARED_PTR_NAMESPACE::make_shared<ResultSet>(async_hstmt);
+		return std::make_shared<ResultSet>(async_hstmt);
 	}
 
 	bool isOK() const

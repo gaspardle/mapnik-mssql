@@ -56,7 +56,7 @@ const double mssql_datasource::FMAX = std::numeric_limits<float>::max();
 //const std::string mssql_datasource::GEOMETRY_COLUMNS = "geometry_columns";
 //const std::string mssql_datasource::SPATIAL_REF_SYS = "spatial_ref_system";
 
-using SHARED_PTR_NAMESPACE::shared_ptr;
+using std::shared_ptr;
 using mapnik::attribute_descriptor;
 
 mssql_datasource::mssql_datasource(parameters const& params)
@@ -87,8 +87,8 @@ mssql_datasource::mssql_datasource(parameters const& params)
 	pixel_width_token_("!pixel_width!"),
 	pixel_height_token_("!pixel_height!"),
 	pool_max_size_(*params_.get<mapnik::value_integer>("max_size", 10)),
-	persist_connection_(*params.get<BOOLEAN_TYPE>("persist_connection", true)),
-	extent_from_subquery_(*params.get<BOOLEAN_TYPE>("extent_from_subquery", false)),
+	persist_connection_(*params.get<mapnik::boolean_type>("persist_connection", true)),
+	extent_from_subquery_(*params.get<mapnik::boolean_type>("extent_from_subquery", false)),
 	max_async_connections_(*params_.get<mapnik::value_integer>("max_async_connection", 1)),
 	asynchronous_request_(false),
 	// params below are for testing purposes only and may be removed at any time
@@ -125,10 +125,10 @@ mssql_datasource::mssql_datasource(parameters const& params)
 	}
 
 	boost::optional<mapnik::value_integer> initial_size = params.get<mapnik::value_integer>("initial_size", 1);
-	boost::optional<BOOLEAN_TYPE> autodetect_key_field = params.get<BOOLEAN_TYPE>("autodetect_key_field", false);
-	boost::optional<BOOLEAN_TYPE> estimate_extent = params.get<BOOLEAN_TYPE>("estimate_extent", false);
+	boost::optional<mapnik::boolean_type> autodetect_key_field = params.get<mapnik::boolean_type>("autodetect_key_field", false);
+	boost::optional<mapnik::boolean_type> estimate_extent = params.get<mapnik::boolean_type>("estimate_extent", false);
 	estimate_extent_ = estimate_extent && *estimate_extent;
-	boost::optional<BOOLEAN_TYPE> simplify_opt = params.get<BOOLEAN_TYPE>("simplify_geometries", false);
+	boost::optional<mapnik::boolean_type> simplify_opt = params.get<mapnik::boolean_type>("simplify_geometries", false);
 	simplify_geometries_ = simplify_opt && *simplify_opt;
 
 	ConnectionManager::instance().registerPool(creator_, *initial_size, pool_max_size_);
@@ -370,7 +370,7 @@ mssql_datasource::mssql_datasource(parameters const& params)
 		// Close explicitly the connection so we can 'fork()' without sharing open connections
 		conn->close();
 
-#if MAPNIK_VERSION >= 300000
+
 		// Finally, add unique metadata to layer descriptor
 		mapnik::parameters & extra_params = desc_.get_extra_parameters();
 		// explicitly make copies of values due to https://github.com/mapnik/mapnik/issues/2651
@@ -379,7 +379,7 @@ mssql_datasource::mssql_datasource(parameters const& params)
 		{
 			extra_params["key_field"] = key_field_;
 		}
-#endif
+
 	}
 }
 
@@ -534,22 +534,22 @@ shared_ptr<IResultSet> mssql_datasource::get_resultset(shared_ptr<Connection> &c
 
     if (!ctx)
     {
-        return SHARED_PTR_NAMESPACE::make_shared<CursorResultSet>(conn, sql);
+        return std::make_shared<CursorResultSet>(conn, sql);
     }
 	else
 	{   // asynchronous requests
 		
-		shared_ptr<mssql_processor_context> pgis_ctxt = SHARED_PTR_NAMESPACE::static_pointer_cast<mssql_processor_context>(ctx);
+		shared_ptr<mssql_processor_context> pgis_ctxt = std::static_pointer_cast<mssql_processor_context>(ctx);
 		if (conn)
 		{
 			// lauch async req & create asyncresult with conn
 			conn->executeAsyncQuery(sql);
-			return SHARED_PTR_NAMESPACE::make_shared<AsyncResultSet>(pgis_ctxt, pool, conn, sql);
+			return std::make_shared<AsyncResultSet>(pgis_ctxt, pool, conn, sql);
 		}
 		else
 		{
 			// create asyncresult  with  null connection
-			shared_ptr<AsyncResultSet> res = SHARED_PTR_NAMESPACE::make_shared<AsyncResultSet>(pgis_ctxt, pool, conn, sql);
+			shared_ptr<AsyncResultSet> res = std::make_shared<AsyncResultSet>(pgis_ctxt, pool, conn, sql);
 			pgis_ctxt->add_request(res);
 			return res;
 		}
@@ -572,7 +572,7 @@ processor_context_ptr mssql_datasource::get_context(feature_style_context_map & 
 	else
 	{
 		//return ctx.insert(std::make_pair(ds_name, std::make_shared<mssql_processor_context>())).first->second;
-		return ctx.emplace(ds_name, SHARED_PTR_NAMESPACE::make_shared<mssql_processor_context>()).first->second;
+		return ctx.emplace(ds_name, std::make_shared<mssql_processor_context>()).first->second;
 	}
 }
 
@@ -581,7 +581,7 @@ featureset_ptr mssql_datasource::features(query const& q) const
 	// if the driver is in asynchronous mode, return the appropriate fetaures
 	if (asynchronous_request_)
 	{
-		return features_with_context(q, SHARED_PTR_NAMESPACE::make_shared<mssql_processor_context>());
+		return features_with_context(q, std::make_shared<mssql_processor_context>());
 	}
 	else
 	{
@@ -609,7 +609,7 @@ featureset_ptr mssql_datasource::features_with_context(query const& q, processor
 		if (asynchronous_request_)
 		{
 			// limit use to num_async_request_ => if reached don't borrow the last connexion object
-			shared_ptr<mssql_processor_context> pgis_ctxt = SHARED_PTR_NAMESPACE::static_pointer_cast<mssql_processor_context>(proc_ctx);
+			shared_ptr<mssql_processor_context> pgis_ctxt = std::static_pointer_cast<mssql_processor_context>(proc_ctx);
 			if (pgis_ctxt->num_async_requests_ < max_async_connections_)
 			{
 				conn = pool->borrowObject();
@@ -651,8 +651,8 @@ featureset_ptr mssql_datasource::features_with_context(query const& q, processor
 
 		std::ostringstream s;
 
-		const double px_gw = 1.0 / TUPLE_NAMESPACE::get<0>(q.resolution());
-		const double px_gh = 1.0 / TUPLE_NAMESPACE::get<1>(q.resolution());
+		const double px_gw = 1.0 / std::get<0>(q.resolution());
+		const double px_gh = 1.0 / std::get<1>(q.resolution());
 
 		s << "SELECT ";
 		if (row_limit_ > 0) {
@@ -672,7 +672,7 @@ featureset_ptr mssql_datasource::features_with_context(query const& q, processor
 
 		s << ".STAsBinary() AS geom";
 
-		mapnik::context_ptr ctx = SHARED_PTR_NAMESPACE::make_shared<mapnik::context_type>();
+		mapnik::context_ptr ctx = std::make_shared<mapnik::context_type>();
 		std::set<std::string> const& props = q.property_names();
 		std::set<std::string>::const_iterator pos = props.begin();
 		std::set<std::string>::const_iterator end = props.end();
@@ -711,7 +711,7 @@ featureset_ptr mssql_datasource::features_with_context(query const& q, processor
 
 		//std::cout << "\n------------------\nReq: \n" << s.str() << "\n\n";
 		shared_ptr<IResultSet> rs = get_resultset(conn, s.str(), pool, proc_ctx);
-		return SHARED_PTR_NAMESPACE::make_shared<mssql_featureset>(rs, ctx, !key_field_.empty());
+		return std::make_shared<mssql_featureset>(rs, ctx, !key_field_.empty());
 
 	}
 
@@ -763,7 +763,7 @@ featureset_ptr mssql_datasource::features_at_point(coord2d const& pt, double tol
 			}
 			s << "\"" << geometryColumn_ << "\".STAsBinary() AS geom";
 
-			mapnik::context_ptr ctx = SHARED_PTR_NAMESPACE::make_shared<mapnik::context_type>();
+			mapnik::context_ptr ctx = std::make_shared<mapnik::context_type>();
 			std::vector<attribute_descriptor>::const_iterator itr = desc_.get_descriptors().begin();
 			std::vector<attribute_descriptor>::const_iterator end = desc_.get_descriptors().end();
 
@@ -795,7 +795,7 @@ featureset_ptr mssql_datasource::features_at_point(coord2d const& pt, double tol
 			s << " FROM " << table_with_bbox;
 
 			shared_ptr<IResultSet> rs = get_resultset(conn, s.str(), pool);
-			return SHARED_PTR_NAMESPACE::make_shared<mssql_featureset>(rs, ctx, !key_field_.empty());
+			return std::make_shared<mssql_featureset>(rs, ctx, !key_field_.empty());
 		}
 	}
 
@@ -897,11 +897,11 @@ box2d<double> mssql_datasource::envelope() const
 	return extent_;
 }
 
-boost::optional<mapnik::datasource::geometry_t> mssql_datasource::get_geometry_type() const
+boost::optional<mapnik::datasource_geometry_t> mssql_datasource::get_geometry_type() const
 {
 	//return boost::optional<mapnik::datasource::geometry_t>();
 
-	boost::optional<mapnik::datasource::geometry_t> result;
+	boost::optional<mapnik::datasource_geometry_t> result;
 
 	CnxPool_ptr pool = ConnectionManager::instance().getPool(creator_.id());
 	if (pool)
@@ -941,26 +941,26 @@ boost::optional<mapnik::datasource::geometry_t> mssql_datasource::get_geometry_t
 					if (boost::algorithm::contains(data, "line"))
 					{
 						g_type = "linestring";
-						result.reset(mapnik::datasource::LineString);
+						result.reset(mapnik::datasource_geometry_t::LineString);
 					}
 					else if (boost::algorithm::contains(data, "point"))
 					{
 						g_type = "point";
-						result.reset(mapnik::datasource::Point);
+						result.reset(mapnik::datasource_geometry_t::Point);
 					}
 					else if (boost::algorithm::contains(data, "polygon"))
 					{
 						g_type = "polygon";
-						result.reset(mapnik::datasource::Polygon);
+						result.reset(mapnik::datasource_geometry_t::Polygon);
 					}
 					else // geometry
 					{
-						result.reset(mapnik::datasource::Collection);
+						result.reset(mapnik::datasource_geometry_t::Collection);
 						return result;
 					}
 					if (!prev_type.empty() && g_type != prev_type)
 					{
-						result.reset(mapnik::datasource::Collection);
+						result.reset(mapnik::datasource_geometry_t::Collection);
 						return result;
 					}
 					prev_type = g_type;

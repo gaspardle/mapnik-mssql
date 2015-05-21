@@ -36,9 +36,6 @@
     <ClInclude Include="..\mssql\connection.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\mssql\compat.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\mssql\cursorresultset.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>

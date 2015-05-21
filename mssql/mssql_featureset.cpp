@@ -44,13 +44,12 @@
 #include <string>
 #include <memory>
 
-using mapnik::geometry_type;
-using mapnik::byte;
+
 using mapnik::geometry_utils;
 using mapnik::feature_factory;
 using mapnik::context_ptr;
 
-mssql_featureset::mssql_featureset(SHARED_PTR_NAMESPACE::shared_ptr<IResultSet> const& rs,
+mssql_featureset::mssql_featureset(std::shared_ptr<IResultSet> const& rs,
                                        context_ptr const& ctx,
                                        bool key_field)
     : rs_(rs),
@@ -116,9 +115,9 @@ feature_ptr mssql_featureset::next()
         std::vector<char> data = rs_->getBinary(0);    
         int size = data.size();       
 		
-        if (!geometry_utils::from_wkb(feature->paths(), &data[0], data.size())){
-            continue;
-        }
+        
+		mapnik::geometry::geometry<double> geometry = geometry_utils::from_wkb(&data[0], size);			
+		feature->set_geometry(std::move(geometry));
 
         totalGeomSize_ += size;
         unsigned num_attrs = ctx_->size() + 1;
