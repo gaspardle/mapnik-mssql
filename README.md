@@ -39,13 +39,9 @@ Building instructions
 ---------------------
 ### Windows
 
-Requirements for mapnik 2.3:  
- - Visual Studio 2013  
- - Mapnik SDK 2.3
-
 Requirements for mapnik 3.0:  
- - Visual Studio 2015  
- - [Mapnik SDK 3.0](http://mapnik.s3.amazonaws.com/dist/dev/mapnik-win-sdk-14.0-x64-v3.0.0-rc1-693-g01a9b4c.7z)
+ - Visual Studio 2015 RC
+ - [Mapnik SDK 3.0](https://mapnik.s3.amazonaws.com/dist/dev/vs2015rc1/mapnik-win-sdk-14.0-x64-v3.0.0-rc1-1126-g340ed85.7z)
 
 ### Linux / OS X (Tested with unixODBC / FreeTDS)
 make  
