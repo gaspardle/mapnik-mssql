@@ -36,6 +36,7 @@
 #include <sql.h>
 #include <sqlext.h>
 #include <sqlucode.h>
+#include "odbc.hpp"
 
 #include "resultset.hpp"
 
@@ -82,7 +83,7 @@ public:
 		if (!(retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO))
 		{
 			std::string err_msg = "Mssql Plugin: ";
-			err_msg += status(SQL_HANDLE_DBC, sqlconnectionhandle);
+			err_msg += getOdbcError(SQL_HANDLE_DBC, sqlconnectionhandle);
 			err_msg += "\nSQLDriverConnect Error, Connection string: '";
 			err_msg += connection_str;
 			err_msg += "'\n";
@@ -133,7 +134,7 @@ public:
 
 		if (!(retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO))
 		{
-			std::string err_msg = status(SQL_HANDLE_STMT, hstmt);
+			std::string err_msg = getOdbcError(SQL_HANDLE_STMT, hstmt);
 			err_msg += "\nFull sql was: '";
 			err_msg += sql;
 			err_msg += "'\n";
@@ -145,38 +146,8 @@ public:
 		return std::make_shared<ResultSet>(hstmt);
 	}
 
-	std::string status() const
-	{
-		return status(SQL_HANDLE_DBC, sqlconnectionhandle);
-	}
-	std::string status(unsigned int handletype, const SQLHANDLE& handle) const
-	{
+	
 
-		std::string  status;
-
-		SQLCHAR  sqlstate[6];
-		SQLCHAR  message[SQL_MAX_MESSAGE_LENGTH];
-		SQLINTEGER  NativeError;
-		SQLSMALLINT   i, MsgLen;
-		SQLRETURN     rc2;
-
-		// Get the status records.
-		i = 1;
-		while ((rc2 = SQLGetDiagRecA(handletype, handle, i, sqlstate, &NativeError,
-			message, sizeof(message), &MsgLen)) != SQL_NO_DATA) {
-			status += "(" + std::to_string((short)i) + ")";
-			status += "\nSQLState: ";
-			status += ((char*)&sqlstate[0]);
-			status += "\nNativeError: " + std::to_string((long)NativeError);
-			status += "\nMessage: ";
-			status += (char*)&message[0];
-			status += "\nMsgLen: " + std::to_string((long)MsgLen);
-
-			i++;
-		}
-
-		return status;
-	}
 	bool executeAsyncQuery(std::string const& sql)
 	{
 		debug_current_sql = sql;		
@@ -196,7 +167,7 @@ public:
 		if (!(retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO || retcode == SQL_STILL_EXECUTING))
 		{
 			std::string err_msg = "Mssql Plugin: ";
-			err_msg += status();
+			err_msg += getOdbcError(SQL_HANDLE_DBC, sqlconnectionhandle);
 			err_msg += "\nin executeAsyncQuery Full sql was: '";
 			err_msg += sql;
 			err_msg += "'\n";
@@ -234,7 +205,7 @@ public:
 		if (!(result == SQL_SUCCESS || result == SQL_SUCCESS_WITH_INFO))
 		{
 			std::string err_msg = "Mssql Plugin: ";
-			std::string err_status = status(SQL_HANDLE_STMT, async_hstmt);
+			std::string err_status = getOdbcError(SQL_HANDLE_STMT, async_hstmt);
 			err_msg += err_status + "\n in getNextAsyncResult";
 			clearAsyncResult(async_hstmt);
 			// We need to guarde against losing the connection
@@ -257,7 +228,7 @@ public:
 		{
 
 			std::string err_msg = "Mssql Plugin: ";
-			std::string err_status = status(SQL_HANDLE_STMT, async_hstmt);
+			std::string err_status = getOdbcError(SQL_HANDLE_STMT, async_hstmt);
 			err_msg += err_status + "\n in getAsyncResult";
             err_msg += err_msg + "\n query: " + debug_current_sql;
 			clearAsyncResult(async_hstmt);
@@ -325,5 +296,7 @@ private:
 		pending_ = false;
 	}
 };
+
+
 
 #endif //CONNECTION_HPP

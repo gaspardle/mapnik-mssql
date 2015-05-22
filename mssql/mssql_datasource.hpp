@@ -98,6 +98,7 @@ private:
 	std::string geometry_table_;
 	const std::string geometry_field_;
 	std::string key_field_;
+	bool wkb_;
 	
 	mapnik::value_integer row_limit_;
 	std::string geometryColumn_;

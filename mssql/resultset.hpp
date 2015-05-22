@@ -31,7 +31,7 @@
 
 #include <sql.h>
 #include <sqlext.h>
-
+#include "odbc.hpp"
 
 class IResultSet
 {
@@ -114,15 +114,9 @@ public:
 			return false;
 		}
 		else{
-			return false;
-			
-			SQLCHAR  sqlstate[6];
-			SQLCHAR  message[SQL_MAX_MESSAGE_LENGTH];
-			SQLINTEGER  NativeError;
-			SQLSMALLINT MsgLen;
-			retcode = SQLGetDiagRecA(SQL_HANDLE_STMT, res_, 1, sqlstate, &NativeError,
-				message, sizeof(message), &MsgLen);
-			std::string errormsg((char*)&message[0]);
+			//return false;			
+
+			std::string errormsg = getOdbcError(SQL_HANDLE_STMT, res_);			
 			throw mapnik::datasource_exception("resultset next error: " + errormsg);
 		}
 
@@ -147,7 +141,7 @@ public:
 			return std::string(fname);
 		}
 		else{			
-			throw mapnik::datasource_exception("Error in Resultset getFieldName");
+			throw mapnik::datasource_exception("Error in Resultset getFieldName: " + getOdbcError(SQL_HANDLE_STMT, res_));
 		}
 		return 0;
 	}

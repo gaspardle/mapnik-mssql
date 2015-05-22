@@ -178,10 +178,13 @@
     <ClInclude Include="..\mssql\asyncresultset.hpp" />
     <ClInclude Include="..\mssql\connection_manager.hpp" />
     <ClInclude Include="..\mssql\cursorresultset.hpp" />
+    <ClInclude Include="..\mssql\mssqlclrgeo.hpp" />
     <ClInclude Include="..\mssql\mssql_datasource.hpp" />
     <ClInclude Include="..\mssql\mssql_featureset.hpp" />
+    <ClInclude Include="..\mssql\odbc.hpp" />
     <ClInclude Include="..\mssql\resultset.hpp" />
     <ClInclude Include="..\mssql\stdafx.h" />
+    <ClInclude Include="..\mssql\udt_reader.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\mssql\mssql_datasource.cpp">
@@ -192,6 +195,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Use</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="..\mssql\Odbc.cpp" />
     <ClCompile Include="..\mssql\stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>

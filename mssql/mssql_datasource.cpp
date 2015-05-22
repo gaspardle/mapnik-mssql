@@ -94,7 +94,9 @@ mssql_datasource::mssql_datasource(parameters const& params)
 	asynchronous_request_(true),
 	// params below are for testing purposes only and may be removed at any time
 	intersect_min_scale_(*params.get<mapnik::value_integer>("intersect_min_scale", 0)),
-	intersect_max_scale_(*params.get<mapnik::value_integer>("intersect_max_scale", 0))
+	intersect_max_scale_(*params.get<mapnik::value_integer>("intersect_max_scale", 0)),
+	wkb_(*params.get<mapnik::boolean_type>("wkb", true))
+
 {
 #ifdef MAPNIK_STATS
 	mapnik::progress_timer __stats__(std::clog, "mssql_datasource::init");
@@ -671,7 +673,11 @@ featureset_ptr mssql_datasource::features_with_context(query const& q, processor
 			s << tolerance << ")";
 		}
 
-		s << ".STAsBinary() AS geom";
+		if (wkb_) {
+			s << ".STAsBinary()";
+		}
+		
+		s << " AS geom";
 
 		mapnik::context_ptr ctx = std::make_shared<mapnik::context_type>();
 		std::set<std::string> const& props = q.property_names();
@@ -712,7 +718,7 @@ featureset_ptr mssql_datasource::features_with_context(query const& q, processor
 
 		//std::cout << "\n------------------\nReq: \n" << s.str() << "\n\n";
 		shared_ptr<IResultSet> rs = get_resultset(conn, s.str(), pool, proc_ctx);
-		return std::make_shared<mssql_featureset>(rs, ctx, !key_field_.empty());
+		return std::make_shared<mssql_featureset>(rs, ctx,  wkb_, !key_field_.empty());
 
 	}
 
@@ -762,8 +768,11 @@ featureset_ptr mssql_datasource::features_at_point(coord2d const& pt, double tol
 			{
 				s << " TOP " << row_limit_;
 			}
-			s << "\"" << geometryColumn_ << "\".STAsBinary() AS geom";
-
+			s << "\"" << geometryColumn_ << "\"";
+			if (wkb_) {
+				s << ".STAsBinary()";
+			}
+			s << " AS geom";
 			mapnik::context_ptr ctx = std::make_shared<mapnik::context_type>();
 			std::vector<attribute_descriptor>::const_iterator itr = desc_.get_descriptors().begin();
 			std::vector<attribute_descriptor>::const_iterator end = desc_.get_descriptors().end();
@@ -796,7 +805,7 @@ featureset_ptr mssql_datasource::features_at_point(coord2d const& pt, double tol
 			s << " FROM " << table_with_bbox;
 
 			shared_ptr<IResultSet> rs = get_resultset(conn, s.str(), pool);
-			return std::make_shared<mssql_featureset>(rs, ctx, !key_field_.empty());
+			return std::make_shared<mssql_featureset>(rs, ctx, wkb_, !key_field_.empty());
 		}
 	}
 

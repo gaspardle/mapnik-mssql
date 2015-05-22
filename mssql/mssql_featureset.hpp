@@ -43,13 +43,16 @@ class mssql_featureset : public mapnik::Featureset
 public:
 	mssql_featureset(std::shared_ptr<IResultSet> const& rs,
                        context_ptr const& ctx,
-                       bool key_field = false);
+                       bool wkb,
+                       bool key_field = false
+		               );
     feature_ptr next();
     ~mssql_featureset();
 
 private:
 	std::shared_ptr<IResultSet> rs_;
     context_ptr ctx_;
+	bool wkb_;
 	const std::unique_ptr<mapnik::transcoder> tr_ucs2_;
 	const std::unique_ptr<mapnik::transcoder> tr_;
     unsigned totalGeomSize_;

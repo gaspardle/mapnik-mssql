@@ -24,6 +24,7 @@
 
 #include "mssql_featureset.hpp"
 #include "resultset.hpp"
+#include "udt_reader.hpp"
 
 // mapnik
 /*#include <mapnik/global.hpp>
@@ -50,10 +51,12 @@ using mapnik::feature_factory;
 using mapnik::context_ptr;
 
 mssql_featureset::mssql_featureset(std::shared_ptr<IResultSet> const& rs,
-                                       context_ptr const& ctx,
-                                       bool key_field)
+                                     context_ptr const& ctx,
+	                                 bool wkb,
+                                     bool key_field )
     : rs_(rs),
       ctx_(ctx),
+	  wkb_(wkb),
 	  tr_ucs2_(new transcoder("UTF-16LE")),
 	  tr_(new transcoder("UTF-8")),
       totalGeomSize_(0),
@@ -114,9 +117,15 @@ feature_ptr mssql_featureset::next()
         // parse geometry		
         std::vector<char> data = rs_->getBinary(0);    
         int size = data.size();       
-		
-        
-		mapnik::geometry::geometry<double> geometry = geometry_utils::from_wkb(&data[0], size);			
+				
+		mapnik::geometry::geometry<double> geometry;
+		if (wkb_) {
+			geometry = geometry_utils::from_wkb(&data[0], size);
+		}
+		else {
+			//check if column is geography or geometry?
+			geometry = from_udt(&data[0], size, false);
+		}
 		feature->set_geometry(std::move(geometry));
 
         totalGeomSize_ += size;
@@ -128,8 +137,7 @@ feature_ptr mssql_featureset::next()
             // NOTE: we intentionally do not store null here
             // since it is equivalent to the attribute not existing
             if (!rs_->isNull(pos))
-            {
-                //const char* buf = rs_->getValue(pos);
+            {              
                 const int oid = rs_->getTypeOID(pos);
 				
                 switch (oid)
