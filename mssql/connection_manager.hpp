@@ -89,13 +89,10 @@ public:
 		else{
 
 			if (driver_   && !driver_->empty()){
+				//Tested with {ODBC Driver 11 for SQL Server}, {SQL Server Native Client 11.0}, FreeTDS
 				connect_str += "DRIVER=" + *driver_ + ";";
 			}
-			else{
-				//{ODBC Driver 11 for SQL Server}
-				//FreeTDS
-				connect_str += "DRIVER={SQL Server Native Client 11.0};";
-			}
+			
 			if (host_   && !host_->empty()) connect_str += "SERVER=" + *host_ + ";";
 			if (port_   && !port_->empty()) connect_str += "port=" + *port_ + ";";
 			if (dbname_ && !dbname_->empty()) connect_str += "DATABASE=" + *dbname_ + ";";

@@ -75,7 +75,7 @@ mssql_datasource::mssql_datasource(parameters const& params)
 	simplify_geometries_(false),
 	desc_(mssql_datasource::name(), "utf-8"),
 	creator_(params.get<std::string>("connection_string"),
-	params.get<std::string>("driver"),
+	params.get<std::string>("driver", "{SQL Server Native Client 11.0}"),
 	params.get<std::string>("host"),
 	params.get<std::string>("port"),
 	params.get<std::string>("dbname"),
@@ -89,8 +89,9 @@ mssql_datasource::mssql_datasource(parameters const& params)
 	pool_max_size_(*params_.get<mapnik::value_integer>("max_size", 10)),
 	persist_connection_(*params.get<mapnik::boolean_type>("persist_connection", true)),
 	extent_from_subquery_(*params.get<mapnik::boolean_type>("extent_from_subquery", false)),
-	max_async_connections_(*params_.get<mapnik::value_integer>("max_async_connection", 1)),
-	asynchronous_request_(false),
+	//XXX async by default, there's a bug that need to be fixed
+	max_async_connections_(*params_.get<mapnik::value_integer>("max_async_connection", 4)),
+	asynchronous_request_(true),
 	// params below are for testing purposes only and may be removed at any time
 	intersect_min_scale_(*params.get<mapnik::value_integer>("intersect_min_scale", 0)),
 	intersect_max_scale_(*params.get<mapnik::value_integer>("intersect_max_scale", 0))
@@ -122,7 +123,7 @@ mssql_datasource::mssql_datasource(parameters const& params)
 			throw mapnik::datasource_exception(err.str());
 		}
 		asynchronous_request_ = true;
-	}
+	}	
 
 	boost::optional<mapnik::value_integer> initial_size = params.get<mapnik::value_integer>("initial_size", 1);
 	boost::optional<mapnik::boolean_type> autodetect_key_field = params.get<mapnik::boolean_type>("autodetect_key_field", false);
