@@ -32,7 +32,6 @@
 #include <sql.h>
 #include <sqlext.h>
 
-#include "compat.h"
 
 class IResultSet
 {
@@ -63,8 +62,7 @@ public:
 	ResultSet(SQLHANDLE res)
 		: res_(res),
 		pos_(-1)
-	{
-		//numTuples_ = PQntuples(res_);        
+	{		
 	}
 
 	virtual void close()

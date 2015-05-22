@@ -29,8 +29,6 @@
 #include <mapnik/datasource.hpp>
 #include <mapnik/feature.hpp>
 #include <mapnik/unicode.hpp>
-#include "compat.h"
-
 
 using mapnik::Featureset;
 using mapnik::box2d;
