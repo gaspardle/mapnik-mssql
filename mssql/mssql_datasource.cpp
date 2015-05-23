@@ -153,11 +153,7 @@ mssql_datasource::mssql_datasource(parameters const& params)
 			if (idx != std::string::npos)
 			{
 				schema_ = geometry_table_.substr(0, idx);
-				geometry_table_ = geometry_table_.substr(idx + 1);
-			}
-			else
-			{
-				geometry_table_ = geometry_table_.substr(0);
+				geometry_table_ = geometry_table_.substr(idx + 1);			
 			}
 
 			// If we do not know both the geometry_field and the srid
@@ -479,7 +475,13 @@ std::string mssql_datasource::populate_tokens(std::string const& sql) const
 	return populated_sql;
 }
 
-std::string mssql_datasource::populate_tokens(std::string const& sql, double scale_denom, box2d<double> const& env, double pixel_width, double pixel_height) const
+std::string mssql_datasource::populate_tokens(
+	std::string const& sql,
+	double scale_denom,
+	box2d<double> const& env,
+	double pixel_width,
+	double pixel_height,
+	mapnik::attributes const& vars) const
 {
 	std::string populated_sql = sql;
 	std::string box = sql_bbox(env);
@@ -513,10 +515,14 @@ std::string mssql_datasource::populate_tokens(std::string const& sql, double sca
 	else
 	{
 		std::ostringstream s;
-		//XXX makeValid?
+		
 		if (intersect_min_scale_ > 0 && (scale_denom <= intersect_min_scale_))
 		{			
-			s << " WHERE \"" << geometryColumn_ << "\".STIsValid() = 1 AND \"" << geometryColumn_ << "\".STIntersects(" << box << ") = 1";
+			s << " WHERE \"" << geometryColumn_ << "\"";
+			if (wkb_) {
+				s << ".STIsValid() = 1 AND ";				
+			}
+			s << "\"" << geometryColumn_ << "\".STIntersects(" << box << ") = 1";
 		}
 		else if (intersect_max_scale_ > 0 && (scale_denom >= intersect_max_scale_))
 		{
@@ -524,7 +530,11 @@ std::string mssql_datasource::populate_tokens(std::string const& sql, double sca
 		}
 		else
 		{
-			s << " WHERE \"" << geometryColumn_ << "\".STIsValid() = 1 AND \"" << geometryColumn_ << "\".STIntersects(" << box << ") = 1";			
+			s << " WHERE \"" << geometryColumn_ << "\"";
+			if (wkb_) {
+				s << ".STIsValid() = 1 AND ";
+			}
+			s << "\"" << geometryColumn_ << "\".STIntersects(" << box << ") = 1";
 		}
 
 		return populated_sql + s.str();
@@ -573,8 +583,7 @@ processor_context_ptr mssql_datasource::get_context(feature_style_context_map & 
 		return itr->second;
 	}
 	else
-	{
-		//return ctx.insert(std::make_pair(ds_name, std::make_shared<mssql_processor_context>())).first->second;
+	{		
 		return ctx.emplace(ds_name, std::make_shared<mssql_processor_context>()).first->second;
 	}
 }
@@ -707,7 +716,7 @@ featureset_ptr mssql_datasource::features_with_context(query const& q, processor
 			}
 		}
 
-		std::string table_with_bbox = populate_tokens(table_, scale_denom, box, px_gw, px_gh);
+		std::string table_with_bbox = populate_tokens(table_, scale_denom, box, px_gw, px_gh, q.variables());
 
 		s << " FROM " << table_with_bbox;
 
@@ -800,7 +809,7 @@ featureset_ptr mssql_datasource::features_at_point(coord2d const& pt, double tol
 			}
 
 			box2d<double> box(pt.x - tol, pt.y - tol, pt.x + tol, pt.y + tol);
-			std::string table_with_bbox = populate_tokens(table_, FMAX, box, 0, 0);
+			std::string table_with_bbox = populate_tokens(table_, FMAX, box, 0, 0, mapnik::attributes());
 
 			s << " FROM " << table_with_bbox;
 
