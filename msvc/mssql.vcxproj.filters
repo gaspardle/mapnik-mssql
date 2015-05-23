@@ -42,10 +42,10 @@
     <ClInclude Include="..\mssql\odbc.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\mssql\udt_reader.hpp">
+    <ClInclude Include="..\mssql\mssqlclrgeo.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\mssql\mssqlclrgeo.hpp">
+    <ClInclude Include="..\mssql\geoclr_reader.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -60,6 +60,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\mssql\Odbc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\mssql\mssqlclrgeo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -24,7 +24,7 @@
 
 #include "mssql_featureset.hpp"
 #include "resultset.hpp"
-#include "udt_reader.hpp"
+#include "geoclr_reader.hpp"
 
 // mapnik
 /*#include <mapnik/global.hpp>
@@ -35,8 +35,7 @@
 #include <mapnik/feature_factory.hpp>
 #include <mapnik/util/conversions.hpp>
 #include <mapnik/util/trim.hpp>
-#include <mapnik/global.hpp> // for int2net
-#include <boost/scoped_array.hpp>*/
+#include <mapnik/global.hpp> // for int2net*/
 
 #include <cstdint>
 
@@ -65,7 +64,7 @@ mssql_featureset::mssql_featureset(std::shared_ptr<IResultSet> const& rs,
 {
 }
 
-std::string numeric2string(const char* buf);
+static inline std::string numeric2string(const char* buf);
 
 feature_ptr mssql_featureset::next()
 {
@@ -124,7 +123,7 @@ feature_ptr mssql_featureset::next()
 		}
 		else {
 			//check if column is geography or geometry?
-			geometry = from_udt(&data[0], size, false);
+			geometry = from_geoclr(&data[0], size, false);
 		}
 		feature->set_geometry(std::move(geometry));
 
@@ -192,14 +191,14 @@ mssql_featureset::~mssql_featureset()
     rs_->close();
 }
 
-std::string numeric2string(const char* buf)
+static inline std::string numeric2string(const char* buf)
 {
     std::int16_t ndigits = int2net(buf);
 	std::int16_t weight  = int2net(buf+2);
 	std::int16_t sign    = int2net(buf+4);
 	std::int16_t dscale  = int2net(buf+6);
 
-    boost::scoped_array<boost::int16_t> digits(new std::int16_t[ndigits]);
+	std::unique_ptr<std::int16_t[]> digits(new std::int16_t[ndigits]);
     for (int n=0; n < ndigits ;++n)
     {
         digits[n] = int2net(buf+8+n*2);

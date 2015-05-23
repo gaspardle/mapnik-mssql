@@ -1,4 +1,6 @@
-#pragma once
+#ifndef MSSQL_GEOCLR_READER_HPP
+#define MSSQL_GEOCLR_READER_HPP
+
 #include <mapnik/make_unique.hpp>
 #include <mapnik/debug.hpp>
 #include <mapnik/global.hpp>
@@ -9,25 +11,26 @@
 
 #include <cstdint>
 #include <vector>
+
 #include "mssqlclrgeo.hpp"
 
-struct mapnik_udt_reader : mapnik::util::noncopyable
+struct mapnik_geoclr_reader : mapnik::util::noncopyable
 {
 private:
-	udt_reader reader;
+	mssqlclr::sqlgeo_reader reader;
 	uint32_t shape_pos_;
-	Geometry geo_;
+	mssqlclr::Geometry geo_;
 	bool is_geography_;
 public:
-	mapnik_udt_reader(const char* data, std::size_t size, bool isGeography)
-		: reader(udt_reader(data, size)),
+	mapnik_geoclr_reader(const char* data, std::size_t size, bool isGeography)
+		: reader(mssqlclr::sqlgeo_reader(data, size)),
 		shape_pos_(0),
 		is_geography_(isGeography)
 	{
 		geo_ = reader.parseGeometry(is_geography_);
 	}
 
-	mapnik::geometry::point<double> read_point(Shape shape)
+	mapnik::geometry::point<double> read_point(mssqlclr::Shape shape)
 	{
 		
 		auto figures = geo_.getFiguresFromShape(shape_pos_);
@@ -38,12 +41,12 @@ public:
 		
 		return mapnik::geometry::point<double>(x, y);
 	}
-	mapnik::geometry::multi_point<double> read_multipoint(Shape shape)
+	mapnik::geometry::multi_point<double> read_multipoint(mssqlclr::Shape shape)
 	{
 		
 		mapnik::geometry::multi_point<double> multi_point;
 
-		Geometry parent_geo = geo_;
+		mssqlclr::Geometry parent_geo = geo_;
 		uint32_t parent_pos = shape_pos_;
 		while ((parent_geo.Shapes.size() - 1 >= shape_pos_ + 1) && parent_geo.Shapes[shape_pos_ + 1].ParentOffset == parent_pos) {
 			shape_pos_++;
@@ -54,7 +57,7 @@ public:
 	}
 
 
-	mapnik::geometry::line_string<double> read_linestring(Shape shape)
+	mapnik::geometry::line_string<double> read_linestring(mssqlclr::Shape shape)
 	{
 		mapnik::geometry::line_string<double> line;
 		auto figures = geo_.getFiguresFromShape(shape_pos_);
@@ -73,12 +76,12 @@ public:
 		}
 		return line;
 	}
-	mapnik::geometry::multi_line_string<double> read_multilinestring(Shape shape)
+	mapnik::geometry::multi_line_string<double> read_multilinestring(mssqlclr::Shape shape)
 	{	
 		
 		mapnik::geometry::multi_line_string<double> multi_line;
 
-		Geometry parent_geo = geo_;
+		mssqlclr::Geometry parent_geo = geo_;
 		uint32_t parent_pos = shape_pos_;
 		while ((parent_geo.Shapes.size() - 1 >= shape_pos_ + 1) && parent_geo.Shapes[shape_pos_ + 1].ParentOffset == parent_pos) {
 			shape_pos_++;
@@ -87,7 +90,7 @@ public:
 		
 		return multi_line;
 	}
-	mapnik::geometry::polygon<double> read_polygon(Shape shape)
+	mapnik::geometry::polygon<double> read_polygon(mssqlclr::Shape shape)
 	{
 		auto rings = geo_.getFiguresFromShape(shape_pos_);
 
@@ -115,11 +118,11 @@ public:
 		}
 		return poly;
 	}
-	mapnik::geometry::multi_polygon<double> read_multipolygon(Shape shape)
+	mapnik::geometry::multi_polygon<double> read_multipolygon(mssqlclr::Shape shape)
 	{
 		
 		mapnik::geometry::multi_polygon<double> multi_poly;
-		Geometry parent_geo = geo_;
+		mssqlclr::Geometry parent_geo = geo_;
 		uint32_t parent_pos = shape_pos_;
 		while ((parent_geo.Shapes.size() - 1 >= shape_pos_ + 1) && parent_geo.Shapes[shape_pos_ + 1].ParentOffset == parent_pos) {
 			shape_pos_++;
@@ -128,10 +131,10 @@ public:
 		return multi_poly;
 	}
 
-	mapnik::geometry::geometry_collection<double> read_collection(Shape shape)
+	mapnik::geometry::geometry_collection<double> read_collection(mssqlclr::Shape shape)
 	{		
 		mapnik::geometry::geometry_collection<double> collection;
-		Geometry parent_geo = geo_;
+		mssqlclr::Geometry parent_geo = geo_;
 		uint32_t parent_pos = shape_pos_;
 		while ((parent_geo.Shapes.size() - 1 >= shape_pos_ + 1) && parent_geo.Shapes[shape_pos_ + 1].ParentOffset == parent_pos) {
 			shape_pos_++;		
@@ -148,60 +151,55 @@ public:
 		
 		auto s = geo_.Shapes[shape_pos_];
 		
-		SHAPE type = s.OpenGisType;
+		mssqlclr::SHAPE type = s.OpenGisType;
 		switch (type)
 		{
-		case SHAPE::SHAPE_POINT:
+		case mssqlclr::SHAPE::SHAPE_POINT:
 			geom = std::move(read_point(s));
 			break;
-		case SHAPE::SHAPE_LINESTRING:
+		case mssqlclr::SHAPE::SHAPE_LINESTRING:
 			geom = std::move(read_linestring(s));
 			break;
-		case SHAPE::SHAPE_POLYGON:
+		case mssqlclr::SHAPE::SHAPE_POLYGON:
 			geom = std::move(read_polygon(s));
 			break;
-		case SHAPE::SHAPE_MULTIPOINT:
+		case mssqlclr::SHAPE::SHAPE_MULTIPOINT:
 			geom = std::move(read_multipoint(s));
 			break;
-		case SHAPE::SHAPE_MULTILINESTRING:
+		case mssqlclr::SHAPE::SHAPE_MULTILINESTRING:
 			geom = std::move(read_multilinestring(s));
 			break;
-		case SHAPE::SHAPE_MULTIPOLYGON:
+		case mssqlclr::SHAPE::SHAPE_MULTIPOLYGON:
 			geom = std::move(read_multipolygon(s));
 			break;
-		case SHAPE::SHAPE_GEOMETRY_COLLECTION:
+		case mssqlclr::SHAPE::SHAPE_GEOMETRY_COLLECTION:
 			geom = std::move(read_collection(s));
 			break;
 		
-		case SHAPE::SHAPE_COMPOUND_CURVE:
-		case SHAPE::SHAPE_CIRCULAR_STRING:
-		case SHAPE::SHAPE_CURVE_POLYGON:
+		case mssqlclr::SHAPE::SHAPE_COMPOUND_CURVE:
+		case mssqlclr::SHAPE::SHAPE_CIRCULAR_STRING:
+		case mssqlclr::SHAPE::SHAPE_CURVE_POLYGON:
 		default:
 			//nope
 			break;
 		}
-		shape_pos_++;
+		
 		return geom;
 	}
 };
 
-mapnik::geometry::geometry<double> from_udt(const char* wkb,
+mapnik::geometry::geometry<double> from_geoclr(const char* wkb,
 	std::size_t size, bool is_geography)
 {
 	if (size == 0) {
 		return mapnik::geometry::geometry_empty();
 	}
-	mapnik_udt_reader reader(wkb, size, is_geography);
-	//try {
-
-		mapnik::geometry::geometry<double> geom(reader.read());
-		// note: this will only be applied to polygons
-		mapnik::geometry::correct(geom);
-		return geom;
-	/*}
-	catch(...){
-		return mapnik::geometry::geometry_empty();
-	}*/
-	
+	mapnik_geoclr_reader reader(wkb, size, is_geography);
+	mapnik::geometry::geometry<double> geom(reader.read());
+	// note: this will only be applied to polygons
+	mapnik::geometry::correct(geom);
+	return geom;	
 	
 }
+
+#endif //MSSQL_GEOCLR_READER_HPP

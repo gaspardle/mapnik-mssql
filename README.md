@@ -29,7 +29,7 @@ Parameters
 | simplify_geometries   | boolean      | whether to automatically [reduce input vertices](http://blog.cartodb.com/post/20163722809/speeding-up-tiles-rendering). Only effective when output projection matches (or is similar to) input projection. | false |
 | asynchronous_request  | boolean      | Queries are sent asynchronously : while rendering a layer, queries for further layers will run in parallel in the remote server. | false |
 | max_async_connection  | integer      | max number of queries for rendering one map in asynchronous mode. Used only when asynchronous_request=true. Default value (1) has no effect. | 1 |
-| wkb                   | bool         | Fetch the geometry column as a WKB with .STAsBinary() instead of using SQL Server CLR type | true |
+| wkb                   | bool         | Fetch the geometry column as a WKB with .STAsBinary() instead of using SQL Server CLR type | false |
 
 
 Installation

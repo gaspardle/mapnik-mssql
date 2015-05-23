@@ -19,7 +19,6 @@
 #include <mapnik/feature.hpp>
 
 
-#include <boost/scoped_array.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/tokenizer.hpp>
-#include <boost/format.hpp>
+
