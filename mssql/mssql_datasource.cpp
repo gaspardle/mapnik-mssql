@@ -95,7 +95,7 @@ mssql_datasource::mssql_datasource(parameters const& params)
 	// params below are for testing purposes only and may be removed at any time
 	intersect_min_scale_(*params.get<mapnik::value_integer>("intersect_min_scale", 0)),
 	intersect_max_scale_(*params.get<mapnik::value_integer>("intersect_max_scale", 0)),
-	wkb_(*params.get<mapnik::boolean_type>("wkb", true))
+	wkb_(*params.get<mapnik::boolean_type>("wkb", false))
 
 {
 #ifdef MAPNIK_STATS
@@ -518,9 +518,9 @@ std::string mssql_datasource::populate_tokens(
 		
 		if (intersect_min_scale_ > 0 && (scale_denom <= intersect_min_scale_))
 		{			
-			s << " WHERE \"" << geometryColumn_ << "\"";
+			s << " WHERE ";
 			if (wkb_) {
-				s << ".STIsValid() = 1 AND ";				
+				s << "\"" << geometryColumn_ << "\".STIsValid() = 1 AND ";
 			}
 			s << "\"" << geometryColumn_ << "\".STIntersects(" << box << ") = 1";
 		}
@@ -530,9 +530,9 @@ std::string mssql_datasource::populate_tokens(
 		}
 		else
 		{
-			s << " WHERE \"" << geometryColumn_ << "\"";
+			s << " WHERE ";
 			if (wkb_) {
-				s << ".STIsValid() = 1 AND ";
+				s << "\"" << geometryColumn_ << "\".STIsValid() = 1 AND ";
 			}
 			s << "\"" << geometryColumn_ << "\".STIntersects(" << box << ") = 1";
 		}
