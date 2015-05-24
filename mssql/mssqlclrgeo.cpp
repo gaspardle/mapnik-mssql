@@ -212,7 +212,9 @@ namespace mssqlclr
 				return g;
 			}
 			else if (g.SRID < 4210 || g.SRID > 4999) {
-				throw std::exception("Invalid SRID for geography");
+				g.Properties.V = false;
+				return g;
+				//("Invalid SRID for geography");
 			}
 		}
 
@@ -220,7 +222,9 @@ namespace mssqlclr
 		g.Version = read_uint8();
 
 		if (g.Version > 2) {
-			throw std::exception("Version %d is not supported", g.Version);
+			g.Properties.V = false;
+			return g;
+			//("Version %d is not supported", g.Version);
 		}
 
 		//flags
@@ -237,7 +241,9 @@ namespace mssqlclr
 			g.Properties.H = (flags & (1 << 5)) != 0;
 		}
 		if (g.Properties.P && g.Properties.L) {
-			throw std::exception("geometry data is invalid");
+			g.Properties.V = false;
+			return g;
+			//("geometry data is invalid");
 		}
 
 		//points
