@@ -1,4 +1,5 @@
 #include "mssqlclrgeo.hpp"
+#include <cstring>
 
 namespace mssqlclr
 {
