@@ -856,7 +856,7 @@ box2d<double> mssql_datasource::envelope() const
 
 			if (estimate_extent_)
 			{
-				s << "SELECT ext.STPointN(1).STX AS MinX, ext.STPointN(1).STY AS MinY,ext.STPointN(3).STX AS MaxX, ext.STPointN(3).STY AS MaxX"
+				s << "SELECT ext.STPointN(1).STX AS MinX, ext.STPointN(1).STY AS MinY,ext.STPointN(3).STX AS MaxX, ext.STPointN(3).STY AS MaxY"
 					<< " FROM (SELECT geometry::EnvelopeAggregate('";
 				//<< " FROM (SELECT ST_Estimated_Extent('";
 
@@ -870,7 +870,7 @@ box2d<double> mssql_datasource::envelope() const
 			}
 			else
 			{
-				s << "SELECT ext.STPointN(1).STX AS MinX, ext.STPointN(1).STY AS MinY,ext.STPointN(3).STX AS MaxX, ext.STPointN(3).STY AS MaxX"
+				s << "SELECT ext.STPointN(1).STX AS MinX, ext.STPointN(1).STY AS MinY,ext.STPointN(3).STX AS MaxX, ext.STPointN(3).STY AS MaxY"
 					<< " FROM (SELECT geometry::EnvelopeAggregate(" << geometryColumn_ << ") as ext from ";
 
 				if (extent_from_subquery_)
