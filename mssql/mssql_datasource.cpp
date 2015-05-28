@@ -89,9 +89,8 @@ mssql_datasource::mssql_datasource(parameters const& params)
 	pool_max_size_(*params_.get<mapnik::value_integer>("max_size", 10)),
 	persist_connection_(*params.get<mapnik::boolean_type>("persist_connection", true)),
 	extent_from_subquery_(*params.get<mapnik::boolean_type>("extent_from_subquery", false)),
-	//XXX async by default, there's a bug that need to be fixed
-	max_async_connections_(*params_.get<mapnik::value_integer>("max_async_connection", 4)),
-	asynchronous_request_(true),
+	max_async_connections_(*params_.get<mapnik::value_integer>("max_async_connection", 1)),
+	asynchronous_request_(false),
 	// params below are for testing purposes only and may be removed at any time
 	intersect_min_scale_(*params.get<mapnik::value_integer>("intersect_min_scale", 0)),
 	intersect_max_scale_(*params.get<mapnik::value_integer>("intersect_max_scale", 0)),
@@ -114,7 +113,6 @@ mssql_datasource::mssql_datasource(parameters const& params)
 
 	// NOTE: In multithread environment, pool_max_size_ should be
 	// max_async_connections_ * num_threads
-	
 	if (max_async_connections_ > 1)
 	{
 		if (max_async_connections_ > pool_max_size_)
@@ -547,7 +545,8 @@ shared_ptr<IResultSet> mssql_datasource::get_resultset(shared_ptr<Connection> &c
 
     if (!ctx)
     {
-        return std::make_shared<CursorResultSet>(conn, sql);
+		
+        return std::make_shared<CursorResultSet>(pool, conn, sql);
     }
 	else
 	{   // asynchronous requests
@@ -632,10 +631,10 @@ featureset_ptr mssql_datasource::features_with_context(query const& q, processor
 		{
 			// Always get a connection in synchronous mode
 			conn = pool->borrowObject();
-			if (!conn)
+			/*if (!conn)
 			{
 				throw mapnik::datasource_exception("Mssql Plugin: Null connection");
-			}
+			}*/
 		}
 
 
@@ -725,7 +724,6 @@ featureset_ptr mssql_datasource::features_with_context(query const& q, processor
 			s << " " << order_by_;
 		}
 
-		//std::cout << "\n------------------\nReq: \n" << s.str() << "\n\n";
 		shared_ptr<IResultSet> rs = get_resultset(conn, s.str(), pool, proc_ctx);
 		return std::make_shared<mssql_featureset>(rs, ctx,  wkb_, !key_field_.empty());
 

@@ -31,12 +31,14 @@
 class CursorResultSet : public IResultSet, private mapnik::util::noncopyable
 {
 public:
-	CursorResultSet(std::shared_ptr<Connection> const &conn, std::string const& sql)
-		: conn_(conn),
+	CursorResultSet(std::shared_ptr< Pool<Connection, ConnectionCreator> > const& pool, 
+		std::shared_ptr<Connection> const &conn,
+		std::string const& sql)
+		: pool_(pool),
+		conn_(conn),
 		sql_(sql),
 		is_closed_(false)
-	{
-		//getNextResultSet();
+	{		
 	}
 
 	virtual ~CursorResultSet()
@@ -133,15 +135,20 @@ public:
     
 private:
 	void getNextResultSet()
-	{
-		
-        
+	{		
+		if(!conn_) {
+			conn_ = pool_->borrowObject();
+			if (!conn_ || !conn_->isOK())
+			{			
+				throw mapnik::datasource_exception("Mssql Plugin: bad connection");
+			}
+		}
 		rs_ = conn_->executeQuery(sql_.c_str());
 		is_closed_ = false;
-        
+		
 	
 	}
-    
+	std::shared_ptr< Pool<Connection, ConnectionCreator> > pool_;
 	std::shared_ptr<Connection> conn_;
 	std::shared_ptr<ResultSet> rs_;
 

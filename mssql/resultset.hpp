@@ -60,19 +60,23 @@ class ResultSet : public IResultSet, private mapnik::util::noncopyable
 {
 public:
 	ResultSet(SQLHANDLE res)
-		: res_(res),
-		pos_(-1)
+		: res_(res),	
+		is_closed_(false)
 	{		
 	}
 
 	virtual void close()
 	{	
-        SQLFreeHandle(SQL_HANDLE_STMT, res_);
+		if (!is_closed_)
+		{
+			SQLFreeHandle(SQL_HANDLE_STMT, res_);
+			is_closed_ = true;
+		}
 	}
 
 	virtual ~ResultSet()
-	{
-		SQLFreeHandle(SQL_HANDLE_STMT, res_);
+	{		
+		close();		
 	}
 
 	virtual int getNumFields() const
@@ -86,16 +90,13 @@ public:
 		return column_count;
 	}
 
-	int pos() const
-	{
-		return pos_;
-	}
+
 
 
 	virtual bool next()
 	{
 
-		++pos_;
+		
 		SQLRETURN retcode;
 		retcode = SQLFetch(res_);
 
@@ -334,8 +335,8 @@ public:
 	}
 
 private:
-	SQLHANDLE res_;
-	int pos_;
+	SQLHANDLE res_;	
+	bool is_closed_;
 };
 
 #endif // MSSQL_RESULTSET_HPP
