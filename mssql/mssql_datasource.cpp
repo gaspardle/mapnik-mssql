@@ -170,11 +170,20 @@ mssql_datasource::mssql_datasource(parameters const& params)
 
 				try
 				{
-					s << "SELECT column_name, 3857 FROM "
-						<< "information_schema.columns "
-						<< " WHERE (data_type = 'geometry' OR data_type = 'geography') AND table_name='"
-						<< mapnik::sql_utils::unquote_double(geometry_table_)
-						<< "'";
+					s << "SELECT column_name";
+					if (!geometry_field_.empty()) 
+					{
+						s << ", (SELECT TOP 1 \"" 
+						<< geometry_field_ << "\".STSrid FROM \"" << geometry_table_ 
+						<< "\" WHERE \"" 
+						<< geometry_field_ << "\" IS NOT NULL)";
+					}
+					s << " FROM "
+					<< "information_schema.columns "
+					<< " WHERE (data_type = 'geometry' OR data_type = 'geography') AND table_name='"
+					<< mapnik::sql_utils::unquote_double(geometry_table_)
+					<< "'";
+
 					if (!schema_.empty())
 					{
 						s << " AND table_schema='"
@@ -855,16 +864,13 @@ box2d<double> mssql_datasource::envelope() const
 			if (estimate_extent_)
 			{
 				s << "SELECT ext.STPointN(1).STX AS MinX, ext.STPointN(1).STY AS MinY,ext.STPointN(3).STX AS MaxX, ext.STPointN(3).STY AS MaxY"
-					<< " FROM (SELECT geometry::EnvelopeAggregate('";
-				//<< " FROM (SELECT ST_Estimated_Extent('";
+					<< " FROM (SELECT geometry::EnvelopeAggregate(" << geometryColumn_ << ") as ext from ";
 
 				if (!schema_.empty())
 				{
-					s << mapnik::sql_utils::unquote_double(schema_) << "','";
+					s << schema_ << ".";
 				}
-
-				s << mapnik::sql_utils::unquote_double(geometry_table_) << "','"
-					<< mapnik::sql_utils::unquote_double(geometryColumn_) << "') as ext) as tmp";
+				s << geometry_table_ << " TABLESAMPLE (25 percent) ) as tmp";
 			}
 			else
 			{
