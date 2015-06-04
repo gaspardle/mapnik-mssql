@@ -161,7 +161,7 @@ mssql_datasource::mssql_datasource(parameters const& params)
 			// the table parameter references a table, view, or subselect not
 			// registered in the geometry columns.
 			geometryColumn_ = geometry_field_;
-			if (geometryColumn_.empty() || srid_ == 0)
+			if (geometryColumn_.empty() || srid_ == 0 || geometryColumnType_.empty())
 			{
 #ifdef MAPNIK_STATS
 				mapnik::progress_timer __stats2__(std::clog, "mssql_datasource::init(get_srid_and_geometry_column)");
@@ -170,7 +170,7 @@ mssql_datasource::mssql_datasource(parameters const& params)
 
 				try
 				{
-					s << "SELECT column_name";
+					s << "SELECT column_name, data_type";
 					if (!geometry_field_.empty()) 
 					{
 						s << ", (SELECT TOP 1 \"" 
@@ -200,11 +200,13 @@ mssql_datasource::mssql_datasource(parameters const& params)
 					shared_ptr<ResultSet> rs = conn->executeQuery(s.str());
 					if (rs->next())
 					{
-						geometryColumn_ = rs->getString(0);
-
+                        if (geometryColumn_.empty()){
+						    geometryColumn_ = rs->getString(0);
+                        }
+                        geometryColumnType_ = rs->getString(1);
 						if (srid_ == 0)
 						{
-							srid_ = rs->getInt(1);
+							srid_ = rs->getInt(2);
 						}
 					}
 					rs->close();
@@ -435,18 +437,13 @@ std::string mssql_datasource::sql_bbox(box2d<double> const& env) const
 	std::ostringstream b;
 
 
-	/* b << "geometry::STGeomFromText('POLYGON((";
+	b << geometryColumnType_ << "::STGeomFromText('POLYGON((";
 	b << std::setprecision(16);
 	b << env.minx() << " " << env.miny() << ",";
 	b << env.maxx() << " " << env.miny() << ",";
 	b << env.maxx() << " " << env.maxy() << ",";
 	b << env.minx() << " " << env.maxy() << ",";
 	b << env.minx() << " " << env.miny() << "))', " << srid_ << ")";
-	*/
-	b << "geometry::STLineFromText('LINESTRING(";
-	b << std::setprecision(16);
-	b << env.minx() << " " << env.miny() << ",";
-	b << env.maxx() << " " << env.maxy() << ")', " << (srid_ == 0 ? 3857 : srid_) << ").STEnvelope()";
 
 	return b.str();
 }
@@ -734,7 +731,7 @@ featureset_ptr mssql_datasource::features_with_context(query const& q, processor
 		}
 
 		shared_ptr<IResultSet> rs = get_resultset(conn, s.str(), pool, proc_ctx);
-		return std::make_shared<mssql_featureset>(rs, ctx,  wkb_, !key_field_.empty());
+		return std::make_shared<mssql_featureset>(rs, ctx,  wkb_, geometryColumnType_ == "geography",  !key_field_.empty());
 
 	}
 
@@ -821,7 +818,7 @@ featureset_ptr mssql_datasource::features_at_point(coord2d const& pt, double tol
 			s << " FROM " << table_with_bbox;
 
 			shared_ptr<IResultSet> rs = get_resultset(conn, s.str(), pool);
-			return std::make_shared<mssql_featureset>(rs, ctx, wkb_, !key_field_.empty());
+			return std::make_shared<mssql_featureset>(rs, ctx, wkb_, geometryColumnType_ == "geography", !key_field_.empty());
 		}
 	}
 
@@ -863,9 +860,14 @@ box2d<double> mssql_datasource::envelope() const
 
 			if (estimate_extent_)
 			{
-				s << "SELECT ext.STPointN(1).STX AS MinX, ext.STPointN(1).STY AS MinY,ext.STPointN(3).STX AS MaxX, ext.STPointN(3).STY AS MaxY"
-					<< " FROM (SELECT geometry::EnvelopeAggregate(" << geometryColumn_ << ") as ext from ";
-
+                if(geometryColumnType_ == "geometry"){
+				    s << "SELECT ext.STPointN(1).STX AS MinX, ext.STPointN(1).STY AS MinY,ext.STPointN(3).STX AS MaxX, ext.STPointN(3).STY AS MaxY"
+					    << " FROM (SELECT " << geometryColumnType_ <<"::EnvelopeAggregate(" << geometryColumn_ << ") as ext from ";
+                }
+                else {
+                    s << "SELECT ext.STPointN(1).Long AS MinX, ext.STPointN(1).Lat AS MinY,ext.STPointN(3).Long AS MaxX, ext.STPointN(3).Lat AS MaxY "
+                        << " FROM (SELECT " << geometryColumnType_ << "::EnvelopeAggregate(" << geometryColumn_ << ") as ext from ";
+                }
 				if (!schema_.empty())
 				{
 					s << schema_ << ".";
@@ -874,8 +876,14 @@ box2d<double> mssql_datasource::envelope() const
 			}
 			else
 			{
-				s << "SELECT ext.STPointN(1).STX AS MinX, ext.STPointN(1).STY AS MinY,ext.STPointN(3).STX AS MaxX, ext.STPointN(3).STY AS MaxY"
-					<< " FROM (SELECT geometry::EnvelopeAggregate(" << geometryColumn_ << ") as ext from ";
+                if (geometryColumnType_ == "geometry") {
+                    s << "SELECT ext.STPointN(1).STX AS MinX, ext.STPointN(1).STY AS MinY,ext.STPointN(3).STX AS MaxX, ext.STPointN(3).STY AS MaxY"
+                        << " FROM (SELECT " << geometryColumnType_ << "::EnvelopeAggregate(" << geometryColumn_ << ") as ext from ";
+                }
+                else {
+                    s << "SELECT ext.STPointN(1).Long AS MinX, ext.STPointN(1).Lat AS MinY,ext.STPointN(3).Long AS MaxX, ext.STPointN(3).Lat AS MaxY "
+                        << " FROM (SELECT " << geometryColumnType_ << "::EnvelopeAggregate(" << geometryColumn_ << ") as ext from ";
+                }
 
 				if (extent_from_subquery_)
 				{

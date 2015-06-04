@@ -100,7 +100,8 @@ private:
 	bool wkb_;
 	
 	mapnik::value_integer row_limit_;
-	std::string geometryColumn_;
+    std::string geometryColumn_;
+    std::string geometryColumnType_;
 	mapnik::datasource::datasource_t type_;
 	int srid_;
 	mutable bool extent_initialized_;

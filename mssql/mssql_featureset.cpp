@@ -51,11 +51,13 @@ using mapnik::context_ptr;
 
 mssql_featureset::mssql_featureset(std::shared_ptr<IResultSet> const& rs,
                                      context_ptr const& ctx,
-	                                 bool wkb,
+                                     bool wkb,
+                                     bool is_sqlgeography,
                                      bool key_field )
     : rs_(rs),
       ctx_(ctx),
 	  wkb_(wkb),
+      is_sqlgeography_(is_sqlgeography),
 	  tr_ucs2_(new transcoder("UTF-16LE")),
 	  tr_(new transcoder("UTF-8")),
       totalGeomSize_(0),
@@ -77,7 +79,7 @@ feature_ptr mssql_featureset::next()
         if (key_field_)
         {
             std::string name = rs_->getFieldName(pos);
-
+            
             // null feature id is not acceptable
             if (rs_->isNull(pos))
             {
@@ -121,9 +123,8 @@ feature_ptr mssql_featureset::next()
 		if (wkb_) {
 			geometry = geometry_utils::from_wkb(&data[0], size);
 		}
-		else {
-			//check if column is geography or geometry?
-			geometry = from_geoclr(&data[0], size, false);
+		else {			
+			geometry = from_geoclr(&data[0], size, is_sqlgeography_);
 		}
 		feature->set_geometry(std::move(geometry));
 
