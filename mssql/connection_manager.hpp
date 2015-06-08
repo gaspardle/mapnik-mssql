@@ -85,6 +85,10 @@ public:
 		std::string connect_str;
 		if (connection_string_   && !connection_string_->empty()) {
 			connect_str += "" + *connection_string_;
+
+            if(!driver_->empty() || !host_->empty() || !port_->empty() || !dbname_->empty() || !user_->empty()){
+                MAPNIK_LOG_ERROR(mssql) << "mssql: connection_string and other parameter(s) (driver, host, port, dbname or user) were both detected, using connection_string";
+            }
 		}
 		else{
 
