@@ -105,7 +105,7 @@ private:
 	double read_double();
 	void readPointsZ(std::vector<Point> points);
 	void readPointsM(std::vector<Point> points);
-	std::vector<Point> readPoints(uint32_t count);
+	std::vector<Point> readPoints(uint32_t count, bool isGeography);
 	std::vector<Figure> readFigures(uint32_t count, SerializationProperties properties);
 	std::vector<Shape> readShapes(uint32_t count, SerializationProperties properties);
 	std::vector<Segment> readSegments(uint32_t count);
@@ -117,7 +117,8 @@ private:
 public:
 
 	sqlgeo_reader(const char* data, std::size_t size);
-	Geometry parseGeometry(bool isGeography);
+    Geometry parseGeometry(bool isGeography = false);
+    Geometry parseGeography();
 
 };
 

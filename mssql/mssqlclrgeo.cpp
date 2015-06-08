@@ -123,7 +123,7 @@ namespace mssqlclr
 		}
 
 	}
-	std::vector<Point> sqlgeo_reader::readPoints(uint32_t count) {
+	std::vector<Point> sqlgeo_reader::readPoints(uint32_t count, bool isGeography) {
 		std::vector<Point> points;
 
 		if (count < 1) {
@@ -131,11 +131,17 @@ namespace mssqlclr
 		}
 
 		for (uint32_t i = 0; i < count; i++) {
-
-			double x = read_double();
-			double y = read_double();
-			points.emplace_back(x, y);
-
+            if (isGeography) {
+                double y = read_double();
+                double x = read_double();
+                points.emplace_back(x, y);
+            }
+            else {
+                double x = read_double();
+                double y = read_double();
+                points.emplace_back(x, y);
+            }
+               
 		}
 
 		return points;
@@ -197,7 +203,12 @@ namespace mssqlclr
 		return segments;
 	}
 
+    Geometry sqlgeo_reader::parseGeography() {        
+        return parseGeometry(true);
+    }
+
 	Geometry sqlgeo_reader::parseGeometry(bool isGeography) {
+       
 		Geometry g = {};
 
 		uint32_t numberOfPoints;
@@ -257,7 +268,7 @@ namespace mssqlclr
 		else {
 			numberOfPoints = read_uint32();
 		}
-		g.Points = readPoints(numberOfPoints);
+		g.Points = readPoints(numberOfPoints, isGeography);
 
 		if (g.Properties.Z) {
 			readPointsZ(g.Points);
