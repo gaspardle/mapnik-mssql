@@ -171,7 +171,7 @@ mssql_datasource::mssql_datasource(parameters const& params)
 				try
 				{
 					s << "SELECT column_name, data_type";
-					if (!geometry_field_.empty()) 
+					if (!geometry_field_.empty() && srid_ == 0) 
 					{
 						s << ", (SELECT TOP 1 \"" 
 						<< geometry_field_ << "\".STSrid FROM \"" << geometry_table_ 
@@ -204,10 +204,10 @@ mssql_datasource::mssql_datasource(parameters const& params)
 						    geometryColumn_ = rs->getString(0);
                         }
                         geometryColumnType_ = rs->getString(1);
-						if (srid_ == 0)
-						{
-							srid_ = rs->getInt(2);
-						}
+                        if (!geometryColumn_.empty() && srid_ == 0)
+                        {
+                            srid_ = rs->getInt(2);
+                        }
 					}
 					rs->close();
 				}
