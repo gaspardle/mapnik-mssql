@@ -1,0 +1,36 @@
+version: v0.1.{build}
+skip_tags: true
+os: Visual Studio 2015 RC
+configuration: Release
+init:
+- SET PATH=C:\Program Files (x86)\MSBuild\14.0\Bin;%PATH%
+- SET PATH=C:\Program Files\7-Zip;%PATH%
+- SET MAPNIK_SDK=%CD%\mapnik-sdk
+environment:
+  msvs_toolset: 14
+  matrix:
+  - platform: x64
+    MAPNIK_GIT: v3.0.0-rc1-1126-g340ed85
+  - platform: x86
+    MAPNIK_GIT: v3.0.0-rc1-1126-g340ed85
+  - platform: x64
+    MAPNIK_GIT: v3.0.0-rc3-92-g8d3d136
+  - platform: x86
+    MAPNIK_GIT: v3.0.0-rc3-92-g8d3d136
+install:
+- ps: >-
+    Write-Output "fetching mapnik sdk https://mapnik.s3.amazonaws.com/dist/dev/mapnik-win-sdk-$env:msvs_toolset.0-$env:Platform-$env:MAPNIK_GIT.7z"
+
+    Start-FileDownload https://mapnik.s3.amazonaws.com/dist/dev/mapnik-win-sdk-$env:msvs_toolset.0-$env:Platform-$env:MAPNIK_GIT.7z -FileName mapnik-sdk.7z
+
+    Write-Output "extracting mapnik sdk"
+
+    invoke-expression "& 7z -y x mapnik-sdk.7z | FIND /V `"ing  `""
+
+    $env:INCLUDE = "$env:MAPNIK_SDK\include\"
+
+    $env:LIB = "$env:MAPNIK_SDK\lib\"
+build:
+  verbosity: minimal
+artifacts:
+- path: msvc\$(platform)\$(configuration)\*.input
