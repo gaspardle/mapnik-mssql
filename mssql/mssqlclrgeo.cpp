@@ -53,7 +53,7 @@ namespace mssqlclr
 	uint32_t sqlgeo_reader::read_uint32()
 	{
 		std::uint32_t val;
-		if(pos_ + 4 > size_) {
+		if (pos_ + 4 > size_) {
 			return 0;
 		}
 		auto data = data_ + pos_;
@@ -105,7 +105,7 @@ namespace mssqlclr
 		if (points.empty()) {
 			return;
 		}
-		for (auto point : points)
+		for (auto& point : points)
 		{
 			point.Z = read_double();
 		}
@@ -117,7 +117,7 @@ namespace mssqlclr
 		if (points.empty()) {
 			return;
 		}
-		for (auto point : points)
+		for (auto& point : points)
 		{
 			point.M = read_double();
 		}
@@ -125,23 +125,24 @@ namespace mssqlclr
 	}
 	std::vector<Point> sqlgeo_reader::readPoints(uint32_t count, bool isGeography) {
 		std::vector<Point> points;
+		points.reserve(count);
 
 		if (count < 1) {
 			return std::vector<Point>();
 		}
 
 		for (uint32_t i = 0; i < count; i++) {
-            if (isGeography) {
-                double y = read_double();
-                double x = read_double();
-                points.emplace_back(x, y);
-            }
-            else {
-                double x = read_double();
-                double y = read_double();
-                points.emplace_back(x, y);
-            }
-               
+			if (isGeography) {
+				double y = read_double();
+				double x = read_double();
+				points.emplace_back(x, y);
+			}
+			else {
+				double x = read_double();
+				double y = read_double();
+				points.emplace_back(x, y);
+			}
+
 		}
 
 		return points;
@@ -149,6 +150,8 @@ namespace mssqlclr
 
 	std::vector<Figure> sqlgeo_reader::readFigures(uint32_t count, SerializationProperties properties) {
 		std::vector<Figure> figures;
+		figures.reserve(count);
+
 		if (count == 0) {
 			return figures;
 		}
@@ -169,6 +172,8 @@ namespace mssqlclr
 	}
 	std::vector<Shape> sqlgeo_reader::readShapes(uint32_t count, SerializationProperties properties) {
 		std::vector<Shape> shapes;
+		shapes.reserve(count);
+
 		if (count < 1) {
 			return shapes;
 		}
@@ -203,12 +208,12 @@ namespace mssqlclr
 		return segments;
 	}
 
-    Geometry sqlgeo_reader::parseGeography() {        
-        return parseGeometry(true);
-    }
+	Geometry sqlgeo_reader::parseGeography() {
+		return parseGeometry(true);
+	}
 
 	Geometry sqlgeo_reader::parseGeometry(bool isGeography) {
-       
+
 		Geometry g = {};
 
 		uint32_t numberOfPoints;
