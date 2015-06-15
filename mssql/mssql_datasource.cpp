@@ -167,11 +167,11 @@ mssql_datasource::mssql_datasource(parameters const& params)
 				mapnik::progress_timer __stats2__(std::clog, "mssql_datasource::init(get_srid_and_geometry_column)");
 #endif
 				std::ostringstream s;
-
+				bool check_srid = !geometry_field_.empty() && srid_ == 0;
 				try
 				{
 					s << "SELECT column_name, data_type";
-					if (!geometry_field_.empty() && srid_ == 0) 
+					if (check_srid)
 					{
 						s << ", (SELECT TOP 1 \"" 
 						<< geometry_field_ << "\".STSrid FROM \"" << geometry_table_ 
@@ -200,14 +200,14 @@ mssql_datasource::mssql_datasource(parameters const& params)
 					shared_ptr<ResultSet> rs = conn->executeQuery(s.str());
 					if (rs->next())
 					{
-                        if (geometryColumn_.empty()){
-						    geometryColumn_ = rs->getString(0);
-                        }
-                        geometryColumnType_ = rs->getString(1);
-                        if (!geometryColumn_.empty() && srid_ == 0)
-                        {
-                            srid_ = rs->getInt(2);
-                        }
+						if (geometryColumn_.empty()){
+							geometryColumn_ = rs->getString(0);
+						}
+						geometryColumnType_ = rs->getString(1);
+						if (check_srid)
+						{
+							srid_ = rs->getInt(2);
+						}
 					}
 					rs->close();
 				}
