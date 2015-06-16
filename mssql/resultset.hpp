@@ -31,6 +31,7 @@
 
 #include <sql.h>
 #include <sqlext.h>
+#include "mapnik/util/utf_conv_win.hpp"
 #include "odbc.hpp"
 
 class IResultSet
@@ -281,6 +282,7 @@ public:
     
 	virtual const std::string getString(int index) const
 	{
+    
 #ifdef _WINDOWS
 		std::string s = mapnik::utf16_to_utf8(getWString(index));
 		return s;
