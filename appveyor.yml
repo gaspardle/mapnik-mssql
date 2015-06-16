@@ -10,10 +10,6 @@ environment:
   msvs_toolset: 14
   matrix:
   - platform: x64
-    MAPNIK_GIT: v3.0.0-rc1-1126-g340ed85
-  - platform: x86
-    MAPNIK_GIT: v3.0.0-rc1-1126-g340ed85
-  - platform: x64
     MAPNIK_GIT: v3.0.0-rc3-92-g8d3d136
   - platform: x86
     MAPNIK_GIT: v3.0.0-rc3-92-g8d3d136
