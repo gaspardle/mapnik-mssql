@@ -133,10 +133,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\test\catch.hpp" />
+    <ClInclude Include="..\test\catch.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\test\main.cpp" />
+    <ClCompile Include="..\test\main.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
