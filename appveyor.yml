@@ -13,6 +13,8 @@ environment:
     MAPNIK_GIT: v3.0.0-rc3-92-g8d3d136
   - platform: x86
     MAPNIK_GIT: v3.0.0-rc3-92-g8d3d136
+services:
+  - mssql2014
 install:
 - ps: >-
     Write-Output "fetching mapnik sdk https://mapnik.s3.amazonaws.com/dist/dev/mapnik-win-sdk-$env:msvs_toolset.0-$env:Platform-$env:MAPNIK_GIT.7z"
@@ -28,5 +30,17 @@ install:
     $env:LIB = "$env:MAPNIK_SDK\lib\"
 build:
   verbosity: minimal
+test_script:
+- ps: $sqlInstance = "(local)\SQL2014"
+- ps: $sqlUser = "sa"
+- ps: $sqlPw = "Password12!"
+- ps: sqlcmd -S "$sqlInstance" -i .\test\test.sql
+- ps: $ENV:MSSQL_CONNECTION_STRING = "Driver={SQL Server Native Client 11.0};Server=$sqlInstance;Database=mapnik_tmp_mssql_db;Uid=$sqlUser;Pwd=$sqlPw;"
+- ps: $ENV:PATH = "$MAPNIK_SDK\lib" + ";" + $ENV:Path
+- ps: $ENV:ICU_DATA = "$MAPNIK_SDK\share\icu"
+- ps: $ENV:PROJ_LIB = "$MAPNIK_SDK\share\proj"
+- ps: $ENV:GDAL_DATA = "$MAPNIK_SDK\share\gdal"
+- ps: cd "msvc\$env:Platform\$env:Configuration"
+- ps: .\test.exe
 artifacts:
 - path: msvc\$(platform)\$(configuration)\*.input
