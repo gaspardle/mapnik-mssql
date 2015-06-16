@@ -36,10 +36,10 @@ test_script:
 - ps: $sqlPw = "Password12!"
 - ps: sqlcmd -S "$sqlInstance" -i .\test\test.sql
 - ps: $ENV:MSSQL_CONNECTION_STRING = "Driver={SQL Server Native Client 11.0};Server=$sqlInstance;Database=mapnik_tmp_mssql_db;Uid=$sqlUser;Pwd=$sqlPw;"
-- ps: $ENV:PATH = "$MAPNIK_SDK\lib" + ";" + $ENV:Path
-- ps: $ENV:ICU_DATA = "$MAPNIK_SDK\share\icu"
-- ps: $ENV:PROJ_LIB = "$MAPNIK_SDK\share\proj"
-- ps: $ENV:GDAL_DATA = "$MAPNIK_SDK\share\gdal"
+- ps: $ENV:PATH = "$ENV:MAPNIK_SDK\lib" + ";" + $ENV:Path
+- ps: $ENV:ICU_DATA = "$ENV:MAPNIK_SDK\share\icu"
+- ps: $ENV:PROJ_LIB = "$ENV:MAPNIK_SDK\share\proj"
+- ps: $ENV:GDAL_DATA = "$ENV:MAPNIK_SDK\share\gdal"
 - ps: cd "msvc\$env:Platform\$env:Configuration"
 - ps: .\test.exe
 artifacts:
