@@ -30,7 +30,7 @@
 
 // mapnik
 #include <mapnik/pool.hpp>
-#include <mapnik/utils.hpp>
+#include <mapnik/util/singleton.hpp>
 
 // boost
 #include <boost/optional.hpp>

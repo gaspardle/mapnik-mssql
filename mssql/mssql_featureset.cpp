@@ -200,4 +200,3 @@ mssql_featureset::~mssql_featureset()
 {
     rs_->close();
 }
-

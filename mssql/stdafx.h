@@ -8,7 +8,6 @@
 #include <mapnik/timer.hpp>
 #include <mapnik/value_types.hpp>
 #include <mapnik/datasource.hpp>
-#include <mapnik/utils.hpp>
 
 #include <mapnik/global.hpp>
 #include <mapnik/wkb.hpp>

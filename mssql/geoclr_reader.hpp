@@ -1,12 +1,8 @@
 #ifndef MSSQL_GEOCLR_READER_HPP
 #define MSSQL_GEOCLR_READER_HPP
 
-#include <mapnik/make_unique.hpp>
-#include <mapnik/debug.hpp>
-#include <mapnik/global.hpp>
-#include <mapnik/wkb.hpp>
-#include <mapnik/feature.hpp>
 #include <mapnik/util/noncopyable.hpp>
+#include <mapnik/geometry.hpp>
 #include <mapnik/geometry_correct.hpp>
 
 #include <cstdint>
@@ -109,7 +105,7 @@ public:
 			if (num_points > 0)
 			{
 				ring.reserve(num_points);
-				for (auto p : points) {
+				for (const auto& p : points) {
 					ring.emplace_back(p.X, p.Y);
 				}				
 			}
@@ -148,7 +144,11 @@ public:
 	mapnik::geometry::geometry<double> read()	
 	{		
 		mapnik::geometry::geometry<double> geom = mapnik::geometry::geometry_empty();
-		
+        
+        if (geo_.Shapes.size() == 0) {
+            return geom;
+        }
+
 		auto s = geo_.Shapes[shape_pos_];
 		
 		mssqlclr::SHAPE type = s.OpenGisType;
@@ -188,13 +188,13 @@ public:
 	}
 };
 
-mapnik::geometry::geometry<double> from_geoclr(const char* wkb,
+mapnik::geometry::geometry<double> from_geoclr(const char* data,
 	std::size_t size, bool is_geography)
 {
 	if (size == 0) {
 		return mapnik::geometry::geometry_empty();
 	}
-	mapnik_geoclr_reader reader(wkb, size, is_geography);
+	mapnik_geoclr_reader reader(data, size, is_geography);
 	mapnik::geometry::geometry<double> geom(reader.read());
 	// note: this will only be applied to polygons
 	mapnik::geometry::correct(geom);

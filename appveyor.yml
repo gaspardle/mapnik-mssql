@@ -1,0 +1,40 @@
+version: v0.1.{build}
+skip_tags: true
+os: Visual Studio 2015 RC
+configuration: Release
+init:
+- SET PATH=C:\Program Files (x86)\MSBuild\14.0\Bin;%PATH%
+- SET PATH=C:\Program Files\7-Zip;%PATH%
+- SET MAPNIK_SDK=%CD%\mapnik-sdk
+environment:
+  msvs_toolset: 14
+  matrix:
+  - platform: x64
+    MAPNIK_GIT: v3.0.0-rc3-136-g8c6bf0e
+  - platform: x86
+    MAPNIK_GIT: v3.0.0-rc3-136-g8c6bf0e
+services:
+  - mssql2014
+install:
+- ps: Write-Output "fetching mapnik sdk http://ici.io/files/msvs2015rc1/mapnik-win-sdk-$env:msvs_toolset.0-$env:Platform-$env:MAPNIK_GIT.7z"
+- ps: Start-FileDownload http://ici.io/files/msvs2015rc1/mapnik-win-sdk-$env:msvs_toolset.0-$env:Platform-$env:MAPNIK_GIT.7z -FileName mapnik-sdk.7z
+- ps: Write-Output "extracting mapnik sdk"
+- ps: invoke-expression "& 7z -y x mapnik-sdk.7z | FIND /V `"ing  `""
+- ps: $env:INCLUDE = "$env:MAPNIK_SDK\include\"
+- ps: $env:LIB = "$env:MAPNIK_SDK\lib\"
+build:
+  verbosity: minimal
+test_script:
+- ps: $sqlInstance = "(local)\SQL2014"
+- ps: $sqlUser = "sa"
+- ps: $sqlPw = "Password12!"
+- ps: sqlcmd -S "$sqlInstance" -i .\test\test.sql
+- ps: $ENV:MSSQL_CONNECTION_STRING = "Driver={SQL Server Native Client 11.0};Server=$sqlInstance;Database=mapnik_tmp_mssql_db;Uid=$sqlUser;Pwd=$sqlPw;"
+- ps: $ENV:PATH = "$ENV:MAPNIK_SDK\lib" + ";" + $ENV:Path
+- ps: $ENV:ICU_DATA = "$ENV:MAPNIK_SDK\share\icu"
+- ps: $ENV:PROJ_LIB = "$ENV:MAPNIK_SDK\share\proj"
+- ps: $ENV:GDAL_DATA = "$ENV:MAPNIK_SDK\share\gdal"
+- ps: cd "msvc\$env:Platform\$env:Configuration"
+- ps: .\test.exe
+artifacts:
+- path: msvc\$(platform)\$(configuration)\*.input
