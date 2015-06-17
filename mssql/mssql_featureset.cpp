@@ -163,16 +163,17 @@ feature_ptr mssql_featureset::next()
                         break;
 					case SQL_VARCHAR:
                     case SQL_LONGVARCHAR:
-                    case 47:
                     {
                         auto stringbin2 = rs_->getBinary(pos);
                         feature->put(name, (UnicodeString)tr_->transcode(stringbin2.data(), stringbin2.size()));
                       //  feature->put(name, (UnicodeString)tr_->transcode(rs_->getString(pos).c_str()));
                          break;
                     }
+                    case 0x2F:
+                        feature->put(name, UnicodeString::fromUTF8(rs_->getString(pos)));
+                        break;
                     case SQL_WVARCHAR:
 					case SQL_WLONGVARCHAR:
-                    
                     {
 						//feature->put(name, (UnicodeString)tr_->transcode(rs_->getString(pos).c_str()));
 
