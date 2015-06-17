@@ -1,3 +1,5 @@
+#define NOMINMAX
+#include <winsock2.h>
 #include <mapnik/debug.hpp>
 #include <mapnik/global.hpp>
 #include <mapnik/boolean.hpp>

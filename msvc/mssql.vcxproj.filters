@@ -45,6 +45,15 @@
     <ClInclude Include="..\mssql\mssqlclrgeo.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\mssql\dblib_resultset.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\mssql\dblib_connection.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\mssql\iresultset.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\mssql\geoclr_reader.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>

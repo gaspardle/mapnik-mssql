@@ -149,6 +149,8 @@ feature_ptr mssql_featureset::next()
                     case SQL_TINYINT:
                     case SQL_INTEGER:
                     case SQL_BIGINT:
+                    case 0x34:
+                    case 0x38:
                         feature->put<mapnik::value_integer>(name, rs_->getInt(pos));
                         break;
                     case SQL_FLOAT:
@@ -156,14 +158,21 @@ feature_ptr mssql_featureset::next()
                         feature->put(name, static_cast<double>(rs_->getFloat(pos)));
                         break;                    
                     case SQL_DOUBLE:
+                    case 0x3b:
                         feature->put(name, rs_->getDouble(pos));               
                         break;
 					case SQL_VARCHAR:
                     case SQL_LONGVARCHAR:
-                         feature->put(name, (UnicodeString)tr_->transcode(rs_->getString(pos).c_str()));
+                    case 47:
+                    {
+                        auto stringbin2 = rs_->getBinary(pos);
+                        feature->put(name, (UnicodeString)tr_->transcode(stringbin2.data(), stringbin2.size()));
+                      //  feature->put(name, (UnicodeString)tr_->transcode(rs_->getString(pos).c_str()));
                          break;
+                    }
                     case SQL_WVARCHAR:
 					case SQL_WLONGVARCHAR:
+                    
                     {
 						//feature->put(name, (UnicodeString)tr_->transcode(rs_->getString(pos).c_str()));
 

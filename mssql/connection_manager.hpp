@@ -23,7 +23,10 @@
 #ifndef MSSQL_CONNECTION_MANAGER_HPP
 #define MSSQL_CONNECTION_MANAGER_HPP
 
+
 #include "connection.hpp"
+#include "dblib_connection.hpp"
+
 
 // mapnik
 #include <mapnik/pool.hpp>
@@ -62,10 +65,16 @@ public:
 		user_(user),
 		pass_(pass),
 		connect_timeout_(connect_timeout) {}
-
+    
 	T* operator()() const
-	{
-		return new T(connection_string_safe(), pass_);
+	{      
+        //return new T(connection_string_safe(), pass_);
+        //return new Connection(connection_string_safe(), pass_);
+        std::string host = host_.get_value_or("");
+        std::string user = user_.get_value_or("");
+        std::string pass = pass_.get_value_or("");
+    
+        return new ConnectionDblib(host, user,  pass, dbname_);
 	}
 
 	inline std::string id() const
@@ -86,9 +95,9 @@ public:
 		if (connection_string_   && !connection_string_->empty()) {
 			connect_str += "" + *connection_string_;
 
-            if(!driver_->empty() || !host_->empty() || !port_->empty() || !dbname_->empty() || !user_->empty()){
+            /*if(!driver_->empty() || !host_->empty() || !port_->empty() || !dbname_->empty() || !user_->empty()){
                 MAPNIK_LOG_ERROR(mssql) << "mssql: connection_string and other parameter(s) (driver, host, port, dbname or user) were both detected, using connection_string";
-            }
+            }*/
 		}
 		else{
 
@@ -128,17 +137,17 @@ class ConnectionManager : public singleton <ConnectionManager, CreateStatic>
 {
 
 public:
-	using PoolType = Pool<Connection, ConnectionCreator>;
+	using PoolType = Pool<IConnection, ConnectionCreator>;
 private:
 	friend class CreateStatic<ConnectionManager>;
 	
 	using ContType = std::map<std::string, std::shared_ptr<PoolType> >;
-	using HolderType = std::shared_ptr<Connection>;
+	using HolderType = std::shared_ptr<IConnection>;
 	ContType pools_;
 
 public:
 
-	bool registerPool(const ConnectionCreator<Connection>& creator, unsigned initialSize, unsigned maxSize)
+	bool registerPool(const ConnectionCreator<IConnection>& creator, unsigned initialSize, unsigned maxSize)
 	{
 		ContType::const_iterator itr = pools_.find(creator.id());
 

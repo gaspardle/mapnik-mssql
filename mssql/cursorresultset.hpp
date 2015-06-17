@@ -31,8 +31,8 @@
 class CursorResultSet : public IResultSet, private mapnik::util::noncopyable
 {
 public:
-	CursorResultSet(std::shared_ptr< Pool<Connection, ConnectionCreator> > const& pool, 
-		std::shared_ptr<Connection> const &conn,
+	CursorResultSet(std::shared_ptr< Pool<IConnection, ConnectionCreator> > const& pool, 
+		std::shared_ptr<IConnection> const &conn,
 		std::string const& sql)
 		: pool_(pool),
 		conn_(conn),
@@ -148,9 +148,9 @@ private:
 		
 	
 	}
-	std::shared_ptr< Pool<Connection, ConnectionCreator> > pool_;
-	std::shared_ptr<Connection> conn_;
-	std::shared_ptr<ResultSet> rs_;
+	std::shared_ptr< Pool<IConnection, ConnectionCreator> > pool_;
+	std::shared_ptr<IConnection> conn_;
+	std::shared_ptr<IResultSet> rs_;
 
 	std::string sql_;
 	bool is_closed_;    

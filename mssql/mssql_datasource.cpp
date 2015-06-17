@@ -136,7 +136,7 @@ mssql_datasource::mssql_datasource(parameters const& params)
 	CnxPool_ptr pool = ConnectionManager::instance().getPool(creator_.id());
 	if (pool)
 	{
-		shared_ptr<Connection> conn = pool->borrowObject();
+		shared_ptr<IConnection> conn = pool->borrowObject();
 		if (!conn) return;
 
 		if (conn->isOK())
@@ -167,15 +167,15 @@ mssql_datasource::mssql_datasource(parameters const& params)
 				mapnik::progress_timer __stats2__(std::clog, "mssql_datasource::init(get_srid_and_geometry_column)");
 #endif
 				std::ostringstream s;
-
+                bool check_srid = !geometry_field_.empty() && srid_ == 0;
 				try
 				{
 					s << "SELECT column_name, data_type";
-					if (!geometry_field_.empty()) 
+					if (check_srid)
 					{
-						s << ", (SELECT TOP 1 \"" 
-						<< geometry_field_ << "\".STSrid FROM \"" << geometry_table_ 
-						<< "\" WHERE \"" 
+						s << ", (SELECT TOP 1 [" 
+						<< geometry_field_ << "].STSrid FROM [" << geometry_table_ 
+						<< "] WHERE \"" 
 						<< geometry_field_ << "\" IS NOT NULL)";
 					}
 					s << " FROM "
@@ -197,14 +197,14 @@ mssql_datasource::mssql_datasource(parameters const& params)
 							<< "'";
 					}
 
-					shared_ptr<ResultSet> rs = conn->executeQuery(s.str());
+					shared_ptr<IResultSet> rs = conn->executeQuery(s.str());
 					if (rs->next())
 					{
                         if (geometryColumn_.empty()){
 						    geometryColumn_ = rs->getString(0);
                         }
                         geometryColumnType_ = rs->getString(1);
-						if (srid_ == 0)
+						if (check_srid)
 						{
 							srid_ = rs->getInt(2);
 						}
@@ -224,10 +224,10 @@ mssql_datasource::mssql_datasource(parameters const& params)
 				{
 					s.str("");
 
-					s << "SELECT TOP 1 (\"" << geometryColumn_ << "\").STSrid AS srid FROM "
-						<< populate_tokens(table_) << " WHERE \"" << geometryColumn_ << "\" IS NOT NULL;";
+					s << "SELECT TOP 1 [" << geometryColumn_ << "].STSrid AS srid FROM "
+						<< populate_tokens(table_) << " WHERE [" << geometryColumn_ << "] IS NOT NULL;";
 
-					shared_ptr<ResultSet> rs = conn->executeQuery(s.str());
+					shared_ptr<IResultSet> rs = conn->executeQuery(s.str());
 					if (rs->next())
 					{
 						srid_ = rs->getInt(0);                     
@@ -264,7 +264,7 @@ mssql_datasource::mssql_datasource(parameters const& params)
 				}
 				s << "ORDER BY kcu.ORDINAL_POSITION";
 
-				shared_ptr<ResultSet> rs_key = conn->executeQuery(s.str());
+				shared_ptr<IResultSet> rs_key = conn->executeQuery(s.str());
 				if (rs_key->next())
 				{
 					std::string key_field_string = rs_key->getString(0);
@@ -308,7 +308,7 @@ mssql_datasource::mssql_datasource(parameters const& params)
 			std::ostringstream s;
 			s << "SELECT TOP 0 * FROM " << populate_tokens(table_);
 
-			shared_ptr<ResultSet> rs = conn->executeQuery(s.str());
+			shared_ptr<IResultSet> rs = conn->executeQuery(s.str());
 			int count = rs->getNumFields();
 			bool found_key_field = false;
 			for (int i = 0; i < count; ++i)
@@ -399,7 +399,7 @@ mssql_datasource::~mssql_datasource()
 		if (pool)
 		{
 			try {
-				shared_ptr<Connection> conn = pool->borrowObject();
+				shared_ptr<IConnection> conn = pool->borrowObject();
 				if (conn)
 				{
 					conn->close();
@@ -546,7 +546,7 @@ std::string mssql_datasource::populate_tokens(
 }
 
 
-shared_ptr<IResultSet> mssql_datasource::get_resultset(shared_ptr<Connection> &conn, std::string const& sql, CnxPool_ptr const& pool, processor_context_ptr ctx) const
+shared_ptr<IResultSet> mssql_datasource::get_resultset(shared_ptr<IConnection> &conn, std::string const& sql, CnxPool_ptr const& pool, processor_context_ptr ctx) const
 {
 
     if (!ctx)
@@ -621,7 +621,7 @@ featureset_ptr mssql_datasource::features_with_context(query const& q, processor
 
 	if (pool)
 	{
-		shared_ptr<Connection> conn;
+		shared_ptr<IConnection> conn;
 
 		if (asynchronous_request_)
 		{
@@ -747,7 +747,7 @@ featureset_ptr mssql_datasource::features_at_point(coord2d const& pt, double tol
 	CnxPool_ptr pool = ConnectionManager::instance().getPool(creator_.id());
 	if (pool)
 	{
-		shared_ptr<Connection> conn = pool->borrowObject();
+		shared_ptr<IConnection> conn = pool->borrowObject();
 		if (!conn) return featureset_ptr();
 
 		if (conn->isOK())
@@ -835,7 +835,7 @@ box2d<double> mssql_datasource::envelope() const
 	CnxPool_ptr pool = ConnectionManager::instance().getPool(creator_.id());
 	if (pool)
 	{
-		shared_ptr<Connection> conn = pool->borrowObject();
+		shared_ptr<IConnection> conn = pool->borrowObject();
 		if (!conn) return extent_;
 		if (conn->isOK())
 		{
@@ -904,7 +904,7 @@ box2d<double> mssql_datasource::envelope() const
 				}
 			}
 
-			shared_ptr<ResultSet> rs = conn->executeQuery(s.str());
+			shared_ptr<IResultSet> rs = conn->executeQuery(s.str());
 			if (rs->next() && !rs->isNull(0))
 			{
 				double lox, loy, hix, hiy;
@@ -937,7 +937,7 @@ boost::optional<mapnik::datasource_geometry_t> mssql_datasource::get_geometry_ty
 	CnxPool_ptr pool = ConnectionManager::instance().getPool(creator_.id());
 	if (pool)
 	{
-		shared_ptr<Connection> conn = pool->borrowObject();
+		shared_ptr<IConnection> conn = pool->borrowObject();
 		if (!conn) return result;
 		if (conn->isOK())
 		{
@@ -964,7 +964,7 @@ boost::optional<mapnik::datasource_geometry_t> mssql_datasource::get_geometry_ty
 					<< " FROM " << populate_tokens(table_);
 
 
-				shared_ptr<ResultSet> rs = conn->executeQuery(s.str());
+				shared_ptr<IResultSet> rs = conn->executeQuery(s.str());
 				while (rs->next() && !rs->isNull(0))
 				{					
 					std::string data = rs->getString(0);

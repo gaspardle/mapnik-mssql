@@ -61,6 +61,8 @@ using mapnik::parameters;
 using mapnik::coord2d;
 
 using CnxPool_ptr = std::shared_ptr< ConnectionManager::PoolType>;
+using ConnectionCreatorOdbc = ConnectionCreator<Connection>;
+//using ConnectionCreatorDBLIb = ConnectionCreator<ConnectionDblib>;
 
 class mssql_datasource : public datasource
 {
@@ -86,7 +88,7 @@ private:
 		double pixel_height,
 		mapnik::attributes const& vars) const;
 	std::string populate_tokens(std::string const& sql) const;
-	std::shared_ptr<IResultSet> get_resultset(std::shared_ptr<Connection> &conn, std::string const& sql, CnxPool_ptr const& pool, processor_context_ptr ctx = processor_context_ptr()) const;
+	std::shared_ptr<IResultSet> get_resultset(std::shared_ptr<IConnection> &conn, std::string const& sql, CnxPool_ptr const& pool, processor_context_ptr ctx = processor_context_ptr()) const;
 	static const double FMAX;
 	
 	const std::string uri_;
@@ -108,7 +110,7 @@ private:
 	mutable mapnik::box2d<double> extent_;
 	bool simplify_geometries_;
 	layer_descriptor desc_;
-	ConnectionCreator<Connection> creator_;
+	ConnectionCreator<IConnection> creator_;
 	const std::string bbox_token_;
 	const std::string scale_denom_token_;
 	const std::string pixel_width_token_;

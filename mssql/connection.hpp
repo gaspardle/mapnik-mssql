@@ -40,8 +40,20 @@
 
 #include "resultset.hpp"
 
+class IConnection
+{
+public:
+    virtual std::shared_ptr<IResultSet> executeQuery(std::string const& sql) = 0;
+    virtual bool execute(std::string const& sql) = 0;
+    virtual bool executeAsyncQuery(std::string const& sql) = 0;
+    virtual std::shared_ptr<IResultSet> getNextAsyncResult() = 0;
+    virtual std::shared_ptr<IResultSet> getAsyncResult() = 0;
+    virtual bool isOK() const = 0;
+    virtual bool isPending() const = 0;
+    virtual void close() = 0;
+};
 
-class Connection
+class Connection : public IConnection
 {
 public:
 	Connection(std::string const& connection_str, boost::optional<std::string> const& password)
@@ -118,7 +130,7 @@ public:
 
 	}
 
-	std::shared_ptr<ResultSet> executeQuery(std::string const& sql)
+	std::shared_ptr<IResultSet> executeQuery(std::string const& sql)
 	{
 #ifdef MAPNIK_STATS
 		mapnik::progress_timer __stats__(std::clog, std::string("mssql_connection::execute_query ") + sql);
@@ -130,6 +142,7 @@ public:
 		if (SQL_SUCCESS != SQLAllocHandle(SQL_HANDLE_STMT, sqlconnectionhandle, &hstmt)){
 			throw mapnik::datasource_exception("SQLAllocHandle error");
 		}
+        std::cout << "connection executeQuery: " << std::endl << sql.c_str() << std::endl << std::endl;
 		retcode = SQLExecDirectA(hstmt, (SQLCHAR*)sql.c_str(), SQL_NTS);
 
 		if (!(retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO))
@@ -162,6 +175,7 @@ public:
 		SQLSetStmtAttr(async_hstmt, SQL_ATTR_ASYNC_ENABLE, (SQLPOINTER)SQL_ASYNC_ENABLE_ON, 0);
 #endif
 
+        std::cout << "connection executeAsyncQuery: " << std::endl << sql.c_str() <<std::endl << std::endl;
 		retcode = SQLExecDirectA(async_hstmt, (SQLCHAR*)sql.c_str(), SQL_NTS);
 			
 		if (!(retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO || retcode == SQL_STILL_EXECUTING))
@@ -199,7 +213,7 @@ public:
 		return retcode;
 	}
 
-	std::shared_ptr<ResultSet> getNextAsyncResult()
+	std::shared_ptr<IResultSet> getNextAsyncResult()
 	{
 		SQLRETURN result = getResult();
 		if (!(result == SQL_SUCCESS || result == SQL_SUCCESS_WITH_INFO))
@@ -217,7 +231,7 @@ public:
 	}
 
 
-	std::shared_ptr<ResultSet> getAsyncResult()
+	std::shared_ptr<IResultSet> getAsyncResult()
 	{
         
 		SQLRETURN result = getResult();

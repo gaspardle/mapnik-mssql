@@ -104,7 +104,7 @@
       <Optimization>Disabled</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;MAPNIK_THREADSAFE;BIGINT;NDEBUG;_USRDLL;MSSQL_EXPORTS;_SECURE_SCL=0;_HAS_ITERATOR_DEBUGGING=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;MAPNIK_THREADSAFE;BIGINT;NDEBUG;_USRDLL;MSSQL_EXPORTS;MSDBLIB;_SECURE_SCL=0;_HAS_ITERATOR_DEBUGGING=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(SolutionDir)..\mapnik\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ObjectFileName>$(IntDir)/%(RelativeDir)/</ObjectFileName>
@@ -129,21 +129,23 @@
       <Optimization>Disabled</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;MAPNIK_THREADSAFE;BIGINT;NDEBUG;_USRDLL;MSSQL_EXPORTS;_SECURE_SCL=0;_HAS_ITERATOR_DEBUGGING=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;MAPNIK_THREADSAFE;BIGINT;NDEBUG;_USRDLL;MSSQL_EXPORTS;MSDBLIB;_SECURE_SCL=0;_HAS_ITERATOR_DEBUGGING=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\mapnik\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\mapnik-sdk\include;$(SolutionDir)..\freetds\win32;$(SolutionDir)..\freetds\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ObjectFileName>$(IntDir)/%(RelativeDir)/</ObjectFileName>
       <AdditionalOptions>-Zm111 %(AdditionalOptions)</AdditionalOptions>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <WholeProgramOptimization>false</WholeProgramOptimization>
+      <ShowIncludes>false</ShowIncludes>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>false</EnableCOMDATFolding>
       <OptimizeReferences>false</OptimizeReferences>
-      <AdditionalLibraryDirectories>$(SolutionDir)..\mapnik\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>mapnik.lib;icuin.lib;icuuc.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)..\mapnik-sdk\lib;$(SolutionDir)..\freetds\src\tds\x64\release;$(SolutionDir)..\freetds\src\dblib\x64\release;$(SolutionDir)..\freetds\src\replacements\x64\release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>mapnik.lib;icuin.lib;icuuc.lib;tds.lib;db-lib.lib;replacements.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <Profile>true</Profile>
     </Link>
   </ItemDefinitionGroup>
@@ -154,22 +156,24 @@
       <Optimization>Disabled</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;MAPNIK_THREADSAFE;BIGINT;NDEBUG;_USRDLL;MSSQL_EXPORTS;_SECURE_SCL=0;_HAS_ITERATOR_DEBUGGING=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;MAPNIK_THREADSAFE;BIGINT;NDEBUG;_USRDLL;MSSQL_EXPORTS;MSDBLIB;_SECURE_SCL=0;_HAS_ITERATOR_DEBUGGING=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\mapnik-sdk\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\mapnik-sdk\include;$(SolutionDir)..\freetds\win32;$(SolutionDir)..\freetds\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ObjectFileName>$(IntDir)/%(RelativeDir)/</ObjectFileName>
       <AdditionalOptions>-Zm111 %(AdditionalOptions)</AdditionalOptions>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <WholeProgramOptimization>false</WholeProgramOptimization>
       <BrowseInformation>true</BrowseInformation>
+      <ShowIncludes>false</ShowIncludes>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>false</EnableCOMDATFolding>
       <OptimizeReferences>false</OptimizeReferences>
-      <AdditionalLibraryDirectories>$(SolutionDir)..\mapnik-sdk\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>mapnik.lib;icuin.lib;icuuc.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)..\mapnik-sdk\lib;$(SolutionDir)..\freetds\src\tds\x64\release;$(SolutionDir)..\freetds\src\dblib\x64\release;$(SolutionDir)..\freetds\src\replacements\x64\release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>mapnik.lib;icuin.lib;icuuc.lib;tds.lib;db-lib.lib;replacements.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <Profile>true</Profile>
     </Link>
     <Bscmake>
@@ -183,22 +187,24 @@
       <Optimization>Disabled</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;MAPNIK_THREADSAFE;BIGINT;NDEBUG;_USRDLL;MSSQL_EXPORTS;_SECURE_SCL=0;_HAS_ITERATOR_DEBUGGING=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;MAPNIK_THREADSAFE;BIGINT;NDEBUG;_USRDLL;MSSQL_EXPORTS;MSDBLIB;_SECURE_SCL=0;_HAS_ITERATOR_DEBUGGING=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\mapnik-sdk\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\mapnik-sdk\include;$(SolutionDir)..\freetds\win32;$(SolutionDir)..\freetds\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ObjectFileName>$(IntDir)/%(RelativeDir)/</ObjectFileName>
       <AdditionalOptions>-Zm111 %(AdditionalOptions)</AdditionalOptions>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <WholeProgramOptimization>false</WholeProgramOptimization>
       <BrowseInformation>true</BrowseInformation>
+      <ShowIncludes>false</ShowIncludes>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>false</EnableCOMDATFolding>
       <OptimizeReferences>false</OptimizeReferences>
-      <AdditionalLibraryDirectories>$(SolutionDir)..\mapnik-sdk\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>mapnik.lib;icuin.lib;icuuc.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)..\mapnik-sdk\lib;$(SolutionDir)..\freetds\src\tds\x64\release;$(SolutionDir)..\freetds\src\dblib\x64\release;$(SolutionDir)..\freetds\src\replacements\x64\release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>mapnik.lib;icuin.lib;icuuc.lib;tds.lib;db-lib.lib;replacements.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <Profile>true</Profile>
     </Link>
     <Bscmake>
@@ -207,18 +213,23 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\mapnik-sdk\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\mapnik-sdk\include;$(SolutionDir)..\freetds\win32;$(SolutionDir)..\freetds\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <ShowIncludes>false</ShowIncludes>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(SolutionDir)..\mapnik-sdk\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>mapnik.lib;icuin.lib;icuuc.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)..\mapnik-sdk\lib;$(SolutionDir)..\freetds\src\tds\x64\release;$(SolutionDir)..\freetds\src\dblib\x64\release;$(SolutionDir)..\freetds\src\replacements\x64\release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>mapnik.lib;icuin.lib;icuuc.lib;tds.lib;db-lib.lib;replacements.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\mssql\connection.hpp" />
     <ClInclude Include="..\mssql\asyncresultset.hpp" />
+    <ClInclude Include="..\mssql\dblib_connection.hpp" />
     <ClInclude Include="..\mssql\connection_manager.hpp" />
     <ClInclude Include="..\mssql\cursorresultset.hpp" />
+    <ClInclude Include="..\mssql\dblib_resultset.hpp" />
+    <ClInclude Include="..\mssql\iresultset.hpp" />
     <ClInclude Include="..\mssql\mssqlclrgeo.hpp" />
     <ClInclude Include="..\mssql\mssql_datasource.hpp" />
     <ClInclude Include="..\mssql\mssql_featureset.hpp" />
