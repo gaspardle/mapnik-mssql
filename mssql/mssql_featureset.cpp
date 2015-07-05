@@ -148,8 +148,10 @@ feature_ptr mssql_featureset::next()
                     case SQL_SMALLINT:
                     case SQL_TINYINT:
                     case SQL_INTEGER:
-                    case SQL_BIGINT:
                         feature->put<mapnik::value_integer>(name, rs_->getInt(pos));
+                        break;
+                    case SQL_BIGINT:
+                        feature->put<mapnik::value_integer>(name, rs_->getBigInt(pos));
                         break;
                     case SQL_FLOAT:
                     case SQL_REAL:

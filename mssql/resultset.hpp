@@ -48,7 +48,8 @@ public:
 	virtual int getTypeOID(int index) const = 0;
 	virtual int getTypeOID(const char* name) const = 0;
 	virtual bool isNull(int index) const = 0;
-	virtual const int getInt(int index) const = 0;
+    virtual const int getInt(int index) const = 0;
+    virtual const long long getBigInt(int index) const = 0;
 	virtual const double getDouble(int index) const = 0;
 	virtual const float getFloat(int index) const = 0;
 	virtual const std::string getString(int index) const = 0;
@@ -210,7 +211,22 @@ public:
 		return 0;
 	}
 
+    virtual const long long getBigInt(int index) const {
+        SQLBIGINT intvalue;
+        SQLRETURN retcode;
+        
+        retcode = SQLGetData(res_, index + 1, SQL_C_SBIGINT, &intvalue, 0, NULL);
 
+        if (retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO) {
+            return intvalue;
+        }
+        else
+        {
+            std::string errormsg = getOdbcError(SQL_HANDLE_STMT, res_);
+            throw mapnik::datasource_exception("getBigInt error: " + errormsg);
+        }
+        return 0;		
+    }
 	virtual const int getInt(int index) const
 	{
 		SQLINTEGER intvalue;
@@ -220,8 +236,12 @@ public:
 
 		if (retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO){
 			return intvalue;
-		}
-
+        }
+        else
+        {
+            std::string errormsg = getOdbcError(SQL_HANDLE_STMT, res_);
+            throw mapnik::datasource_exception("sgetInt error: " + errormsg);
+        }
 		return 0;		
 	}
 	virtual const double getDouble(int index) const

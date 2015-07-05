@@ -154,6 +154,11 @@ public:
 	{
 		return rs_->getInt(index);
 	}
+
+    virtual const long long getBigInt(int index) const
+    {
+        return rs_->getBigInt(index);
+    }
 	virtual const double getDouble(int index) const
 	{
 		return rs_->getDouble(index);

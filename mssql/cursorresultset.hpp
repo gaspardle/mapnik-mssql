@@ -120,6 +120,10 @@ public:
 	{
 		return rs_->getInt(index);
 	}
+    virtual const long long getBigInt(int index) const
+    {
+        return rs_->getBigInt(index);
+    }
 	virtual const float getFloat(int index) const
 	{
 		return rs_->getFloat(index);
