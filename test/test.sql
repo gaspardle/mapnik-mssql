@@ -13,33 +13,33 @@ GO
 CREATE TABLE table1 
 (
     _bigint BIGINT,
-	_bit BIT,
-	_decimal DECIMAL(9,2),
-	_int INT,
-	_money MONEY,
-	_numeric NUMERIC(9,2),
-	_smallint SMALLINT,
-	_smallmoney SMALLMONEY,
-	_tinyint TINYINT,
-	_float FLOAT,
-	_real REAL,
-	_date DATE,
-	_datetime2 DATETIME2,
-	_datetime DATETIME,
-	_datetimeoffset DATETIMEOFFSET,
-	_smalldatetime SMALLDATETIME,
-	_time TIME,
-	_char CHAR,
-	_text TEXT,
-	_varchar VARCHAR(255),
-	_nchar NCHAR,
-	_ntext NTEXT,
-	_nvarchar NVARCHAR(255),
-	_binary BINARY,
-	_image IMAGE,
-	_varbinary VARBINARY(255),
-	_uniqueidentifier UNIQUEIDENTIFIER,
-	_null INT,
+    _bit BIT,
+    _decimal DECIMAL(9,2),
+    _int INT,
+    _money MONEY,
+    _numeric NUMERIC(9,2),
+    _smallint SMALLINT,
+    _smallmoney SMALLMONEY,
+    _tinyint TINYINT,
+    _float FLOAT,
+    _real REAL,
+    _date DATE,
+    _datetime2 DATETIME2,
+    _datetime DATETIME,
+    _datetimeoffset DATETIMEOFFSET,
+    _smalldatetime SMALLDATETIME,
+    _time TIME,
+    _char CHAR,
+    _text TEXT,
+    _varchar VARCHAR(255),
+    _nchar NCHAR,
+    _ntext NTEXT,
+    _nvarchar NVARCHAR(255),
+    _binary BINARY,
+    _image IMAGE,
+    _varbinary VARBINARY(255),
+    _uniqueidentifier UNIQUEIDENTIFIER,
+    _null INT,
     geom GEOMETRY
 )
 GO
@@ -72,7 +72,7 @@ INSERT INTO [dbo].[table1]
            ,[_image]
            ,[_varbinary]
            ,[_uniqueidentifier]
-		   ,[_null]
+           ,[_null]
            ,[geom])
      VALUES
            (2147483648
@@ -97,7 +97,7 @@ INSERT INTO [dbo].[table1]
            ,'text'
            ,'a'
            ,'text'
-           ,'text'
+           ,N'ab©ĎéⒻ☀'
            ,0x2A
            ,0x2A
            ,0x2A

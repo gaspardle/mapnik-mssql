@@ -1,4 +1,4 @@
-#define CATCH_CONFIG_RUNNER
+﻿#define CATCH_CONFIG_RUNNER
 #include "catch.hpp"
 
 //mapnik
@@ -58,6 +58,20 @@ TEST_CASE("mssql") {
             REQUIRE(0 == poly.exterior_ring[0].x);
             REQUIRE(0 == poly.exterior_ring[0].y);
 
+            //bigint
+            auto _bigint = f1->get("_bigint");
+            mapnik::value_integer _bigint_value = _bigint.to_int();
+            REQUIRE(2147483648 == _bigint_value);
+
+            //int
+            auto _int = f1->get("_int");
+            mapnik::value_integer int_value = _int.to_int();
+            REQUIRE(1 == int_value);
+           
+            //nvarchar
+            mapnik::value_unicode_string nvarchar_string = f1->get("_nvarchar").to_unicode();
+            REQUIRE(0 == nvarchar_string.compare(UnicodeString::fromUTF8(StringPiece("\x61\x62\xC2\xA9\xC4\x8E\xC3\xA9\xE2\x92\xBB\xE2\x98\x80"))));
+            
             //next feature should be empty
             mapnik::feature_ptr f2 = fs->next();
             REQUIRE(mapnik::feature_ptr() == f2);
