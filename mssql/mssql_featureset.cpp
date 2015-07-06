@@ -50,16 +50,16 @@ using mapnik::feature_factory;
 using mapnik::context_ptr;
 
 mssql_featureset::mssql_featureset(std::shared_ptr<IResultSet> const& rs,
-                                     context_ptr const& ctx,
-                                     bool wkb,
-                                     bool is_sqlgeography,
-                                     bool key_field )
+                                   context_ptr const& ctx,
+                                   bool wkb,
+                                   bool is_sqlgeography,
+                                   bool key_field )
     : rs_(rs),
       ctx_(ctx),
-	  wkb_(wkb),
+      wkb_(wkb),
       is_sqlgeography_(is_sqlgeography),
-	  tr_ucs2_(new transcoder("UTF-16LE")),
-	  tr_(new transcoder("UTF-8")),
+      tr_ucs2_(new transcoder("UTF-16LE")),
+      tr_(new transcoder("UTF-8")),
       totalGeomSize_(0),
       feature_id_(1),
       key_field_(key_field)
@@ -75,11 +75,11 @@ feature_ptr mssql_featureset::next()
         // new feature
         unsigned pos = 1;
         feature_ptr feature;
-		
+
         if (key_field_)
         {
             std::string name = rs_->getFieldName(pos);
-            
+
             // null feature id is not acceptable
             if (rs_->isNull(pos))
             {
@@ -88,7 +88,7 @@ feature_ptr mssql_featureset::next()
             }
             // create feature with user driven id from attribute
             int oid = rs_->getTypeOID(pos);
-         
+
 
             // validation happens of this type at initialization
             mapnik::value_integer val;
@@ -98,7 +98,7 @@ feature_ptr mssql_featureset::next()
             // TODO - extend feature class to know
             // that its id is also an attribute to avoid
             // this duplication
-            feature->put<mapnik::value_integer>(name,val);
+            feature->put<mapnik::value_integer>(name, val);
             ++pos;
         }
         else
@@ -115,18 +115,20 @@ feature_ptr mssql_featureset::next()
             continue;
         }
 
-        // parse geometry		
+        // parse geometry
         std::vector<char> data = rs_->getBinary(0);
         size_t size = data.size();
-				
-		mapnik::geometry::geometry<double> geometry;
-		if (wkb_) {
-			geometry = geometry_utils::from_wkb(&data[0], size);
-		}
-		else {			
-			geometry = from_geoclr(&data[0], size, is_sqlgeography_);
-		}
-		feature->set_geometry(std::move(geometry));
+
+        mapnik::geometry::geometry<double> geometry;
+        if (wkb_)
+        {
+            geometry = geometry_utils::from_wkb(&data[0], size);
+        }
+        else
+        {
+            geometry = from_geoclr(&data[0], size, is_sqlgeography_);
+        }
+        feature->set_geometry(std::move(geometry));
 
         totalGeomSize_ += size;
         unsigned num_attrs = ctx_->size() + 1;
@@ -137,53 +139,53 @@ feature_ptr mssql_featureset::next()
             // NOTE: we intentionally do not store null here
             // since it is equivalent to the attribute not existing
             if (!rs_->isNull(pos))
-            {              
+            {
                 const int oid = rs_->getTypeOID(pos);
-				
+
                 switch (oid)
                 {
-                    case SQL_BIT:
-                        feature->put(name, rs_->getInt(pos) != 0);
+                case SQL_BIT:
+                    feature->put(name, rs_->getInt(pos) != 0);
                     break;
-                    case SQL_SMALLINT:
-                    case SQL_TINYINT:
-                    case SQL_INTEGER:
-                        feature->put<mapnik::value_integer>(name, rs_->getInt(pos));
-                        break;
-                    case SQL_BIGINT:
-                        feature->put<mapnik::value_integer>(name, rs_->getBigInt(pos));
-                        break;
-                    case SQL_FLOAT:
-                    case SQL_REAL:
-                        feature->put(name, static_cast<double>(rs_->getFloat(pos)));
-                        break;                    
-                    case SQL_DOUBLE:
-                        feature->put(name, rs_->getDouble(pos));
-                        break;
-                    case SQL_DECIMAL:
-                    case SQL_NUMERIC:
-                        feature->put(name, rs_->getDouble(pos));
-                        break;
-					case SQL_VARCHAR:
-                    case SQL_LONGVARCHAR:
-                         feature->put(name, (UnicodeString)tr_->transcode(rs_->getString(pos).c_str()));
-                         break;
-                    case SQL_WVARCHAR:
-					case SQL_WLONGVARCHAR:
-                    {
-						//feature->put(name, (UnicodeString)tr_->transcode(rs_->getString(pos).c_str()));
+                case SQL_SMALLINT:
+                case SQL_TINYINT:
+                case SQL_INTEGER:
+                    feature->put<mapnik::value_integer>(name, rs_->getInt(pos));
+                    break;
+                case SQL_BIGINT:
+                    feature->put<mapnik::value_integer>(name, rs_->getBigInt(pos));
+                    break;
+                case SQL_FLOAT:
+                case SQL_REAL:
+                    feature->put(name, static_cast<double>(rs_->getFloat(pos)));
+                    break;
+                case SQL_DOUBLE:
+                    feature->put(name, rs_->getDouble(pos));
+                    break;
+                case SQL_DECIMAL:
+                case SQL_NUMERIC:
+                    feature->put(name, rs_->getDouble(pos));
+                    break;
+                case SQL_VARCHAR:
+                case SQL_LONGVARCHAR:
+                    feature->put(name, (UnicodeString)tr_->transcode(rs_->getString(pos).c_str()));
+                    break;
+                case SQL_WVARCHAR:
+                case SQL_WLONGVARCHAR:
+                {
+                    //feature->put(name, (UnicodeString)tr_->transcode(rs_->getString(pos).c_str()));
 
-						//easier than to deal with wchar on each platforms
-                        auto stringbin = rs_->getBinary(pos);
-						feature->put(name, (UnicodeString)tr_ucs2_->transcode(stringbin.data(), stringbin.size()));
-						break;
-                    }
-                    default:
-                    {
-                        MAPNIK_LOG_WARN(mssql) << "mssql_featureset: Unknown type=" << oid;
+                    //easier than to deal with wchar on each platforms
+                    auto stringbin = rs_->getBinary(pos);
+                    feature->put(name, (UnicodeString)tr_ucs2_->transcode(stringbin.data(), stringbin.size()));
+                    break;
+                }
+                default:
+                {
+                    MAPNIK_LOG_WARN(mssql) << "mssql_featureset: Unknown type=" << oid;
 
-                        break;
-                    }
+                    break;
+                }
                 }
             }
         }

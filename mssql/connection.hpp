@@ -44,257 +44,269 @@
 class Connection
 {
 public:
-	Connection(std::string const& connection_str, boost::optional<std::string> const& password)
-		:
-		closed_(false),
-		pending_(false)
-	{
-		std::string connect_with_pass = connection_str;
-		if (password && !password->empty())
-		{
-			connect_with_pass += " PWD=" + *password;
-		}
+    Connection(std::string const& connection_str, boost::optional<std::string> const& password)
+        :
+        closed_(false),
+        pending_(false)
+    {
+        std::string connect_with_pass = connection_str;
+        if (password && !password->empty())
+        {
+            connect_with_pass += " PWD=" + *password;
+        }
 
-		if (SQL_SUCCESS != SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &sqlenvhandle)){
-			close();
-			throw mapnik::datasource_exception("Mssql Plugin: SQLAllocHandle");
-		}
+        if (SQL_SUCCESS != SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &sqlenvhandle))
+        {
+            close();
+            throw mapnik::datasource_exception("Mssql Plugin: SQLAllocHandle");
+        }
 
-		if (SQL_SUCCESS != SQLSetEnvAttr(sqlenvhandle, SQL_ATTR_ODBC_VERSION, (SQLPOINTER)SQL_OV_ODBC3, 0)){
-			close();
-			throw mapnik::datasource_exception("Mssql Plugin: SQLSetEnvAttr");
-		}
+        if (SQL_SUCCESS != SQLSetEnvAttr(sqlenvhandle, SQL_ATTR_ODBC_VERSION, (SQLPOINTER)SQL_OV_ODBC3, 0))
+        {
+            close();
+            throw mapnik::datasource_exception("Mssql Plugin: SQLSetEnvAttr");
+        }
 
-		if (SQL_SUCCESS != SQLAllocHandle(SQL_HANDLE_DBC, sqlenvhandle, &sqlconnectionhandle)){
-			close();
-			throw mapnik::datasource_exception("Mssql Plugin: SQLAllocHandle");
-		}		
+        if (SQL_SUCCESS != SQLAllocHandle(SQL_HANDLE_DBC, sqlenvhandle, &sqlconnectionhandle))
+        {
+            close();
+            throw mapnik::datasource_exception("Mssql Plugin: SQLAllocHandle");
+        }
 
-		SQLCHAR  retconstring[1024];
-		SQLSMALLINT OutConnStrLen;
-		SQLRETURN retcode = SQLDriverConnectA(sqlconnectionhandle,
-			NULL,
-			(SQLCHAR*)connect_with_pass.c_str(),
-			SQL_NTS,
-			retconstring,
-			1024,
-			&OutConnStrLen,//NULL,
-			SQL_DRIVER_NOPROMPT);
-		if (!(retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO))
-		{
-			std::string err_msg = "Mssql Plugin: ";
-			err_msg += getOdbcError(SQL_HANDLE_DBC, sqlconnectionhandle);
-			err_msg += "\nSQLDriverConnect Error, Connection string: '";
-			err_msg += connection_str;
-			err_msg += "'\n";
-			close();
-			throw mapnik::datasource_exception(err_msg);
-		}
-	
-	}
+        SQLCHAR  retconstring[1024];
+        SQLSMALLINT OutConnStrLen;
+        SQLRETURN retcode = SQLDriverConnectA(sqlconnectionhandle,
+                                              NULL,
+                                              (SQLCHAR*)connect_with_pass.c_str(),
+                                              SQL_NTS,
+                                              retconstring,
+                                              1024,
+                                              &OutConnStrLen,//NULL,
+                                              SQL_DRIVER_NOPROMPT);
+        if (!(retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO))
+        {
+            std::string err_msg = "Mssql Plugin: ";
+            err_msg += getOdbcError(SQL_HANDLE_DBC, sqlconnectionhandle);
+            err_msg += "\nSQLDriverConnect Error, Connection string: '";
+            err_msg += connection_str;
+            err_msg += "'\n";
+            close();
+            throw mapnik::datasource_exception(err_msg);
+        }
 
-	~Connection()
-	{
-		if (!closed_)
-		{
+    }
 
-			SQLDisconnect(sqlconnectionhandle);
-			SQLFreeHandle(SQL_HANDLE_DBC, sqlconnectionhandle);
-			SQLFreeHandle(SQL_HANDLE_ENV, sqlenvhandle);
+    ~Connection()
+    {
+        if (!closed_)
+        {
 
-			MAPNIK_LOG_DEBUG(mssql) << "mssql_connection: sql server connection closed";
+            SQLDisconnect(sqlconnectionhandle);
+            SQLFreeHandle(SQL_HANDLE_DBC, sqlconnectionhandle);
+            SQLFreeHandle(SQL_HANDLE_ENV, sqlenvhandle);
 
-			closed_ = true;
-		}
+            MAPNIK_LOG_DEBUG(mssql) << "mssql_connection: sql server connection closed";
 
-	}
+            closed_ = true;
+        }
 
-	bool execute(std::string const& sql)
-	{
+    }
+
+    bool execute(std::string const& sql)
+    {
 #ifdef MAPNIK_STATS
-		mapnik::progress_timer __stats__(std::clog, std::string("mssql_connection::execute ") + sql);
+        mapnik::progress_timer __stats__(std::clog, std::string("mssql_connection::execute ") + sql);
 #endif
-		throw mapnik::datasource_exception("not implemented");
+        throw mapnik::datasource_exception("not implemented");
 
-	}
+    }
 
-	std::shared_ptr<ResultSet> executeQuery(std::string const& sql)
-	{
+    std::shared_ptr<ResultSet> executeQuery(std::string const& sql)
+    {
 #ifdef MAPNIK_STATS
-		mapnik::progress_timer __stats__(std::clog, std::string("mssql_connection::execute_query ") + sql);
+        mapnik::progress_timer __stats__(std::clog, std::string("mssql_connection::execute_query ") + sql);
 #endif
-		debug_current_sql = sql;
-		SQLHANDLE hstmt = NULL;
-		SQLRETURN retcode;
+        debug_current_sql = sql;
+        SQLHANDLE hstmt = NULL;
+        SQLRETURN retcode;
 
-		if (SQL_SUCCESS != SQLAllocHandle(SQL_HANDLE_STMT, sqlconnectionhandle, &hstmt)){
-			throw mapnik::datasource_exception("SQLAllocHandle error");
-		}
-		retcode = SQLExecDirectA(hstmt, (SQLCHAR*)sql.c_str(), SQL_NTS);
+        if (SQL_SUCCESS != SQLAllocHandle(SQL_HANDLE_STMT, sqlconnectionhandle, &hstmt))
+        {
+            throw mapnik::datasource_exception("SQLAllocHandle error");
+        }
+        retcode = SQLExecDirectA(hstmt, (SQLCHAR*)sql.c_str(), SQL_NTS);
 
-		if (!(retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO))
-		{
-			std::string err_msg = getOdbcError(SQL_HANDLE_STMT, hstmt);
-			err_msg += "\nFull sql was: '";
-			err_msg += sql;
-			err_msg += "'\n";
+        if (!(retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO))
+        {
+            std::string err_msg = getOdbcError(SQL_HANDLE_STMT, hstmt);
+            err_msg += "\nFull sql was: '";
+            err_msg += sql;
+            err_msg += "'\n";
 
-			SQLFreeHandle(SQL_HANDLE_STMT, hstmt);
-			throw mapnik::datasource_exception(err_msg);
-		}
+            SQLFreeHandle(SQL_HANDLE_STMT, hstmt);
+            throw mapnik::datasource_exception(err_msg);
+        }
 
-		return std::make_shared<ResultSet>(hstmt);
-	}
+        return std::make_shared<ResultSet>(hstmt);
+    }
 
-	
 
-	bool executeAsyncQuery(std::string const& sql)
-	{
-		debug_current_sql = sql;		
-		SQLRETURN retcode;
 
-		if (SQL_SUCCESS != SQLAllocHandle(SQL_HANDLE_STMT, sqlconnectionhandle, &async_hstmt)){
-			throw mapnik::datasource_exception("cant SQLAllocHandle");
-		}
+    bool executeAsyncQuery(std::string const& sql)
+    {
+        debug_current_sql = sql;
+        SQLRETURN retcode;
+
+        if (SQL_SUCCESS != SQLAllocHandle(SQL_HANDLE_STMT, sqlconnectionhandle, &async_hstmt))
+        {
+            throw mapnik::datasource_exception("cant SQLAllocHandle");
+        }
 
 #ifdef _WIN32
-		//freetds does not seem to support async
-		SQLSetStmtAttr(async_hstmt, SQL_ATTR_ASYNC_ENABLE, (SQLPOINTER)SQL_ASYNC_ENABLE_ON, 0);
+        //freetds does not seem to support async
+        SQLSetStmtAttr(async_hstmt, SQL_ATTR_ASYNC_ENABLE, (SQLPOINTER)SQL_ASYNC_ENABLE_ON, 0);
 #endif
 
-		retcode = SQLExecDirectA(async_hstmt, (SQLCHAR*)sql.c_str(), SQL_NTS);
-			
-		if (!(retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO || retcode == SQL_STILL_EXECUTING))
-		{
-			std::string err_msg = "Mssql Plugin: ";
-			err_msg += getOdbcError(SQL_HANDLE_DBC, sqlconnectionhandle);
-			err_msg += "\nin executeAsyncQuery Full sql was: '";
-			err_msg += sql;
-			err_msg += "'\n";
-			clearAsyncResult(async_hstmt);
-			close();
-			throw mapnik::datasource_exception(err_msg);
-		}
-		pending_ = true;
-		return 1;
-	}
+        retcode = SQLExecDirectA(async_hstmt, (SQLCHAR*)sql.c_str(), SQL_NTS);
 
-	SQLRETURN getResult()
-	{
+        if (!(retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO || retcode == SQL_STILL_EXECUTING))
+        {
+            std::string err_msg = "Mssql Plugin: ";
+            err_msg += getOdbcError(SQL_HANDLE_DBC, sqlconnectionhandle);
+            err_msg += "\nin executeAsyncQuery Full sql was: '";
+            err_msg += sql;
+            err_msg += "'\n";
+            clearAsyncResult(async_hstmt);
+            close();
+            throw mapnik::datasource_exception(err_msg);
+        }
+        pending_ = true;
+        return 1;
+    }
+
+    SQLRETURN getResult()
+    {
 #ifndef _WIN32
         //freetds does not seem to support async
         return SQL_SUCCESS;
 #endif
-		SQLRETURN retcode;
+        SQLRETURN retcode;
 
-		while (true) {
+        while (true)
+        {
 
-			retcode = SQLExecDirectA(async_hstmt, (SQLCHAR*)"", SQL_NTS);
+            retcode = SQLExecDirectA(async_hstmt, (SQLCHAR*)"", SQL_NTS);
 
-			if (retcode != SQL_STILL_EXECUTING)
-				break;
-		}
-		
-		SQLSetStmtAttr(async_hstmt, SQL_ATTR_ASYNC_ENABLE, (SQLPOINTER)SQL_ASYNC_ENABLE_OFF, 0);
-		return retcode;
-	}
+            if (retcode != SQL_STILL_EXECUTING)
+            {
+                break;
+            }
+        }
 
-	std::shared_ptr<ResultSet> getNextAsyncResult()
-	{
-		SQLRETURN result = getResult();
-		if (!(result == SQL_SUCCESS || result == SQL_SUCCESS_WITH_INFO))
-		{
-			std::string err_msg = "Mssql Plugin: ";
-			std::string err_status = getOdbcError(SQL_HANDLE_STMT, async_hstmt);
-			err_msg += err_status + "\n in getNextAsyncResult";
-			clearAsyncResult(async_hstmt);
-			// We need to guarde against losing the connection
-			// (i.e db restart) so here we invalidate the full connection
-			close();
-			throw mapnik::datasource_exception(err_msg);
-		}
-		return std::make_shared<ResultSet>(async_hstmt);
-	}
+        SQLSetStmtAttr(async_hstmt, SQL_ATTR_ASYNC_ENABLE, (SQLPOINTER)SQL_ASYNC_ENABLE_OFF, 0);
+        return retcode;
+    }
+
+    std::shared_ptr<ResultSet> getNextAsyncResult()
+    {
+        SQLRETURN result = getResult();
+        if (!(result == SQL_SUCCESS || result == SQL_SUCCESS_WITH_INFO))
+        {
+            std::string err_msg = "Mssql Plugin: ";
+            std::string err_status = getOdbcError(SQL_HANDLE_STMT, async_hstmt);
+            err_msg += err_status + "\n in getNextAsyncResult";
+            clearAsyncResult(async_hstmt);
+            // We need to guarde against losing the connection
+            // (i.e db restart) so here we invalidate the full connection
+            close();
+            throw mapnik::datasource_exception(err_msg);
+        }
+        return std::make_shared<ResultSet>(async_hstmt);
+    }
 
 
-	std::shared_ptr<ResultSet> getAsyncResult()
-	{
-        
-		SQLRETURN result = getResult();
-        if(result == SQL_INVALID_HANDLE){
+    std::shared_ptr<ResultSet> getAsyncResult()
+    {
+
+        SQLRETURN result = getResult();
+        if (result == SQL_INVALID_HANDLE)
+        {
             throw mapnik::datasource_exception("Mssql Plugin: invalid handle in getAsyncResult");
         }
-		if (!(result == SQL_SUCCESS || result == SQL_SUCCESS_WITH_INFO))
-		{
+        if (!(result == SQL_SUCCESS || result == SQL_SUCCESS_WITH_INFO))
+        {
 
-			std::string err_msg = "Mssql Plugin: ";
-			std::string err_status = getOdbcError(SQL_HANDLE_STMT, async_hstmt);
-			err_msg += err_status + "\n in getAsyncResult";
+            std::string err_msg = "Mssql Plugin: ";
+            std::string err_status = getOdbcError(SQL_HANDLE_STMT, async_hstmt);
+            err_msg += err_status + "\n in getAsyncResult";
             err_msg += err_msg + "\n query: " + debug_current_sql;
-			clearAsyncResult(async_hstmt);
-			// We need to be guarded against losing the connection
-			// (i.e db restart), we invalidate the full connection
-			close();
-			throw mapnik::datasource_exception(err_msg);
-		}
-		return std::make_shared<ResultSet>(async_hstmt);
-	}
+            clearAsyncResult(async_hstmt);
+            // We need to be guarded against losing the connection
+            // (i.e db restart), we invalidate the full connection
+            close();
+            throw mapnik::datasource_exception(err_msg);
+        }
+        return std::make_shared<ResultSet>(async_hstmt);
+    }
 
-	bool isOK() const
-	{
-		if (closed_){
-			return false;
-		}
+    bool isOK() const
+    {
+        if (closed_)
+        {
+            return false;
+        }
         return true;
-        
-		SQLINTEGER dead;
-		
-		//SQLRETURN retcode = SQLGetConnectAttr(sqlconnectionhandle, SQL_COPT_SS_CONNECTION_DEAD, &dead, SQL_IS_UINTEGER, NULL);
-		SQLRETURN retcode = SQLGetConnectAttr(sqlconnectionhandle, SQL_ATTR_CONNECTION_DEAD, &dead, 0, NULL);
-		if (retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO){
-			return (!closed_) && (dead != SQL_CD_TRUE);
-		}
-		else{
-			return false;
-		}
-	}
 
-	bool isPending() const
-	{
-		return pending_;
-	}
+        SQLINTEGER dead;
 
-	void close()
-	{
-		if (!closed_)
-		{
-			SQLDisconnect(sqlconnectionhandle);
-			SQLFreeHandle(SQL_HANDLE_DBC, sqlconnectionhandle);
-			SQLFreeHandle(SQL_HANDLE_ENV, sqlenvhandle);
+        //SQLRETURN retcode = SQLGetConnectAttr(sqlconnectionhandle, SQL_COPT_SS_CONNECTION_DEAD, &dead, SQL_IS_UINTEGER, NULL);
+        SQLRETURN retcode = SQLGetConnectAttr(sqlconnectionhandle, SQL_ATTR_CONNECTION_DEAD, &dead, 0, NULL);
+        if (retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO)
+        {
+            return (!closed_) && (dead != SQL_CD_TRUE);
+        }
+        else
+        {
+            return false;
+        }
+    }
 
-			MAPNIK_LOG_DEBUG(mssql) << "mssql_connection: datasource closed, also closing connection";
+    bool isPending() const
+    {
+        return pending_;
+    }
 
-			closed_ = true;
-		}
-	}
+    void close()
+    {
+        if (!closed_)
+        {
+            SQLDisconnect(sqlconnectionhandle);
+            SQLFreeHandle(SQL_HANDLE_DBC, sqlconnectionhandle);
+            SQLFreeHandle(SQL_HANDLE_ENV, sqlenvhandle);
+
+            MAPNIK_LOG_DEBUG(mssql) << "mssql_connection: datasource closed, also closing connection";
+
+            closed_ = true;
+        }
+    }
 
 
 private:
-	SQLHANDLE sqlenvhandle;
-	SQLHANDLE sqlconnectionhandle;
-	SQLHANDLE async_hstmt;
-    
-	bool closed_;
-	bool pending_;
-    
-	std::string debug_current_sql;
-	std::wstring debug_current_wsql;
-    
-	void clearAsyncResult(SQLHANDLE hstmt)
-	{
-		SQLFreeHandle(SQL_HANDLE_STMT, hstmt);
-		pending_ = false;
-	}
+    SQLHANDLE sqlenvhandle;
+    SQLHANDLE sqlconnectionhandle;
+    SQLHANDLE async_hstmt;
+
+    bool closed_;
+    bool pending_;
+
+    std::string debug_current_sql;
+    std::wstring debug_current_wsql;
+
+    void clearAsyncResult(SQLHANDLE hstmt)
+    {
+        SQLFreeHandle(SQL_HANDLE_STMT, hstmt);
+        pending_ = false;
+    }
 };
 
 

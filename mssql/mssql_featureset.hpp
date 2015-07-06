@@ -41,22 +41,22 @@ class IResultSet;
 class mssql_featureset : public mapnik::Featureset
 {
 public:
-	mssql_featureset(std::shared_ptr<IResultSet> const& rs,
-                       context_ptr const& ctx,
-                       bool wkb,
-                       bool is_sqlgeography,
-                       bool key_field = false
-		               );
+    mssql_featureset(std::shared_ptr<IResultSet> const& rs,
+                     context_ptr const& ctx,
+                     bool wkb,
+                     bool is_sqlgeography,
+                     bool key_field = false
+                    );
     feature_ptr next();
     ~mssql_featureset();
 
 private:
-	std::shared_ptr<IResultSet> rs_;
+    std::shared_ptr<IResultSet> rs_;
     context_ptr ctx_;
-	bool wkb_; 
+    bool wkb_;
     bool is_sqlgeography_;
-	const std::unique_ptr<mapnik::transcoder> tr_ucs2_;
-	const std::unique_ptr<mapnik::transcoder> tr_;
+    const std::unique_ptr<mapnik::transcoder> tr_ucs2_;
+    const std::unique_ptr<mapnik::transcoder> tr_;
     size_t totalGeomSize_;
     mapnik::value_integer feature_id_;
     bool key_field_;
