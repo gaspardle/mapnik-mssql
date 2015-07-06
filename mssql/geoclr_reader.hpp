@@ -61,7 +61,7 @@ public:
 		if(!figures.empty()){
 			auto points = geo_.getPointsFromFigure(shape.FigureOffset);
 
-			int num_points = points.size();
+			size_t num_points = points.size();
 			if (num_points > 0)
 			{
 				line.reserve(num_points);
@@ -90,7 +90,7 @@ public:
 	{
 		auto rings = geo_.getFiguresFromShape(shape_pos_);
 
-		int num_rings = rings.size();
+		size_t num_rings = rings.size();
 		mapnik::geometry::polygon<double> poly;
 		if (num_rings > 1)
 		{
@@ -101,7 +101,7 @@ public:
 		{
 			mapnik::geometry::linear_ring<double> ring;
 			auto points = geo_.getPointsFromFigure(shape.FigureOffset + i);
-			int num_points = points.size();
+			size_t num_points = points.size();
 			if (num_points > 0)
 			{
 				ring.reserve(num_points);

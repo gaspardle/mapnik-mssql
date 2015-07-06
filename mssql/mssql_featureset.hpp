@@ -57,7 +57,7 @@ private:
     bool is_sqlgeography_;
 	const std::unique_ptr<mapnik::transcoder> tr_ucs2_;
 	const std::unique_ptr<mapnik::transcoder> tr_;
-    unsigned totalGeomSize_;
+    size_t totalGeomSize_;
     mapnik::value_integer feature_id_;
     bool key_field_;
 };

@@ -160,7 +160,7 @@ namespace mssqlclr
 			figures.emplace_back(FIGURE_STROKE, 0);
 		}
 		else {
-			for (int i = 0; i < count; i++) {
+			for (uint32_t i = 0; i < count; i++) {
 
 				Figure f;
 				f.Attribute = (FIGURE)read_uint8();

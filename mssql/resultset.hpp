@@ -163,7 +163,7 @@ public:
 			&length);
 
 		if (retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO){
-			return length;
+			return (int)length;
 		}
 
 		return 0;	
@@ -178,12 +178,13 @@ public:
 
 	virtual int getTypeOID(int index) const
 	{
-		SQLLEN dataType;
+		SQLLEN dataType = 0;
 		SQLRETURN retcode;
+
 		retcode = SQLColAttribute(res_, index + 1, SQL_DESC_TYPE, NULL, 0, NULL, &dataType);
 		
 		if (retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO){
-			return dataType;
+			return (int) dataType;
 		}
 
 		return 0;
@@ -223,7 +224,7 @@ public:
         else
         {
             std::string errormsg = getOdbcError(SQL_HANDLE_STMT, res_);
-            throw mapnik::datasource_exception("getBigInt error: " + errormsg);
+            MAPNIK_LOG_WARN(mssql) << "getBigInt error: " << errormsg;
         }
         return 0;		
     }
@@ -240,7 +241,7 @@ public:
         else
         {
             std::string errormsg = getOdbcError(SQL_HANDLE_STMT, res_);
-            throw mapnik::datasource_exception("sgetInt error: " + errormsg);
+            MAPNIK_LOG_WARN(mssql) << "getInt error: " << errormsg;
         }
 		return 0;		
 	}
