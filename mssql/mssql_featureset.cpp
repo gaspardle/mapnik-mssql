@@ -116,8 +116,8 @@ feature_ptr mssql_featureset::next()
         }
 
         // parse geometry		
-        std::vector<char> data = rs_->getBinary(0);    
-        int size = data.size();       
+        std::vector<char> data = rs_->getBinary(0);
+        size_t size = data.size();
 				
 		mapnik::geometry::geometry<double> geometry;
 		if (wkb_) {
@@ -158,7 +158,11 @@ feature_ptr mssql_featureset::next()
                         feature->put(name, static_cast<double>(rs_->getFloat(pos)));
                         break;                    
                     case SQL_DOUBLE:
-                        feature->put(name, rs_->getDouble(pos));               
+                        feature->put(name, rs_->getDouble(pos));
+                        break;
+                    case SQL_DECIMAL:
+                    case SQL_NUMERIC:
+                        feature->put(name, rs_->getDouble(pos));
                         break;
 					case SQL_VARCHAR:
                     case SQL_LONGVARCHAR:

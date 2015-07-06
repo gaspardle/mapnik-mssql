@@ -353,6 +353,8 @@ mssql_datasource::mssql_datasource(parameters const& params)
 					case SQL_FLOAT:
 					case SQL_REAL:
 					case SQL_DOUBLE:
+					case SQL_NUMERIC:
+					case SQL_DECIMAL: 
 						desc_.add_descriptor(attribute_descriptor(fld_name, mapnik::Double));
 						break;
 					case SQL_VARCHAR:
