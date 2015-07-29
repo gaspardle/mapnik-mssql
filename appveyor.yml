@@ -1,6 +1,6 @@
 version: v0.1.{build}
 skip_tags: true
-os: Visual Studio 2015 RC
+os: Visual Studio 2015
 configuration: Release
 init:
 - SET PATH=C:\Program Files (x86)\MSBuild\14.0\Bin;%PATH%
@@ -10,14 +10,14 @@ environment:
   msvs_toolset: 14
   matrix:
   - platform: x64
-    MAPNIK_GIT: v3.0.0
+    MAPNIK_GIT: v3.0.0-32-g25af931
   - platform: x86
-    MAPNIK_GIT: v3.0.0
+    MAPNIK_GIT: v3.0.0-32-g25af931
 services:
   - mssql2014
 install:
-- ps: Write-Output "fetching mapnik sdk http://ici.io/files/msvs2015rc1/mapnik-win-sdk-$env:msvs_toolset.0-$env:Platform-$env:MAPNIK_GIT.7z"
-- ps: Start-FileDownload http://ici.io/files/msvs2015rc1/mapnik-win-sdk-$env:msvs_toolset.0-$env:Platform-$env:MAPNIK_GIT.7z -FileName mapnik-sdk.7z
+- ps: Write-Output "fetching mapnik sdk http://mapnik.s3.amazonaws.com/dist/dev/vs2015/mapnik-win-sdk-$env:msvs_toolset.0-$env:Platform-$env:MAPNIK_GIT.7z"
+- ps: Start-FileDownload http://mapnik.s3.amazonaws.com/dist/dev/vs2015/mapnik-win-sdk-$env:msvs_toolset.0-$env:Platform-$env:MAPNIK_GIT.7z -FileName mapnik-sdk.7z
 - ps: Write-Output "extracting mapnik sdk"
 - ps: invoke-expression "& 7z -y x mapnik-sdk.7z | FIND /V `"ing  `""
 - ps: $env:INCLUDE = "$env:MAPNIK_SDK\include\"
