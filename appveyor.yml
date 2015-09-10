@@ -10,14 +10,14 @@ environment:
   msvs_toolset: 14
   matrix:
   - platform: x64
-    MAPNIK_GIT: v3.0.0-32-g25af931
+    MAPNIK_GIT: v3.0.4
   - platform: x86
-    MAPNIK_GIT: v3.0.0-32-g25af931
+    MAPNIK_GIT: v3.0.4
 services:
   - mssql2014
 install:
-- ps: Write-Output "fetching mapnik sdk http://mapnik.s3.amazonaws.com/dist/dev/vs2015/mapnik-win-sdk-$env:msvs_toolset.0-$env:Platform-$env:MAPNIK_GIT.7z"
-- ps: Start-FileDownload http://mapnik.s3.amazonaws.com/dist/dev/vs2015/mapnik-win-sdk-$env:msvs_toolset.0-$env:Platform-$env:MAPNIK_GIT.7z -FileName mapnik-sdk.7z
+- ps: Write-Output "fetching mapnik sdk http://mapnik.s3.amazonaws.com/dist/dev/mapnik-win-sdk-$env:MAPNIK_GIT-$env:Platform-$env:msvs_toolset.0.7z"
+- ps: Start-FileDownload http://mapnik.s3.amazonaws.com/dist/dev/mapnik-win-sdk-$env:MAPNIK_GIT-$env:Platform-$env:msvs_toolset.0.7z -FileName mapnik-sdk.7z
 - ps: Write-Output "extracting mapnik sdk"
 - ps: invoke-expression "& 7z -y x mapnik-sdk.7z | FIND /V `"ing  `""
 - ps: $env:INCLUDE = "$env:MAPNIK_SDK\include\"
