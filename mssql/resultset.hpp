@@ -93,9 +93,6 @@ public:
         return column_count;
     }
 
-
-
-
     virtual bool next()
     {
 
@@ -121,8 +118,6 @@ public:
         }
         else
         {
-            //return false;
-
             std::string errormsg = getOdbcError(SQL_HANDLE_STMT, res_);
             throw mapnik::datasource_exception("resultset next error: " + errormsg);
         }
@@ -178,7 +173,6 @@ public:
 
     virtual int getFieldLength(const char* name) const
     {
-
         throw mapnik::datasource_exception("ResultSet getFieldLength not implemented");
         return 0;
     }
@@ -193,6 +187,11 @@ public:
         if (retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO)
         {
             return (int) dataType;
+        }
+        else
+        {
+            std::string errormsg = getOdbcError(SQL_HANDLE_STMT, res_);
+            MAPNIK_LOG_ERROR(mssql) << "getTypeOID error: " << errormsg;
         }
 
         return 0;
@@ -235,16 +234,17 @@ public:
         else
         {
             std::string errormsg = getOdbcError(SQL_HANDLE_STMT, res_);
-            MAPNIK_LOG_WARN(mssql) << "getBigInt error: " << errormsg;
+            MAPNIK_LOG_ERROR(mssql) << "getBigInt error: " << errormsg;
         }
         return 0;
     }
+    
     virtual const int getInt(int index) const
     {
         SQLINTEGER intvalue;
         SQLRETURN retcode;
-
-        retcode = SQLGetData(res_, index + 1, SQL_C_SLONG, &intvalue, 0, NULL);
+        SQLLEN ind;
+        retcode = SQLGetData(res_, index + 1, SQL_C_SLONG, &intvalue, 0, &ind);
 
         if (retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO)
         {
@@ -253,10 +253,11 @@ public:
         else
         {
             std::string errormsg = getOdbcError(SQL_HANDLE_STMT, res_);
-            MAPNIK_LOG_WARN(mssql) << "getInt error: " << errormsg;
+            MAPNIK_LOG_ERROR(mssql) << "getInt error: " << errormsg;
         }
         return 0;
     }
+    
     virtual const double getDouble(int index) const
     {
         double value;
@@ -268,8 +269,14 @@ public:
         {
             return value;
         }
+        else
+        {
+            std::string errormsg = getOdbcError(SQL_HANDLE_STMT, res_);
+            MAPNIK_LOG_ERROR(mssql) << "getDouble error: " << errormsg;
+        }
         return 0;
     }
+    
     virtual const float getFloat(int index) const
     {
         float value;
@@ -280,6 +287,11 @@ public:
         if (retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO)
         {
             return value;
+        }
+        else
+        {
+            std::string errormsg = getOdbcError(SQL_HANDLE_STMT, res_);
+            MAPNIK_LOG_ERROR(mssql) << "getFloat error: " << errormsg;
         }
 
         return 0;
@@ -353,9 +365,13 @@ public:
                 str.append(buffer);
             }
         }
+        else
+        {
+            std::string errormsg = getOdbcError(SQL_HANDLE_STMT, res_);
+            MAPNIK_LOG_ERROR(mssql) << "getString error: " << errormsg;
+        }
 
         return str;
-
     }
 
     virtual const std::vector<char> getBinary(int index) const
@@ -376,6 +392,11 @@ public:
 
                 return binvalue;
             }
+        }
+        else
+        {
+            std::string errormsg = getOdbcError(SQL_HANDLE_STMT, res_);
+            MAPNIK_LOG_ERROR(mssql) << "getBinary error: " << errormsg;
         }
 
         return std::vector<char>();
