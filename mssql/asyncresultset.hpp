@@ -153,20 +153,20 @@ public:
         return rs_->isNull(index);
     }
 
-    virtual const int getInt(int index) const
+    virtual const boost::optional<int> getInt(int index) const
     {
         return rs_->getInt(index);
     }
 
-    virtual const long long getBigInt(int index) const
+    virtual const boost::optional<long long> getBigInt(int index) const
     {
         return rs_->getBigInt(index);
     }
-    virtual const double getDouble(int index) const
+    virtual const boost::optional<double> getDouble(int index) const
     {
         return rs_->getDouble(index);
     }
-    virtual const float getFloat(int index) const
+    virtual const boost::optional<float> getFloat(int index) const
     {
         return rs_->getFloat(index);
     }

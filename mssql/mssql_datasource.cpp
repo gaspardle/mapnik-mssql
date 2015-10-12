@@ -210,7 +210,7 @@ mssql_datasource::mssql_datasource(parameters const& params)
                         geometryColumnType_ = rs->getString(1);
                         if (check_srid)
                         {
-                            srid_ = rs->getInt(2);
+                            srid_ = *rs->getInt(2);
                         }
                     }
                     rs->close();
@@ -235,7 +235,7 @@ mssql_datasource::mssql_datasource(parameters const& params)
                     shared_ptr<ResultSet> rs = conn->executeQuery(s.str());
                     if (rs->next())
                     {
-                        srid_ = rs->getInt(0);
+                        srid_ = *rs->getInt(0);
                     }
                     rs->close();
                 }
@@ -934,10 +934,10 @@ box2d<double> mssql_datasource::envelope() const
             if (rs->next() && !rs->isNull(0))
             {
                 double lox, loy, hix, hiy;
-                if ((lox = rs->getDouble(0)) &&
-                        (loy = rs->getDouble(1)) &&
-                        (hix = rs->getDouble(2)) &&
-                        (hiy = rs->getDouble(3)))
+                if ((lox = *rs->getDouble(0)) &&
+                        (loy = *rs->getDouble(1)) &&
+                        (hix = *rs->getDouble(2)) &&
+                        (hiy = *rs->getDouble(3)))
                 {
                     extent_.init(lox, loy, hix, hiy);
                     extent_initialized_ = true;

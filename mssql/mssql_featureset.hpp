@@ -60,6 +60,16 @@ private:
     size_t totalGeomSize_;
     mapnik::value_integer feature_id_;
     bool key_field_;
+    
+    template <typename T>
+    inline void putIfNotNull(feature_ptr feature, mapnik::context_type::key_type const& key, T const& val)
+    {
+        if(val){
+            feature->put(key, *val);
+        }
+        
+    }
+
 };
 
 #endif // MSSQL_FEATURESET_HPP

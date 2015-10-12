@@ -48,10 +48,10 @@ public:
     virtual int getTypeOID(int index) const = 0;
     virtual int getTypeOID(const char* name) const = 0;
     virtual bool isNull(int index) const = 0;
-    virtual const int getInt(int index) const = 0;
-    virtual const long long getBigInt(int index) const = 0;
-    virtual const double getDouble(int index) const = 0;
-    virtual const float getFloat(int index) const = 0;
+    virtual const boost::optional<int> getInt(int index) const = 0;
+    virtual const boost::optional<long long> getBigInt(int index) const = 0;
+    virtual const boost::optional<double> getDouble(int index) const = 0;
+    virtual const boost::optional<float> getFloat(int index) const = 0;
     virtual const std::string getString(int index) const = 0;
     virtual const std::wstring getWString(int index) const = 0;
     virtual const std::vector<char> getBinary(int index) const = 0;
@@ -220,15 +220,18 @@ public:
         return 0;
     }
 
-    virtual const long long getBigInt(int index) const
+    virtual const boost::optional<long long> getBigInt(int index) const
     {
         SQLBIGINT intvalue;
         SQLRETURN retcode;
-
-        retcode = SQLGetData(res_, index + 1, SQL_C_SBIGINT, &intvalue, 0, NULL);
+        SQLLEN ind;
+        retcode = SQLGetData(res_, index + 1, SQL_C_SBIGINT, &intvalue, 0, &ind);
 
         if (retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO)
         {
+            if(ind == SQL_NULL_DATA){
+                return boost::optional<long long>();
+            }
             return intvalue;
         }
         else
@@ -239,7 +242,7 @@ public:
         return 0;
     }
     
-    virtual const int getInt(int index) const
+    virtual const boost::optional<int> getInt(int index) const
     {
         SQLINTEGER intvalue;
         SQLRETURN retcode;
@@ -248,6 +251,9 @@ public:
 
         if (retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO)
         {
+            if(ind == SQL_NULL_DATA){
+                return boost::optional<int>();
+            }
             return intvalue;
         }
         else
@@ -258,15 +264,18 @@ public:
         return 0;
     }
     
-    virtual const double getDouble(int index) const
+    virtual const boost::optional<double> getDouble(int index) const
     {
         double value;
         SQLRETURN retcode;
-
-        retcode = SQLGetData(res_, index + 1, SQL_C_DOUBLE, &value, 0, NULL);
+        SQLLEN ind;
+        retcode = SQLGetData(res_, index + 1, SQL_C_DOUBLE, &value, 0, &ind);
 
         if (retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO)
         {
+            if(ind == SQL_NULL_DATA){
+                return boost::optional<double>();
+            }
             return value;
         }
         else
@@ -277,15 +286,18 @@ public:
         return 0;
     }
     
-    virtual const float getFloat(int index) const
+    virtual const boost::optional<float> getFloat(int index) const
     {
         float value;
         SQLRETURN retcode;
-
-        retcode = SQLGetData(res_, index + 1, SQL_C_FLOAT, &value, 0, NULL);
+        SQLLEN ind;
+        retcode = SQLGetData(res_, index + 1, SQL_C_FLOAT, &value, 0, &ind);
 
         if (retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO)
         {
+            if(ind == SQL_NULL_DATA){
+                return boost::optional<float>();
+            }
             return value;
         }
         else
