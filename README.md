@@ -41,14 +41,10 @@ Building instructions
 ---------------------
 ### Windows
 
-Requirements for mapnik 3.0:  
+Requirements and dependencies:
  - Visual Studio 2015 
- - Mapnik SDK 3.0
+ - Mapnik SDK >= 3.0
 
 ### Linux / OS X (Tested with unixODBC / FreeTDS)
 make  
 make install
-
-Friendly notice
----------------------
-Use at your own risk on production
