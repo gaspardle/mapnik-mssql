@@ -31,3 +31,9 @@ install: all deploy
 
 uninstall:
 	-rm $(shell mapnik-config --input-plugins)/mssql.input
+
+test/run: $(BIN) test/main.cpp
+	$(CXX) -o ./test/run test/main.cpp $(CXXFLAGS) $(LIBS)
+
+test: test/run
+	./test/run
