@@ -98,6 +98,8 @@ private:
     const std::string geometry_field_;
     std::string key_field_;
     bool wkb_;
+    bool use_filter_;
+    bool trace_flag_4199_;
 
     mapnik::value_integer row_limit_;
     std::string geometryColumn_;

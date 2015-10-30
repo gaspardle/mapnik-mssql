@@ -94,7 +94,9 @@ mssql_datasource::mssql_datasource(parameters const& params)
       // params below are for testing purposes only and may be removed at any time
       intersect_min_scale_(*params.get<mapnik::value_integer>("intersect_min_scale", 0)),
       intersect_max_scale_(*params.get<mapnik::value_integer>("intersect_max_scale", 0)),
-      wkb_(*params.get<mapnik::boolean_type>("wkb", false))
+      wkb_(*params.get<mapnik::boolean_type>("wkb", false)),
+      use_filter_(*params.get<mapnik::boolean_type>("use_filter", false)),
+      trace_flag_4199_(*params.get<mapnik::boolean_type>("trace_flag_4199", false))
 
 {
 #ifdef MAPNIK_STATS
@@ -529,28 +531,27 @@ std::string mssql_datasource::populate_tokens(
     {
         std::ostringstream s;
 
-        if (intersect_min_scale_ > 0 && (scale_denom <= intersect_min_scale_))
+        if ((intersect_min_scale_ > 0 && (scale_denom <= intersect_min_scale_)) ||
+            !(intersect_max_scale_ > 0 && (scale_denom >= intersect_max_scale_))
+            )
         {
             s << " WHERE ";
             if (wkb_)
             {
                 s << "\"" << geometryColumn_ << "\".STIsValid() = 1 AND ";
             }
-            s << "\"" << geometryColumn_ << "\".STIntersects(" << box << ") = 1";
-        }
-        else if (intersect_max_scale_ > 0 && (scale_denom >= intersect_max_scale_))
-        {
-            // do no bbox restriction
+            if (use_filter_) {
+                s << "\"" << geometryColumn_ << "\".Filter(" << box << ") = 1";
+            }
+            else {
+				s << "\"" << geometryColumn_ << "\".STIntersects(" << box << ") = 1";
+			}
+			
         }
         else
         {
-            s << " WHERE ";
-            if (wkb_)
-            {
-                s << "\"" << geometryColumn_ << "\".STIsValid() = 1 AND ";
-            }
-            s << "\"" << geometryColumn_ << "\".STIntersects(" << box << ") = 1";
-        }
+            // do no bbox restriction
+        }       
 
         return populated_sql + s.str();
     }
@@ -745,6 +746,11 @@ featureset_ptr mssql_datasource::features_with_context(query const& q, processor
             s << " " << order_by_;
         }
 
+        if (trace_flag_4199_)
+        {
+            s << " OPTION(QUERYTRACEON 4199)";
+        }
+        
         shared_ptr<IResultSet> rs = get_resultset(conn, s.str(), pool, proc_ctx);
         return std::make_shared<mssql_featureset>(rs, ctx,  wkb_, geometryColumnType_ == "geography",  !key_field_.empty());
 
@@ -836,6 +842,10 @@ featureset_ptr mssql_datasource::features_at_point(coord2d const& pt, double tol
 
             s << " FROM " << table_with_bbox;
 
+            if (trace_flag_4199_)
+            {
+                s << " OPTION(QUERYTRACEON 4199)";
+            }
             shared_ptr<IResultSet> rs = get_resultset(conn, s.str(), pool);
             return std::make_shared<mssql_featureset>(rs, ctx, wkb_, geometryColumnType_ == "geography", !key_field_.empty());
         }

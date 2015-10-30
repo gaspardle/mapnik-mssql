@@ -117,8 +117,18 @@ public:
 #ifdef MAPNIK_STATS
         mapnik::progress_timer __stats__(std::clog, std::string("mssql_connection::execute ") + sql);
 #endif
-        throw mapnik::datasource_exception("not implemented");
+        SQLHANDLE hstmt = NULL;
+        SQLRETURN retcode;
 
+        if (SQL_SUCCESS != SQLAllocHandle(SQL_HANDLE_STMT, sqlconnectionhandle, &hstmt))
+        {
+            throw mapnik::datasource_exception("SQLAllocHandle error");
+        }
+
+        retcode = SQLExecDirectA(hstmt, (SQLCHAR*)sql.c_str(), SQL_NTS);				
+        SQLFreeHandle(SQL_HANDLE_STMT, hstmt);
+
+        return retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO;
     }
 
     std::shared_ptr<ResultSet> executeQuery(std::string const& sql)
@@ -300,8 +310,7 @@ private:
     bool pending_;
 
     std::string debug_current_sql;
-    std::wstring debug_current_wsql;
-
+   
     void clearAsyncResult(SQLHANDLE hstmt)
     {
         SQLFreeHandle(SQL_HANDLE_STMT, hstmt);
