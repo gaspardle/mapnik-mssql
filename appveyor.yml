@@ -10,9 +10,9 @@ environment:
   msvs_toolset: 14
   matrix:
   - platform: x64
-    MAPNIK_GIT: v3.0.8-2-g646bcbc
+    MAPNIK_GIT: v3.0.9
   - platform: x86
-    MAPNIK_GIT: v3.0.8-2-g646bcbc
+    MAPNIK_GIT: v3.0.9
 services:
   - mssql2014
 install:
