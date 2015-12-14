@@ -123,6 +123,7 @@ private:
     bool asynchronous_request_;
     int intersect_min_scale_;
     int intersect_max_scale_;
+	bool key_field_as_attribute_;
     std::string order_by_;
 };
 

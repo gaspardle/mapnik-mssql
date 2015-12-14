@@ -94,6 +94,7 @@ mssql_datasource::mssql_datasource(parameters const& params)
       // params below are for testing purposes only and may be removed at any time
       intersect_min_scale_(*params.get<mapnik::value_integer>("intersect_min_scale", 0)),
       intersect_max_scale_(*params.get<mapnik::value_integer>("intersect_max_scale", 0)),
+      key_field_as_attribute_(*params.get<mapnik::boolean_type>("key_field_as_attribute", true)),
       wkb_(*params.get<mapnik::boolean_type>("wkb", false)),
       use_filter_(*params.get<mapnik::boolean_type>("use_filter", false)),
       trace_flag_4199_(*params.get<mapnik::boolean_type>("trace_flag_4199", false))
@@ -329,7 +330,10 @@ mssql_datasource::mssql_datasource(parameters const& params)
                     if (type_oid == SQL_SMALLINT || type_oid == SQL_TINYINT || type_oid == SQL_INTEGER || type_oid == SQL_BIGINT)
                     {
                         found_key_field = true;
-                        desc_.add_descriptor(attribute_descriptor(fld_name, mapnik::Integer));
+                        if (key_field_as_attribute_)
+                        {
+                            desc_.add_descriptor(attribute_descriptor(fld_name, mapnik::Integer));
+                        }
                     }
                     else
                     {
@@ -717,7 +721,10 @@ featureset_ptr mssql_datasource::features_with_context(query const& q, processor
         if (!key_field_.empty())
         {
             mapnik::sql_utils::quote_attr(s, key_field_);
-            ctx->push(key_field_);
+            if (key_field_as_attribute_)
+            {
+                ctx->push(key_field_);
+            }
 
             for (; pos != end; ++pos)
             {
@@ -752,7 +759,7 @@ featureset_ptr mssql_datasource::features_with_context(query const& q, processor
         }
         
         shared_ptr<IResultSet> rs = get_resultset(conn, s.str(), pool, proc_ctx);
-        return std::make_shared<mssql_featureset>(rs, ctx,  wkb_, geometryColumnType_ == "geography",  !key_field_.empty());
+        return std::make_shared<mssql_featureset>(rs, ctx,  wkb_, geometryColumnType_ == "geography",  !key_field_.empty(), key_field_as_attribute_);
 
     }
 
@@ -818,7 +825,11 @@ featureset_ptr mssql_datasource::features_at_point(coord2d const& pt, double tol
             if (!key_field_.empty())
             {
                 mapnik::sql_utils::quote_attr(s, key_field_);
-                ctx->push(key_field_);
+                if (key_field_as_attribute_)
+                {
+                    ctx->push(key_field_);
+                }
+                
                 for (; itr != end; ++itr)
                 {
                     if (itr->get_name() != key_field_)
@@ -847,7 +858,7 @@ featureset_ptr mssql_datasource::features_at_point(coord2d const& pt, double tol
                 s << " OPTION(QUERYTRACEON 4199)";
             }
             shared_ptr<IResultSet> rs = get_resultset(conn, s.str(), pool);
-            return std::make_shared<mssql_featureset>(rs, ctx, wkb_, geometryColumnType_ == "geography", !key_field_.empty());
+            return std::make_shared<mssql_featureset>(rs, ctx, wkb_, geometryColumnType_ == "geography", !key_field_.empty(), key_field_as_attribute_);
         }
     }
 

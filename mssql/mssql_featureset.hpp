@@ -45,7 +45,8 @@ public:
                      context_ptr const& ctx,
                      bool wkb,
                      bool is_sqlgeography,
-                     bool key_field = false
+                     bool key_field,
+                     bool key_field_as_attribute
                     );
     feature_ptr next();
     ~mssql_featureset();
@@ -60,7 +61,8 @@ private:
     size_t totalGeomSize_;
     mapnik::value_integer feature_id_;
     bool key_field_;
-    
+    bool key_field_as_attribute_;
+
     template <typename T>
     inline void putIfNotNull(feature_ptr feature, mapnik::context_type::key_type const& key, T const& val)
     {

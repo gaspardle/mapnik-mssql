@@ -53,7 +53,8 @@ mssql_featureset::mssql_featureset(std::shared_ptr<IResultSet> const& rs,
                                    context_ptr const& ctx,
                                    bool wkb,
                                    bool is_sqlgeography,
-                                   bool key_field )
+                                   bool key_field,
+                                   bool key_field_as_attribute)
     : rs_(rs),
       ctx_(ctx),
       wkb_(wkb),
@@ -62,7 +63,8 @@ mssql_featureset::mssql_featureset(std::shared_ptr<IResultSet> const& rs,
       tr_(new transcoder("UTF-8")),
       totalGeomSize_(0),
       feature_id_(1),
-      key_field_(key_field)
+      key_field_(key_field),
+      key_field_as_attribute_(key_field_as_attribute)
 {
 }
 
@@ -95,10 +97,10 @@ feature_ptr mssql_featureset::next()
             val = rs_->getInt(pos).get();
 
             feature = feature_factory::create(ctx_, val);
-            // TODO - extend feature class to know
-            // that its id is also an attribute to avoid
-            // this duplication
-            feature->put<mapnik::value_integer>(name, val);
+            if (key_field_as_attribute_)
+            {
+                feature->put<mapnik::value_integer>(name, val);
+            }
             ++pos;
         }
         else
@@ -134,6 +136,11 @@ feature_ptr mssql_featureset::next()
  
         
         unsigned num_attrs = ctx_->size() + 1;
+        if (!key_field_as_attribute_)
+        {
+            num_attrs++;
+        }
+
         for (; pos < num_attrs; ++pos)
         {
             std::string name = rs_->getFieldName(pos);
