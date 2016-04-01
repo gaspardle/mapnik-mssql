@@ -4,22 +4,23 @@
 #include <windows.h>
 #endif
 
+#include <stdexcept>
 #include "odbc.hpp"
 
 void Odbc::InitOdbc() {
     if (SQL_SUCCESS != SQLSetEnvAttr(SQL_NULL_HANDLE, SQL_ATTR_CONNECTION_POOLING, (SQLPOINTER)SQL_CP_ONE_PER_HENV, 0))
     {
-        throw std::exception("Mssql Plugin: SQLSetEnvAttr SQL_ATTR_CONNECTION_POOLING failed");
+        throw std::runtime_error("Mssql Plugin: SQLSetEnvAttr SQL_ATTR_CONNECTION_POOLING failed");
     }
 
     if (SQL_SUCCESS != SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &sqlenvhandle_))
     {
-        throw std::exception("Mssql Plugin: SQLAllocHandle SQL_HANDLE_ENV failed");
+        throw std::runtime_error("Mssql Plugin: SQLAllocHandle SQL_HANDLE_ENV failed");
     }
 
     if (SQL_SUCCESS != SQLSetEnvAttr(sqlenvhandle_, SQL_ATTR_ODBC_VERSION, (SQLPOINTER)SQL_OV_ODBC3, 0))
     {
-        throw std::exception("Mssql Plugin: SQLSetEnvAttr SQL_ATTR_ODBC_VERSION failed");
+        throw std::runtime_error("Mssql Plugin: SQLSetEnvAttr SQL_ATTR_ODBC_VERSION failed");
     }
 }
 
