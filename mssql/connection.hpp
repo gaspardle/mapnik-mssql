@@ -44,7 +44,7 @@
 class Connection
 {
 public:
-    Connection(std::string const& connection_str, boost::optional<std::string> const& password)
+    Connection(SQLHANDLE sqlenvhandle, std::string const& connection_str, boost::optional<std::string> const& password)
         :
         closed_(false),
         pending_(false)
@@ -54,23 +54,11 @@ public:
         {
             connect_with_pass += " PWD=" + *password;
         }
-
-        if (SQL_SUCCESS != SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &sqlenvhandle))
-        {
-            close();
-            throw mapnik::datasource_exception("Mssql Plugin: SQLAllocHandle");
-        }
-
-        if (SQL_SUCCESS != SQLSetEnvAttr(sqlenvhandle, SQL_ATTR_ODBC_VERSION, (SQLPOINTER)SQL_OV_ODBC3, 0))
-        {
-            close();
-            throw mapnik::datasource_exception("Mssql Plugin: SQLSetEnvAttr");
-        }
-
+  
         if (SQL_SUCCESS != SQLAllocHandle(SQL_HANDLE_DBC, sqlenvhandle, &sqlconnectionhandle))
         {
             close();
-            throw mapnik::datasource_exception("Mssql Plugin: SQLAllocHandle");
+            throw mapnik::datasource_exception("Mssql Plugin: SQLAllocHandle SQL_HANDLE_DBC failed");
         }
 
         SQLCHAR  retconstring[1024];
@@ -103,7 +91,6 @@ public:
 
             SQLDisconnect(sqlconnectionhandle);
             SQLFreeHandle(SQL_HANDLE_DBC, sqlconnectionhandle);
-            SQLFreeHandle(SQL_HANDLE_ENV, sqlenvhandle);
 
             MAPNIK_LOG_DEBUG(mssql) << "mssql_connection: sql server connection closed";
 
@@ -292,7 +279,7 @@ public:
         {
             SQLDisconnect(sqlconnectionhandle);
             SQLFreeHandle(SQL_HANDLE_DBC, sqlconnectionhandle);
-            SQLFreeHandle(SQL_HANDLE_ENV, sqlenvhandle);
+            //SQLFreeHandle(SQL_HANDLE_ENV, sqlenvhandle);
 
             MAPNIK_LOG_DEBUG(mssql) << "mssql_connection: datasource closed, also closing connection";
 
@@ -302,7 +289,7 @@ public:
 
 
 private:
-    SQLHANDLE sqlenvhandle;
+    //SQLHANDLE sqlenvhandle;
     SQLHANDLE sqlconnectionhandle;
     SQLHANDLE async_hstmt;
 

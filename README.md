@@ -2,7 +2,7 @@ mapnik-mssql
 ============
 [![Build status](https://ci.appveyor.com/api/projects/status/mkkf90sypw0b8i82/branch/master?svg=true)](https://ci.appveyor.com/project/gaspardle/mapnik-mssql/branch/master)
 
-A mapnik datasource plugin for Microsoft Sql Server 2012/2014. Based on the PostGIS plugin.
+A mapnik datasource plugin for Microsoft Sql Server 2012/2014/2016. Based on the PostGIS plugin.
 
 Parameters
 ----------

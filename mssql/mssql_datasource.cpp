@@ -95,6 +95,7 @@ mssql_datasource::mssql_datasource(parameters const& params)
       intersect_min_scale_(*params.get<mapnik::value_integer>("intersect_min_scale", 0)),
       intersect_max_scale_(*params.get<mapnik::value_integer>("intersect_max_scale", 0)),
       key_field_as_attribute_(*params.get<mapnik::boolean_type>("key_field_as_attribute", true)),
+
       wkb_(*params.get<mapnik::boolean_type>("wkb", false)),
       use_filter_(*params.get<mapnik::boolean_type>("use_filter", false)),
       trace_flag_4199_(*params.get<mapnik::boolean_type>("trace_flag_4199", false))
@@ -134,6 +135,8 @@ mssql_datasource::mssql_datasource(parameters const& params)
     estimate_extent_ = estimate_extent && *estimate_extent;
     boost::optional<mapnik::boolean_type> simplify_opt = params.get<mapnik::boolean_type>("simplify_geometries", false);
     simplify_geometries_ = simplify_opt && *simplify_opt;
+
+    static bool const quiet_unused = (Odbc::InitOdbc(), true);   
 
     ConnectionManager::instance().registerPool(creator_, *initial_size, pool_max_size_);
     CnxPool_ptr pool = ConnectionManager::instance().getPool(creator_.id());
@@ -430,6 +433,8 @@ mssql_datasource::~mssql_datasource()
             }
         }
     }
+    
+    Odbc::FreeOdbc();
 }
 
 const char * mssql_datasource::name()

@@ -59,7 +59,7 @@
     <ClCompile Include="..\mssql\stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\mssql\Odbc.cpp">
+    <ClCompile Include="..\mssql\odbc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\mssql\mssqlclrgeo.cpp">

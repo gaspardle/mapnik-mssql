@@ -24,6 +24,7 @@
 #define MSSQL_CONNECTION_MANAGER_HPP
 
 #include "connection.hpp"
+#include "odbc.hpp"
 
 // mapnik
 #include <mapnik/pool.hpp>
@@ -65,7 +66,7 @@ public:
 
     T* operator()() const
     {
-        return new T(connection_string_safe(), pass_);
+        return new T(Odbc::GetEnvHandle(), connection_string_safe(), pass_);
     }
 
     inline std::string id() const
