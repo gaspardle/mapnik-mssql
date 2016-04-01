@@ -182,10 +182,10 @@ mssql_datasource::mssql_datasource(parameters const& params)
                     s << "SELECT column_name, data_type";
                     if (check_srid)
                     {
-                        s << ", (SELECT TOP 1 \""
-                          << geometry_field_ << "\".STSrid FROM \"" << geometry_table_
-                          << "\" WHERE \""
-                          << geometry_field_ << "\" IS NOT NULL)";
+                        s << ", (SELECT TOP 1 ["
+                          << geometry_field_ << "].STSrid FROM [" << geometry_table_
+                          << "] WHERE ["
+                          << geometry_field_ << "] IS NOT NULL)";
                     }
                     s << " FROM "
                       << "information_schema.columns "
@@ -235,8 +235,8 @@ mssql_datasource::mssql_datasource(parameters const& params)
                 {
                     s.str("");
 
-                    s << "SELECT TOP 1 (\"" << geometryColumn_ << "\").STSrid AS srid FROM "
-                      << populate_tokens(table_) << " WHERE \"" << geometryColumn_ << "\" IS NOT NULL;";
+                    s << "SELECT TOP 1 ([" << geometryColumn_ << "]).STSrid AS srid FROM "
+                      << populate_tokens(table_) << " WHERE [" << geometryColumn_ << "] IS NOT NULL;";
 
                     shared_ptr<ResultSet> rs = conn->executeQuery(s.str());
                     if (rs->next())
@@ -393,8 +393,7 @@ mssql_datasource::mssql_datasource(parameters const& params)
 
         // Close explicitly the connection so we can 'fork()' without sharing open connections
         conn->close();
-
-
+        
         // Finally, add unique metadata to layer descriptor
         mapnik::parameters & extra_params = desc_.get_extra_parameters();
         // explicitly make copies of values due to https://github.com/mapnik/mapnik/issues/2651
@@ -547,13 +546,13 @@ std::string mssql_datasource::populate_tokens(
             s << " WHERE ";
             if (wkb_)
             {
-                s << "\"" << geometryColumn_ << "\".STIsValid() = 1 AND ";
+                s << "[" << geometryColumn_ << "].STIsValid() = 1 AND ";
             }
             if (use_filter_) {
-                s << "\"" << geometryColumn_ << "\".Filter(" << box << ") = 1";
+                s << "[" << geometryColumn_ << "].Filter(" << box << ") = 1";
             }
             else {
-				s << "\"" << geometryColumn_ << "\".STIntersects(" << box << ") = 1";
+				s << "[" << geometryColumn_ << "].STIntersects(" << box << ") = 1";
 			}
 			
         }
@@ -699,7 +698,7 @@ featureset_ptr mssql_datasource::features_with_context(query const& q, processor
             s << " TOP " << row_limit_;
         }
 
-        s << "\"" << geometryColumn_ << "\"";
+        s << "[" << geometryColumn_ << "]";
 
         if (simplify_geometries_)
         {
@@ -817,7 +816,7 @@ featureset_ptr mssql_datasource::features_at_point(coord2d const& pt, double tol
             {
                 s << " TOP " << row_limit_;
             }
-            s << "\"" << geometryColumn_ << "\"";
+            s << "[" << geometryColumn_ << "]";
             if (wkb_)
             {
                 s << ".STAsBinary()";
@@ -1016,7 +1015,7 @@ boost::optional<mapnik::datasource_geometry_t> mssql_datasource::get_geometry_ty
                     s << " TOP 5";
                 }
 
-                s << "\"" << geometryColumn_ << "\".STGeometryType() AS geom"
+                s << "[" << geometryColumn_ << "].STGeometryType() AS geom"
                   << " FROM " << populate_tokens(table_);
 
 
