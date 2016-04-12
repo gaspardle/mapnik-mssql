@@ -154,6 +154,7 @@ mssql_datasource::mssql_datasource(parameters const& params)
             if (geometry_table_.empty())
             {
                 geometry_table_ = mapnik::sql_utils::table_from_sql(table_);
+                boost::algorithm::replace_all(geometry_table_, "\r", " ");
             }
 
             std::string::size_type idx = geometry_table_.find_last_of('.');
