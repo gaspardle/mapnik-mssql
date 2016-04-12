@@ -22,7 +22,7 @@
 
 #ifndef MSSQL_DATASOURCE_HPP
 #define MSSQL_DATASOURCE_HPP
-#include "stdafx.h"
+
 // mapnik
 #include <mapnik/datasource.hpp>
 #include <mapnik/params.hpp>

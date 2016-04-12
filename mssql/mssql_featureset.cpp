@@ -20,14 +20,13 @@
  *
  *****************************************************************************/
 
-#include "stdafx.h"
 
 #include "mssql_featureset.hpp"
 #include "resultset.hpp"
 #include "geoclr_reader.hpp"
 
 // mapnik
-/*#include <mapnik/global.hpp>
+#include <mapnik/global.hpp>
 #include <mapnik/debug.hpp>
 #include <mapnik/wkb.hpp>
 #include <mapnik/unicode.hpp>
@@ -35,7 +34,7 @@
 #include <mapnik/feature_factory.hpp>
 #include <mapnik/util/conversions.hpp>
 #include <mapnik/util/trim.hpp>
-#include <mapnik/global.hpp> // for int2net*/
+#include <mapnik/global.hpp> // for int2net
 
 #include <cstdint>
 

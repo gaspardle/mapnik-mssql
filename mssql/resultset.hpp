@@ -29,6 +29,7 @@
 #include <windows.h>
 #endif
 
+#include <mapnik/debug.hpp>
 #include <sql.h>
 #include <sqlext.h>
 #include "mapnik/util/utf_conv_win.hpp"

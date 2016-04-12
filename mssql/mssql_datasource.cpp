@@ -20,7 +20,7 @@
 *
 *****************************************************************************/
 
-#include "stdafx.h"
+//#include "stdafx.h"
 
 #include "connection_manager.hpp"
 #include "mssql_datasource.hpp"
@@ -29,7 +29,7 @@
 
 
 // mapnik
-/*
+
 #include <mapnik/debug.hpp>
 #include <mapnik/global.hpp>
 #include <mapnik/boolean.hpp>
@@ -37,7 +37,7 @@
 #include <mapnik/util/conversions.hpp>
 #include <mapnik/timer.hpp>
 #include <mapnik/value_types.hpp>
-*/
+
 // boost
 #include <boost/algorithm/string.hpp>
 #include <boost/tokenizer.hpp>
