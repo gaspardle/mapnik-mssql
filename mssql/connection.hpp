@@ -47,13 +47,16 @@ class Connection
         : closed_(false),
           pending_(false)
     {
+        SQLRETURN retcode;
+
         std::string connect_with_pass = connection_str;
         if (password && !password->empty())
         {
             connect_with_pass += " PWD=" + *password;
         }
-
-        if (SQL_SUCCESS != SQLAllocHandle(SQL_HANDLE_DBC, sqlenvhandle, &sqlconnectionhandle))
+       
+        retcode = SQLAllocHandle(SQL_HANDLE_DBC, sqlenvhandle, &sqlconnectionhandle);
+        if (SQL_SUCCESS != retcode)
         {
             close();
             throw mapnik::datasource_exception("Mssql Plugin: SQLAllocHandle SQL_HANDLE_DBC failed");
@@ -61,7 +64,7 @@ class Connection
 
         SQLCHAR retconstring[1024];
         SQLSMALLINT OutConnStrLen;
-        SQLRETURN retcode = SQLDriverConnectA(sqlconnectionhandle,
+        retcode = SQLDriverConnectA(sqlconnectionhandle,
                                               NULL,
                                               (SQLCHAR*)connect_with_pass.c_str(),
                                               SQL_NTS,

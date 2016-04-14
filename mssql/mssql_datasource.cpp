@@ -137,7 +137,7 @@ mssql_datasource::mssql_datasource(parameters const& params)
     boost::optional<mapnik::boolean_type> simplify_opt = params.get<mapnik::boolean_type>("simplify_geometries", false);
     simplify_geometries_ = simplify_opt && *simplify_opt;
 
-    static bool const quiet_unused = (Odbc::InitOdbc(), true);
+    Odbc::InitOdbc();
 
     ConnectionManager::instance().registerPool(creator_, *initial_size, pool_max_size_);
     CnxPool_ptr pool = ConnectionManager::instance().getPool(creator_.id());
