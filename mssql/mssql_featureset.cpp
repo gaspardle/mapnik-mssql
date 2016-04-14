@@ -20,29 +20,27 @@
  *
  *****************************************************************************/
 
-
+#include "geoclr_reader.hpp"
 #include "mssql_featureset.hpp"
 #include "resultset.hpp"
-#include "geoclr_reader.hpp"
 
 // mapnik
-#include <mapnik/global.hpp>
 #include <mapnik/debug.hpp>
-#include <mapnik/wkb.hpp>
-#include <mapnik/unicode.hpp>
-#include <mapnik/value_types.hpp>
 #include <mapnik/feature_factory.hpp>
+#include <mapnik/global.hpp>
+#include <mapnik/global.hpp> // for int2net
+#include <mapnik/unicode.hpp>
 #include <mapnik/util/conversions.hpp>
 #include <mapnik/util/trim.hpp>
-#include <mapnik/global.hpp> // for int2net
+#include <mapnik/value_types.hpp>
+#include <mapnik/wkb.hpp>
 
 #include <cstdint>
 
 // stl
+#include <memory>
 #include <sstream>
 #include <string>
-#include <memory>
-
 
 using mapnik::geometry_utils;
 using mapnik::feature_factory;
@@ -85,7 +83,7 @@ feature_ptr mssql_featureset::next()
                 MAPNIK_LOG_WARN(mssql) << "mssql_featureset: null value encountered for key_field: " << name;
                 continue;
             }
-            
+
             // validation happens of this type at initialization
             mapnik::value_integer val;
             val = rs_->getInt(pos).get();
@@ -107,14 +105,14 @@ feature_ptr mssql_featureset::next()
         // parse geometry
         std::vector<char> data = rs_->getBinary(0);
         size_t size = data.size();
-        
+
         // null geometry is not acceptable
         if (size == 0)
         {
             MAPNIK_LOG_WARN(mssql) << "mssql_featureset: null value encountered for geometry";
             continue;
         }
-        
+
         mapnik::geometry::geometry<double> geometry;
         if (wkb_)
         {
@@ -127,8 +125,7 @@ feature_ptr mssql_featureset::next()
         feature->set_geometry(std::move(geometry));
 
         totalGeomSize_ += size;
- 
-        
+
         unsigned num_attrs = ctx_->size() + 1;
         if (!key_field_as_attribute_)
         {
@@ -147,9 +144,11 @@ feature_ptr mssql_featureset::next()
 
                 switch (oid)
                 {
-                case SQL_BIT:{
+                case SQL_BIT:
+                {
                     auto bit = rs_->getInt(pos);
-                    if(bit) {
+                    if (bit)
+                    {
                         feature->put(name, *bit != 0);
                     }
                     break;
@@ -200,13 +199,11 @@ feature_ptr mssql_featureset::next()
                 }
                 }
             }
-            
         }
         return feature;
     }
     return feature_ptr();
 }
-
 
 mssql_featureset::~mssql_featureset()
 {

@@ -24,29 +24,28 @@
 #define MSSQL_DATASOURCE_HPP
 
 // mapnik
-#include <mapnik/datasource.hpp>
-#include <mapnik/params.hpp>
-#include <mapnik/query.hpp>
-#include <mapnik/feature.hpp>
+#include <mapnik/attribute.hpp>
 #include <mapnik/box2d.hpp>
 #include <mapnik/coord.hpp>
+#include <mapnik/datasource.hpp>
+#include <mapnik/feature.hpp>
 #include <mapnik/feature_layer_desc.hpp>
+#include <mapnik/params.hpp>
+#include <mapnik/query.hpp>
 #include <mapnik/unicode.hpp>
 #include <mapnik/value_types.hpp>
-#include <mapnik/attribute.hpp>
 
 // boost
 #include <boost/optional.hpp>
 
-
 // stl
 #include <memory>
-#include <vector>
 #include <string>
+#include <vector>
 
 #include "connection_manager.hpp"
-#include "resultset.hpp"
 #include "cursorresultset.hpp"
+#include "resultset.hpp"
 
 using mapnik::transcoder;
 using mapnik::datasource;
@@ -60,16 +59,16 @@ using mapnik::query;
 using mapnik::parameters;
 using mapnik::coord2d;
 
-using CnxPool_ptr = std::shared_ptr< ConnectionManager::PoolType>;
+using CnxPool_ptr = std::shared_ptr<ConnectionManager::PoolType>;
 
 class mssql_datasource : public datasource
 {
-public:
-    mssql_datasource(const parameters &params);
+  public:
+    mssql_datasource(const parameters& params);
     ~mssql_datasource();
     mapnik::datasource::datasource_t type() const;
-    static const char * name();
-    processor_context_ptr get_context(feature_style_context_map &) const;
+    static const char* name();
+    processor_context_ptr get_context(feature_style_context_map&) const;
     featureset_ptr features_with_context(query const& q, processor_context_ptr ctx) const;
     featureset_ptr features(query const& q) const;
     featureset_ptr features_at_point(coord2d const& pt, double tol = 0) const;
@@ -77,7 +76,7 @@ public:
     boost::optional<mapnik::datasource_geometry_t> get_geometry_type() const;
     layer_descriptor get_descriptor() const;
 
-private:
+  private:
     std::string sql_bbox(box2d<double> const& env) const;
     std::string populate_tokens(std::string const& sql,
                                 double scale_denom,
@@ -86,7 +85,7 @@ private:
                                 double pixel_height,
                                 mapnik::attributes const& vars) const;
     std::string populate_tokens(std::string const& sql) const;
-    std::shared_ptr<IResultSet> get_resultset(std::shared_ptr<Connection> &conn, std::string const& sql, CnxPool_ptr const& pool, processor_context_ptr ctx = processor_context_ptr()) const;
+    std::shared_ptr<IResultSet> get_resultset(std::shared_ptr<Connection>& conn, std::string const& sql, CnxPool_ptr const& pool, processor_context_ptr ctx = processor_context_ptr()) const;
     static const double FMAX;
 
     const std::string uri_;
@@ -123,7 +122,7 @@ private:
     bool asynchronous_request_;
     int intersect_min_scale_;
     int intersect_max_scale_;
-	bool key_field_as_attribute_;
+    bool key_field_as_attribute_;
     std::string order_by_;
 };
 

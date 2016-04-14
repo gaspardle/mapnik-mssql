@@ -24,44 +24,42 @@
 #define MSSQL_CONNECTION_HPP
 
 // mapnik
-#include <mapnik/debug.hpp>
 #include <mapnik/datasource.hpp>
+#include <mapnik/debug.hpp>
 #include <mapnik/timer.hpp>
 
 // std
+#include <iostream>
 #include <memory>
 #include <sstream>
-#include <iostream>
 
+#include "odbc.hpp"
 #include <sql.h>
 #include <sqlext.h>
 #include <sqlucode.h>
-#include "odbc.hpp"
 
 #include "resultset.hpp"
 
-
 class Connection
 {
-public:
+  public:
     Connection(SQLHANDLE sqlenvhandle, std::string const& connection_str, boost::optional<std::string> const& password)
-        :
-        closed_(false),
-        pending_(false)
+        : closed_(false),
+          pending_(false)
     {
         std::string connect_with_pass = connection_str;
         if (password && !password->empty())
         {
             connect_with_pass += " PWD=" + *password;
         }
-  
+
         if (SQL_SUCCESS != SQLAllocHandle(SQL_HANDLE_DBC, sqlenvhandle, &sqlconnectionhandle))
         {
             close();
             throw mapnik::datasource_exception("Mssql Plugin: SQLAllocHandle SQL_HANDLE_DBC failed");
         }
 
-        SQLCHAR  retconstring[1024];
+        SQLCHAR retconstring[1024];
         SQLSMALLINT OutConnStrLen;
         SQLRETURN retcode = SQLDriverConnectA(sqlconnectionhandle,
                                               NULL,
@@ -69,7 +67,7 @@ public:
                                               SQL_NTS,
                                               retconstring,
                                               1024,
-                                              &OutConnStrLen,//NULL,
+                                              &OutConnStrLen, //NULL,
                                               SQL_DRIVER_NOPROMPT);
         if (!(retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO))
         {
@@ -81,7 +79,6 @@ public:
             close();
             throw mapnik::datasource_exception(err_msg);
         }
-
     }
 
     ~Connection()
@@ -96,7 +93,6 @@ public:
 
             closed_ = true;
         }
-
     }
 
     bool execute(std::string const& sql)
@@ -112,7 +108,7 @@ public:
             throw mapnik::datasource_exception("SQLAllocHandle error");
         }
 
-        retcode = SQLExecDirectA(hstmt, (SQLCHAR*)sql.c_str(), SQL_NTS);				
+        retcode = SQLExecDirectA(hstmt, (SQLCHAR*)sql.c_str(), SQL_NTS);
         SQLFreeHandle(SQL_HANDLE_STMT, hstmt);
 
         return retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO;
@@ -146,8 +142,6 @@ public:
 
         return std::make_shared<ResultSet>(hstmt);
     }
-
-
 
     bool executeAsyncQuery(std::string const& sql)
     {
@@ -221,7 +215,6 @@ public:
         return std::make_shared<ResultSet>(async_hstmt);
     }
 
-
     std::shared_ptr<ResultSet> getAsyncResult()
     {
 
@@ -287,8 +280,7 @@ public:
         }
     }
 
-
-private:
+  private:
     //SQLHANDLE sqlenvhandle;
     SQLHANDLE sqlconnectionhandle;
     SQLHANDLE async_hstmt;
@@ -297,14 +289,12 @@ private:
     bool pending_;
 
     std::string debug_current_sql;
-   
+
     void clearAsyncResult(SQLHANDLE hstmt)
     {
         SQLFreeHandle(SQL_HANDLE_STMT, hstmt);
         pending_ = false;
     }
 };
-
-
 
 #endif //CONNECTION_HPP

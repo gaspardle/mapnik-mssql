@@ -1,9 +1,9 @@
 #ifndef MSSQL_GEOCLR_READER_HPP
 #define MSSQL_GEOCLR_READER_HPP
 
-#include <mapnik/util/noncopyable.hpp>
 #include <mapnik/geometry.hpp>
 #include <mapnik/geometry_correct.hpp>
+#include <mapnik/util/noncopyable.hpp>
 
 #include <cstdint>
 #include <vector>
@@ -12,12 +12,13 @@
 
 struct mapnik_geoclr_reader : mapnik::util::noncopyable
 {
-private:
+  private:
     mssqlclr::sqlgeo_reader reader;
     uint32_t shape_pos_;
     mssqlclr::Geometry geo_;
     bool is_geography_;
-public:
+
+  public:
     mapnik_geoclr_reader(const char* data, std::size_t size, bool isGeography)
         : reader(mssqlclr::sqlgeo_reader(data, size)),
           shape_pos_(0),
@@ -52,7 +53,6 @@ public:
 
         return multi_point;
     }
-
 
     mapnik::geometry::line_string<double> read_linestring(mssqlclr::Shape shape)
     {
@@ -153,7 +153,6 @@ public:
         return collection;
     }
 
-
     mapnik::geometry::geometry<double> read()
     {
         mapnik::geometry::geometry<double> geom = mapnik::geometry::geometry_empty();
@@ -203,7 +202,7 @@ public:
 };
 
 mapnik::geometry::geometry<double> from_geoclr(const char* data,
-        std::size_t size, bool is_geography)
+                                               std::size_t size, bool is_geography)
 {
     if (size == 0)
     {
@@ -214,7 +213,6 @@ mapnik::geometry::geometry<double> from_geoclr(const char* data,
     // note: this will only be applied to polygons
     mapnik::geometry::correct(geom);
     return geom;
-
 }
 
 #endif //MSSQL_GEOCLR_READER_HPP

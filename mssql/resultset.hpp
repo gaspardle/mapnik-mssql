@@ -23,21 +23,20 @@
 #ifndef MSSQL_RESULTSET_HPP
 #define MSSQL_RESULTSET_HPP
 
-
 #ifdef _WINDOWS
 #define NOMINMAX
 #include <windows.h>
 #endif
 
+#include "mapnik/util/utf_conv_win.hpp"
+#include "odbc.hpp"
 #include <mapnik/debug.hpp>
 #include <sql.h>
 #include <sqlext.h>
-#include "mapnik/util/utf_conv_win.hpp"
-#include "odbc.hpp"
 
 class IResultSet
 {
-public:
+  public:
     //virtual IResultSet& operator=(const IResultSet& rhs) = 0;
     virtual ~IResultSet() {}
     virtual void close() = 0;
@@ -56,12 +55,11 @@ public:
     virtual const std::string getString(int index) const = 0;
     virtual const std::wstring getWString(int index) const = 0;
     virtual const std::vector<char> getBinary(int index) const = 0;
-
 };
 
 class ResultSet : public IResultSet, private mapnik::util::noncopyable
 {
-public:
+  public:
     ResultSet(SQLHANDLE res)
         : res_(res),
           is_closed_(false)
@@ -97,7 +95,6 @@ public:
     virtual bool next()
     {
 
-
         SQLRETURN retcode;
         retcode = SQLFetch(res_);
 
@@ -122,7 +119,6 @@ public:
             std::string errormsg = getOdbcError(SQL_HANDLE_STMT, res_);
             throw mapnik::datasource_exception("resultset next error: " + errormsg);
         }
-
     }
 
     virtual const std::string getFieldName(int index) const
@@ -132,13 +128,13 @@ public:
         SQLRETURN retcode;
 
         retcode = SQLColAttributeA(
-                      res_,
-                      index + 1,
-                      SQL_DESC_NAME,
-                      fname,
-                      sizeof(fname),
-                      &name_length,
-                      0);
+            res_,
+            index + 1,
+            SQL_DESC_NAME,
+            fname,
+            sizeof(fname),
+            &name_length,
+            0);
 
         if (retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO)
         {
@@ -156,13 +152,13 @@ public:
         SQLLEN length = 0;
         SQLRETURN retcode;
         retcode = SQLColAttribute(
-                      res_,
-                      index + 1,
-                      SQL_DESC_LENGTH,
-                      NULL,
-                      NULL,
-                      NULL,
-                      &length);
+            res_,
+            index + 1,
+            SQL_DESC_LENGTH,
+            NULL,
+            NULL,
+            NULL,
+            &length);
 
         if (retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO)
         {
@@ -187,7 +183,7 @@ public:
 
         if (retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO)
         {
-            return (int) dataType;
+            return (int)dataType;
         }
         else
         {
@@ -230,7 +226,8 @@ public:
 
         if (retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO)
         {
-            if(ind == SQL_NULL_DATA){
+            if (ind == SQL_NULL_DATA)
+            {
                 return boost::optional<long long>();
             }
             return intvalue;
@@ -242,7 +239,7 @@ public:
         }
         return 0;
     }
-    
+
     virtual const boost::optional<int> getInt(int index) const
     {
         SQLINTEGER intvalue;
@@ -252,7 +249,8 @@ public:
 
         if (retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO)
         {
-            if(ind == SQL_NULL_DATA){
+            if (ind == SQL_NULL_DATA)
+            {
                 return boost::optional<int>();
             }
             return intvalue;
@@ -264,7 +262,7 @@ public:
         }
         return 0;
     }
-    
+
     virtual const boost::optional<double> getDouble(int index) const
     {
         double value;
@@ -274,7 +272,8 @@ public:
 
         if (retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO)
         {
-            if(ind == SQL_NULL_DATA){
+            if (ind == SQL_NULL_DATA)
+            {
                 return boost::optional<double>();
             }
             return value;
@@ -286,7 +285,7 @@ public:
         }
         return 0;
     }
-    
+
     virtual const boost::optional<float> getFloat(int index) const
     {
         float value;
@@ -296,7 +295,8 @@ public:
 
         if (retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO)
         {
-            if(ind == SQL_NULL_DATA){
+            if (ind == SQL_NULL_DATA)
+            {
                 return boost::optional<float>();
             }
             return value;
@@ -315,10 +315,8 @@ public:
         SQLLEN length = 0;
         SQLRETURN retcode;
 
-
         std::wstring str;
         wchar_t buffer[255];
-
 
         retcode = SQLGetData(res_, index + 1, SQL_C_WCHAR, &buffer, sizeof(buffer), &length);
 
@@ -326,7 +324,6 @@ public:
         {
 
             return buffer;
-
         }
         else if (retcode == SQL_SUCCESS_WITH_INFO && length != SQL_NULL_DATA)
         {
@@ -354,7 +351,6 @@ public:
         SQLLEN length = 0;
         SQLRETURN retcode;
 
-
         std::string str;
         char buffer[255];
 
@@ -364,7 +360,6 @@ public:
         {
 
             return buffer;
-
         }
         else if (retcode == SQL_SUCCESS_WITH_INFO && length != SQL_NULL_DATA)
         {
@@ -417,7 +412,7 @@ public:
         return std::vector<char>();
     }
 
-private:
+  private:
     SQLHANDLE res_;
     bool is_closed_;
 };

@@ -30,9 +30,9 @@
 #include <memory>
 class CursorResultSet : public IResultSet, private mapnik::util::noncopyable
 {
-public:
-    CursorResultSet(std::shared_ptr< Pool<Connection, ConnectionCreator> > const& pool,
-                    std::shared_ptr<Connection> const &conn,
+  public:
+    CursorResultSet(std::shared_ptr<Pool<Connection, ConnectionCreator>> const& pool,
+                    std::shared_ptr<Connection> const& conn,
                     std::string const& sql)
         : pool_(pool),
           conn_(conn),
@@ -45,7 +45,6 @@ public:
     {
         close();
     }
-
 
     virtual void close()
     {
@@ -141,7 +140,7 @@ public:
         return rs_->getBinary(index);
     }
 
-private:
+  private:
     void getNextResultSet()
     {
         if (!conn_)
@@ -154,27 +153,13 @@ private:
         }
         rs_ = conn_->executeQuery(sql_.c_str());
         is_closed_ = false;
-
-
     }
-    std::shared_ptr< Pool<Connection, ConnectionCreator> > pool_;
+    std::shared_ptr<Pool<Connection, ConnectionCreator>> pool_;
     std::shared_ptr<Connection> conn_;
     std::shared_ptr<ResultSet> rs_;
 
     std::string sql_;
     bool is_closed_;
-
 };
 
 #endif // MSSQL_CURSORRESULTSET_HPP
-
-
-
-
-
-
-
-
-
-
-

@@ -4,10 +4,11 @@
 #include <windows.h>
 #endif
 
-#include <stdexcept>
 #include "odbc.hpp"
+#include <stdexcept>
 
-void Odbc::InitOdbc() {
+void Odbc::InitOdbc()
+{
     if (sqlenvhandle_ != SQL_NULL_HANDLE)
     {
         return;
@@ -28,15 +29,17 @@ void Odbc::InitOdbc() {
     }
 }
 
-void Odbc::FreeOdbc() {
+void Odbc::FreeOdbc()
+{
     if (sqlenvhandle_ != SQL_NULL_HANDLE)
     {
-        SQLFreeHandle( SQL_HANDLE_DBC, sqlenvhandle_ );
+        SQLFreeHandle(SQL_HANDLE_DBC, sqlenvhandle_);
         sqlenvhandle_ = SQL_NULL_HANDLE;
     }
 }
 
-SQLHANDLE  Odbc::GetEnvHandle() {
+SQLHANDLE Odbc::GetEnvHandle()
+{
     return Odbc::sqlenvhandle_;
 }
 
@@ -45,13 +48,13 @@ SQLHANDLE Odbc::sqlenvhandle_;
 std::string getOdbcError(unsigned int handletype, const SQLHANDLE& handle)
 {
 
-    std::string  status;
+    std::string status;
 
-    SQLCHAR  sqlstate[6];
-    SQLCHAR  message[SQL_MAX_MESSAGE_LENGTH];
-    SQLINTEGER  NativeError;
-    SQLSMALLINT   i, MsgLen;
-    SQLRETURN     rc2;
+    SQLCHAR sqlstate[6];
+    SQLCHAR message[SQL_MAX_MESSAGE_LENGTH];
+    SQLINTEGER NativeError;
+    SQLSMALLINT i, MsgLen;
+    SQLRETURN rc2;
 
     // Get the status records.
     i = 1;

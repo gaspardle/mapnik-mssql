@@ -40,18 +40,17 @@ class IResultSet;
 
 class mssql_featureset : public mapnik::Featureset
 {
-public:
+  public:
     mssql_featureset(std::shared_ptr<IResultSet> const& rs,
                      context_ptr const& ctx,
                      bool wkb,
                      bool is_sqlgeography,
                      bool key_field,
-                     bool key_field_as_attribute
-                    );
+                     bool key_field_as_attribute);
     feature_ptr next();
     ~mssql_featureset();
 
-private:
+  private:
     std::shared_ptr<IResultSet> rs_;
     context_ptr ctx_;
     bool wkb_;
@@ -66,12 +65,11 @@ private:
     template <typename T>
     inline void putIfNotNull(feature_ptr feature, mapnik::context_type::key_type const& key, T const& val)
     {
-        if(val){
+        if (val)
+        {
             feature->put(key, *val);
         }
-        
     }
-
 };
 
 #endif // MSSQL_FEATURESET_HPP
