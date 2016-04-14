@@ -27,11 +27,9 @@
 // mapnik
 #include <mapnik/debug.hpp>
 #include <mapnik/feature_factory.hpp>
-#include <mapnik/global.hpp>
-#include <mapnik/global.hpp> // for int2net
+///#include <mapnik/global.hpp> // for int2net
 #include <mapnik/unicode.hpp>
-#include <mapnik/util/conversions.hpp>
-#include <mapnik/util/trim.hpp>
+///#include <mapnik/util/conversions.hpp>
 #include <mapnik/value_types.hpp>
 #include <mapnik/wkb.hpp>
 

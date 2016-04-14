@@ -25,10 +25,12 @@
 #define MSSQL_FEATURESET_HPP
 
 // mapnik
-#include <mapnik/box2d.hpp>
-#include <mapnik/datasource.hpp>
+///#include <mapnik/box2d.hpp>
+///#include <mapnik/datasource.hpp>
 #include <mapnik/feature.hpp>
+#include <mapnik/featureset.hpp>
 #include <mapnik/unicode.hpp>
+#include <memory>
 
 using mapnik::Featureset;
 using mapnik::box2d;

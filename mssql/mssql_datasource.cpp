@@ -23,6 +23,8 @@
 //#include "stdafx.h"
 
 #include "asyncresultset.hpp"
+#include "cursorresultset.hpp"
+#include "resultset.hpp"
 #include "connection_manager.hpp"
 #include "mssql_datasource.hpp"
 #include "mssql_featureset.hpp"
@@ -31,15 +33,15 @@
 
 #include <mapnik/boolean.hpp>
 #include <mapnik/debug.hpp>
-#include <mapnik/global.hpp>
+///#include <mapnik/global.hpp>
 #include <mapnik/sql_utils.hpp>
-#include <mapnik/timer.hpp>
-#include <mapnik/util/conversions.hpp>
+///#include <mapnik/timer.hpp>
+///#include <mapnik/util/conversions.hpp>
 #include <mapnik/value_types.hpp>
 
 // boost
 #include <boost/algorithm/string.hpp>
-#include <boost/tokenizer.hpp>
+///#include <boost/tokenizer.hpp>
 
 // stl
 #include <algorithm>
@@ -48,6 +50,8 @@
 #include <set>
 #include <sstream>
 #include <string>
+
+
 
 DATASOURCE_PLUGIN(mssql_datasource)
 

@@ -29,10 +29,12 @@
 #endif
 
 #include "mapnik/util/utf_conv_win.hpp"
+
 #include "odbc.hpp"
+#include <mapnik/datasource.hpp>
 #include <mapnik/debug.hpp>
 #include <sql.h>
-#include <sqlext.h>
+///#include <sqlext.h>
 
 class IResultSet
 {
