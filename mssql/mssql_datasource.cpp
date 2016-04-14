@@ -23,11 +23,11 @@
 //#include "stdafx.h"
 
 #include "asyncresultset.hpp"
-#include "cursorresultset.hpp"
-#include "resultset.hpp"
 #include "connection_manager.hpp"
+#include "cursorresultset.hpp"
 #include "mssql_datasource.hpp"
 #include "mssql_featureset.hpp"
+#include "resultset.hpp"
 
 // mapnik
 
@@ -50,8 +50,6 @@
 #include <set>
 #include <sstream>
 #include <string>
-
-
 
 DATASOURCE_PLUGIN(mssql_datasource)
 
@@ -952,15 +950,19 @@ box2d<double> mssql_datasource::envelope() const
             }
 
             shared_ptr<ResultSet> rs = conn->executeQuery(s.str());
-            if (rs->next() && !rs->isNull(0))
+            if (rs->next())
             {
-                double lox, loy, hix, hiy;
-                if ((lox = *rs->getDouble(0)) &&
-                    (loy = *rs->getDouble(1)) &&
-                    (hix = *rs->getDouble(2)) &&
-                    (hiy = *rs->getDouble(3)))
+                boost::optional<double> lox = rs->getDouble(0);
+                boost::optional<double> loy = rs->getDouble(1);
+                boost::optional<double> hix = rs->getDouble(2);
+                boost::optional<double> hiy = rs->getDouble(3);
+                
+                if (lox &&
+                    loy &&
+                    hix &&
+                    hiy)
                 {
-                    extent_.init(lox, loy, hix, hiy);
+                    extent_.init(*lox, *loy, *hix, *hiy);
                     extent_initialized_ = true;
                 }
                 else
@@ -1014,7 +1016,7 @@ boost::optional<mapnik::datasource_geometry_t> mssql_datasource::get_geometry_ty
                   << " FROM " << populate_tokens(table_);
 
                 shared_ptr<ResultSet> rs = conn->executeQuery(s.str());
-                while (rs->next() && !rs->isNull(0))
+                while (rs->next())
                 {
                     std::string data = rs->getString(0);
 

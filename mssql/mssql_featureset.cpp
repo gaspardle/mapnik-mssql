@@ -75,8 +75,9 @@ feature_ptr mssql_featureset::next()
         {
             std::string name = rs_->getFieldName(pos);
 
+            boost::optional<int> id = rs_->getInt(pos);
             // null feature id is not acceptable
-            if (rs_->isNull(pos))
+            if (!id)
             {
                 MAPNIK_LOG_WARN(mssql) << "mssql_featureset: null value encountered for key_field: " << name;
                 continue;
@@ -84,7 +85,7 @@ feature_ptr mssql_featureset::next()
 
             // validation happens of this type at initialization
             mapnik::value_integer val;
-            val = rs_->getInt(pos).get();
+            val = id.get();
 
             feature = feature_factory::create(ctx_, val);
             if (key_field_as_attribute_)

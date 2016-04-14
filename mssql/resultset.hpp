@@ -49,7 +49,6 @@ class IResultSet
     virtual int getFieldLength(const char* name) const = 0;
     virtual int getTypeOID(int index) const = 0;
     virtual int getTypeOID(const char* name) const = 0;
-    virtual bool isNull(int index) const = 0;
     virtual const boost::optional<int> getInt(int index) const = 0;
     virtual const boost::optional<long long> getBigInt(int index) const = 0;
     virtual const boost::optional<double> getDouble(int index) const = 0;
@@ -199,23 +198,6 @@ class ResultSet : public IResultSet, private mapnik::util::noncopyable
     virtual int getTypeOID(const char* name) const
     {
         throw mapnik::datasource_exception("ResultSet getTypeOID(const char* name) not implemented");
-        return 0;
-    }
-
-    virtual bool isNull(int index) const
-    {
-        SQLLEN length;
-        SQLRETURN retcode;
-
-        unsigned char value[1];
-
-        retcode = SQLGetData(res_, index + 1, SQL_C_BINARY, value, 0, &length);
-
-        if (retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO)
-        {
-            return static_cast<bool>(length == SQL_NULL_DATA);
-        }
-
         return 0;
     }
 

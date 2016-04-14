@@ -147,11 +147,6 @@ class AsyncResultSet : public IResultSet, private mapnik::util::noncopyable
         return rs_->getTypeOID(name);
     }
 
-    virtual bool isNull(int index) const
-    {
-        return rs_->isNull(index);
-    }
-
     virtual const boost::optional<int> getInt(int index) const
     {
         return rs_->getInt(index);

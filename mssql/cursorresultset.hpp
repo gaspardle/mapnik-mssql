@@ -106,10 +106,6 @@ class CursorResultSet : public IResultSet, private mapnik::util::noncopyable
         return rs_->getTypeOID(name);
     }
 
-    virtual bool isNull(int index) const
-    {
-        return rs_->isNull(index);
-    }
     virtual const std::string getString(int index) const
     {
         return rs_->getString(index);
