@@ -6,6 +6,9 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mssql", "mssql.vcxproj", "{2B14B51F-015A-4912-8E0C-7E809673C2CE}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test", "test.vcxproj", "{588AA8E1-8BDC-41C4-B823-CCACC58F3D61}"
+	ProjectSection(ProjectDependencies) = postProject
+		{2B14B51F-015A-4912-8E0C-7E809673C2CE} = {2B14B51F-015A-4912-8E0C-7E809673C2CE}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

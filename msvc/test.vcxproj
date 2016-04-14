@@ -127,6 +127,7 @@
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(SolutionDir)..\mapnik-sdk\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NOMINMAX;_WINDOWS;BOOST_ALL_NO_LIB;BOOST_MSVC_ENABLE_2014_JUN_CTP;BOOST_VARIANT_DO_NOT_USE_VARIADIC_TEMPLATES;HAVE_JPEG;HAVE_PNG;HAVE_WEBP;HAVE_TIFF;MAPNIK_USE_PROJ4;BOOST_REGEX_HAS_ICU;GRID_RENDERER;SVG_RENDERER;MAPNIK_THREADSAFE;BIGINT;HAVE_LIBXML2;HAVE_CAIRO;LIBXML_STATIC</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -141,6 +142,8 @@
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(SolutionDir)..\mapnik-sdk\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NOMINMAX;_WINDOWS;BOOST_ALL_NO_LIB;BOOST_MSVC_ENABLE_2014_JUN_CTP;BOOST_VARIANT_DO_NOT_USE_VARIADIC_TEMPLATES;HAVE_JPEG;HAVE_PNG;HAVE_WEBP;HAVE_TIFF;MAPNIK_USE_PROJ4;BOOST_REGEX_HAS_ICU;GRID_RENDERER;SVG_RENDERER;MAPNIK_THREADSAFE;BIGINT;HAVE_LIBXML2;HAVE_CAIRO;LIBXML_STATIC</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -224,9 +227,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\test\catch.hpp" />
+    <ClInclude Include="..\test\ds_test_util.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\test\main.cpp" />
+    <ClCompile Include="..\test\mssql.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
