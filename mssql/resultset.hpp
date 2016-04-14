@@ -402,8 +402,10 @@ public:
 
                 std::vector<char> binvalue(length, 0);
                 retcode = SQLGetData(res_, index + 1, SQL_C_BINARY, (SQLPOINTER)&binvalue[0], length, &length);
-
-                return binvalue;
+                if (retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO)
+                {
+                    return binvalue;
+                }
             }
         }
         else

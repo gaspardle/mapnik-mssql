@@ -67,8 +67,6 @@ mssql_featureset::mssql_featureset(std::shared_ptr<IResultSet> const& rs,
 {
 }
 
-static inline std::string numeric2string(const char* buf);
-
 feature_ptr mssql_featureset::next()
 {
     while (rs_->next())
@@ -87,10 +85,7 @@ feature_ptr mssql_featureset::next()
                 MAPNIK_LOG_WARN(mssql) << "mssql_featureset: null value encountered for key_field: " << name;
                 continue;
             }
-            // create feature with user driven id from attribute
-            int oid = rs_->getTypeOID(pos);
-
-
+            
             // validation happens of this type at initialization
             mapnik::value_integer val;
             val = rs_->getInt(pos).get();

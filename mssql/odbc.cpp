@@ -8,6 +8,10 @@
 #include "odbc.hpp"
 
 void Odbc::InitOdbc() {
+    if (sqlenvhandle_ != SQL_NULL_HANDLE)
+    {
+        return;
+    }
     if (SQL_SUCCESS != SQLSetEnvAttr(SQL_NULL_HANDLE, SQL_ATTR_CONNECTION_POOLING, (SQLPOINTER)SQL_CP_ONE_PER_HENV, 0))
     {
         throw std::runtime_error("Mssql Plugin: SQLSetEnvAttr SQL_ATTR_CONNECTION_POOLING failed");
@@ -25,7 +29,11 @@ void Odbc::InitOdbc() {
 }
 
 void Odbc::FreeOdbc() {
-    SQLFreeHandle(SQL_HANDLE_DBC, sqlenvhandle_);
+    if (sqlenvhandle_ != SQL_NULL_HANDLE)
+    {
+        SQLFreeHandle( SQL_HANDLE_DBC, sqlenvhandle_ );
+        sqlenvhandle_ = SQL_NULL_HANDLE;
+    }
 }
 
 SQLHANDLE  Odbc::GetEnvHandle() {
