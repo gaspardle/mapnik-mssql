@@ -1026,7 +1026,7 @@ boost::optional<mapnik::datasource_geometry_t> mssql_datasource::get_geometry_ty
                     s << " TOP 5";
                 }
 
-                s << "[" << geometryColumn_ << "].STGeometryType() AS geom"
+                s << " lower([" << geometryColumn_ << "].STGeometryType()) AS type "
                   << " FROM " << populate_tokens(table_);
 
                 shared_ptr<ResultSet> rs = conn->executeQuery(s.str());
