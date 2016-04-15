@@ -252,13 +252,12 @@ mssql_datasource::mssql_datasource(parameters const& params)
             // detect primary key
             if (*autodetect_key_field && key_field_.empty())
             {
-                throw mapnik::datasource_exception("autodetect_key_field  detect key_field_: " + key_field_);
 #ifdef MAPNIK_STATS
                 mapnik::progress_timer __stats2__(std::clog, "mssql_datasource::bind(get_primary_key)");
 #endif
 
                 std::ostringstream s;
-                s << "SELECT kcu.COLUMN_NAME"
+                s << "SELECT kcu.COLUMN_NAME "
                      "from INFORMATION_SCHEMA.TABLE_CONSTRAINTS as tc "
                      "join INFORMATION_SCHEMA.KEY_COLUMN_USAGE as kcu "
                      "on kcu.CONSTRAINT_SCHEMA = tc.CONSTRAINT_SCHEMA "
@@ -288,6 +287,10 @@ mssql_datasource::mssql_datasource(parameters const& params)
                         MAPNIK_LOG_DEBUG(mssql) << "mssql_datasource: auto-detected key field of '"
                                                 << key_field_ << "' on table '" << geometry_table_ << "'";
                     }
+                }
+                if (rs_key->next())
+                {
+                    throw mapnik::datasource_exception(std::string("MSSQL Plugin: Error: multi column primary key detected but is not supported"));
                 }
                 rs_key->close();
             }
@@ -372,6 +375,9 @@ mssql_datasource::mssql_datasource(parameters const& params)
                     case SQL_DECIMAL:
                         desc_.add_descriptor(attribute_descriptor(fld_name, mapnik::Double));
                         break;
+
+                    case SQL_CHAR:
+                    case SQL_WCHAR:
                     case SQL_VARCHAR:
                     case SQL_LONGVARCHAR:
                     case SQL_WVARCHAR:
@@ -454,13 +460,21 @@ std::string mssql_datasource::sql_bbox(box2d<double> const& env) const
 {
     std::ostringstream b;
 
-    b << geometryColumnType_ << "::STGeomFromText('POLYGON((";
-    b << std::setprecision(16);
-    b << env.minx() << " " << env.miny() << ",";
-    b << env.maxx() << " " << env.miny() << ",";
-    b << env.maxx() << " " << env.maxy() << ",";
-    b << env.minx() << " " << env.maxy() << ",";
-    b << env.minx() << " " << env.miny() << "))', " << srid_ << ")";
+    if(env.minx() == env.maxx() && env.minx() == env.miny()){
+        b << geometryColumnType_ << "::STGeomFromText('POINT(";
+        b << std::setprecision(16);
+        b << env.minx() << " " << env.miny();       
+        b << ")', " << srid_ << ")";
+    }else{
+        b << geometryColumnType_ << "::STGeomFromText('POLYGON((";
+        b << std::setprecision(16);
+        b << env.minx() << " " << env.miny() << ",";
+        b << env.maxx() << " " << env.miny() << ",";
+        b << env.maxx() << " " << env.maxy() << ",";
+        b << env.minx() << " " << env.maxy() << ",";
+        b << env.minx() << " " << env.miny() << "))', " << srid_ << ")";
+    }
+   
 
     return b.str();
 }

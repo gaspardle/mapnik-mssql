@@ -176,10 +176,12 @@ feature_ptr mssql_featureset::next()
                     putIfNotNull(feature, name, rs_->getDouble(pos));
                     //feature->put(name, rs_->getDouble(pos));
                     break;
+                case SQL_CHAR:
                 case SQL_VARCHAR:
                 case SQL_LONGVARCHAR:
                     feature->put(name, (UnicodeString)tr_->transcode(rs_->getString(pos).c_str()));
                     break;
+                case SQL_WCHAR:
                 case SQL_WVARCHAR:
                 case SQL_WLONGVARCHAR:
                 {

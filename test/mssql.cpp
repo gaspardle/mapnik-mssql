@@ -135,7 +135,8 @@ TEST_CASE("mssql-2") {
         mapnik::parameters params(base_params);
         params["table"] = "test";
         params["user"] = "not_a_valid_user";
-        params["password"] = "not_a_valid_pwd";
+        params["password"] = "not_a_valid_pwd";       
+        params.erase("connection_string");
         CHECK_THROWS(mapnik::datasource_cache::instance().create(params));
     }
 
@@ -234,7 +235,7 @@ TEST_CASE("mssql-2") {
     SECTION("Postgis bbox query")
     {
         mapnik::parameters params(base_params);
-        params["table"] = "(SELECT * FROM test) as data WHERE geom && !bbox!";
+        params["table"] = "(SELECT * FROM test as data WHERE geom.STIntersects(!bbox!) = 1) tmp";
         auto ds = mapnik::datasource_cache::instance().create(params);
         REQUIRE(ds != nullptr);
         mapnik::box2d<double> ext = ds->envelope();
