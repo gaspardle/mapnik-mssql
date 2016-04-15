@@ -11,7 +11,7 @@ USE mapnik_tmp_mssql_db
 GO
 
 CREATE TABLE [test](
-	[gid] [int] IDENTITY(1,1) NOT NULL,[geom] [geometry] NULL, [colbigint] [bigint] NULL, [col_text] [nvarchar](max) NULL, [col-char] [nchar](10) NULL, [col+bool] [bit] NULL, [colnumeric] [numeric](18, 0) NULL, [colsmallint] [smallint] NULL, [colfloat4] [real] NULL, [colfloat8] [float] NULL, [colcharacter] [char](1) NULL, CONSTRAINT [PK_test] PRIMARY KEY CLUSTERED ([gid] ASC) 
+	[gid] [int] IDENTITY(1,1) NOT NULL,[geom] [geometry] NULL, [colbigint] [bigint] NULL, [col_text] [nvarchar](max) NULL, [col-char] [nchar](1) NULL, [col+bool] [bit] NULL, [colnumeric] [numeric](18, 0) NULL, [colsmallint] [smallint] NULL, [colfloat4] [real] NULL, [colfloat8] [float] NULL, [colcharacter] [char](1) NULL, CONSTRAINT [PK_test] PRIMARY KEY CLUSTERED ([gid] ASC) 
 )
 INSERT INTO test VALUES (geometry::STGeomFromText('POINT(0 0)', 4326), -9223372036854775808, 'I am a point', 'A', 1, 1234567809990001, 0, 0.0, 0.0, 'A');
 INSERT INTO test VALUES (geometry::STGeomFromText('POINT(-2 2)', 4326), 9223372036854775807, 'I, too, am a point!', 'B', 0, -123456780999001, 0, 0.0, 0.0, 'A');
@@ -33,18 +33,22 @@ CREATE TABLE [test_no_geom_col]([id] [int] IDENTITY(1,1) NOT NULL) ON [PRIMARY]
 INSERT INTO test_no_geom_col DEFAULT VALUES;
 
 --simlulate z() function from postgis-vt-util
-/*CREATE OR REPLACE FUNCTION z(numeric)
-  RETURNS integer AS
-$BODY$
-begin
+/*IF object_id('z') IS NOT NULL
+    DROP FUNCTION z
+
+CREATE FUNCTION z
+(
+	-- Add the parameters for the function here
+	@param1 real
+)
+RETURNS int
+AS
+BEGIN
     -- Don't bother if the scale is larger than ~zoom level 0
-    if $1 > 600000000 then
+    if @param1 > 600000000 
+	begin
         return null;
-    end if;
-    return round(log(2,559082264.028/$1));
-end;
-$BODY$
-  LANGUAGE plpgsql IMMUTABLE
-  COST 100;
-ALTER FUNCTION z(numeric)
-  OWNER TO postgres;*/
+    end
+    return round(log(2,559082264.028/@param1), 0);
+
+END*/

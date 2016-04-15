@@ -28,7 +28,8 @@ test_script:
 - ps: $sqlInstance = "(local)\SQL2014"
 - ps: $sqlUser = "sa"
 - ps: $sqlPw = "Password12!"
-- ps: sqlcmd -S "$sqlInstance" -i .\test\test.sql -f 65001
+- ps: sqlcmd -S "$sqlInstance" -i .\test\mssql-create-db-and-tables.sql -f 65001
+- ps: sqlcmd -S "$sqlInstance" -i .\test\mssql-datatypes-test.sql -f 65001
 - ps: $ENV:MSSQL_CONNECTION_STRING = "Driver={SQL Server Native Client 11.0};Server=$sqlInstance;Database=mapnik_tmp_mssql_db;Uid=$sqlUser;Pwd=$sqlPw;"
 - ps: $ENV:PATH = "$ENV:MAPNIK_SDK\lib" + ";" + $ENV:Path
 - ps: $ENV:ICU_DATA = "$ENV:MAPNIK_SDK\share\icu"

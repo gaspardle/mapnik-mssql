@@ -35,38 +35,14 @@ clang++ -o test-postgis -g -I./test/ test/unit/run.cpp test/unit/datasource/post
 
 #include <boost/optional/optional_io.hpp>
 
-//int run(std::string const& command, bool okay_to_fail = false)
-//{
-//    std::string cmd;
-//    if (std::getenv("DYLD_LIBRARY_PATH") != nullptr)
-//    {
-//        cmd += std::string("DYLD_LIBRARY_PATH=") + std::getenv("DYLD_LIBRARY_PATH") + " && ";
-//    }
-//    cmd += command;
-//    // silence output unless MAPNIK_TEST_DEBUG is defined
-//    if (std::getenv("MAPNIK_TEST_DEBUG") == nullptr)
-//    {
-//#ifndef _WINDOWS
-//        cmd += " 2>/dev/null";
-//#else
-//        cmd += " 2> nul";
-//#endif
-//    }
-//    else
-//    {
-//        std::clog << "Running " << cmd << "\n";
-//    }
-//    bool worked = (std::system(cmd.c_str()) == 0);
-//    if (okay_to_fail == true) return true;
-//    return worked;
-//}
 
-std::string dbname("mapnik_tmp_mssql_db");
-std::string connstring("Driver={SQL Server Native Client 11.0};Server=.;Database=mapnik_tmp_mssql_db;Trusted_Connection=Yes;");
+std::string const MSSQL_CONNECTION_STRING = (std::getenv("MSSQL_CONNECTION_STRING") == nullptr) ?
+    "Driver={SQL Server Native Client 11.0};Server=.;Database=mapnik_tmp_mssql_db;Trusted_Connection=Yes;" :
+    std::getenv("MSSQL_CONNECTION_STRING");
 
-TEST_CASE("mssql-2") {
+TEST_CASE("mssql") {
 
-    //SECTION("Postgis data initialization")
+    //SECTION("Mssql data initialization")
     //{
     //    //don't add 'true' here, to get error message, when drop fails. If it works nothing is output
     //    REQUIRE(run("dropdb --if-exists " + dbname));
@@ -79,17 +55,15 @@ TEST_CASE("mssql-2") {
 
     mapnik::parameters base_params;
     base_params["type"] = "mssql";
-    //base_params["dbname"] = dbname;
-    //base_params["host"] = "localhost\\SQLEXPRESS";
-    base_params["connection_string"] = connstring;
+    base_params["connection_string"] = MSSQL_CONNECTION_STRING;
 
-    SECTION("Postgis should throw without 'table' parameter")
+    SECTION("Mssql should throw without 'table' parameter")
     {
         mapnik::parameters params(base_params);
         CHECK_THROWS(mapnik::datasource_cache::instance().create(params));
     }
 
-    SECTION("Postgis should throw with 'max_async_connection' greater than 'max_size'")
+    SECTION("Mssql should throw with 'max_async_connection' greater than 'max_size'")
     {
         mapnik::parameters params(base_params);
         params["table"] = "test";
@@ -98,14 +72,14 @@ TEST_CASE("mssql-2") {
         CHECK_THROWS(mapnik::datasource_cache::instance().create(params));
     }
 
-    SECTION("Postgis should throw with invalid metadata query")
+    SECTION("Mssql should throw with invalid metadata query")
     {
         mapnik::parameters params(base_params);
         params["table"] = "does_not_exist";
         CHECK_THROWS(mapnik::datasource_cache::instance().create(params));
     }
 
-    SECTION("Postgis should throw with invalid key field")
+    SECTION("Mssql should throw with invalid key field")
     {
         mapnik::parameters params(base_params);
         params["table"] = "test_invalid_id";
@@ -113,7 +87,7 @@ TEST_CASE("mssql-2") {
         CHECK_THROWS(mapnik::datasource_cache::instance().create(params));
     }
 
-    SECTION("Postgis should throw with multicolumn primary key")
+    SECTION("Mssql should throw with multicolumn primary key")
     {
         mapnik::parameters params(base_params);
         params["table"] = "test_invalid_multi_col_pk";
@@ -121,7 +95,7 @@ TEST_CASE("mssql-2") {
         CHECK_THROWS(mapnik::datasource_cache::instance().create(params));
     }
 
-    SECTION("Postgis should throw without geom column")
+    SECTION("Mssql should throw without geom column")
     {
         mapnik::parameters params(base_params);
         params["table"] = "test_no_geom_col";
@@ -130,7 +104,7 @@ TEST_CASE("mssql-2") {
         CHECK_THROWS(all_features(ds));
     }
 
-    SECTION("Postgis should throw with invalid credentials")
+    SECTION("Mssql should throw with invalid credentials")
     {
         mapnik::parameters params(base_params);
         params["table"] = "test";
@@ -140,7 +114,7 @@ TEST_CASE("mssql-2") {
         CHECK_THROWS(mapnik::datasource_cache::instance().create(params));
     }
 
-    SECTION("Postgis initialize dataset with persist_connection, schema, extent, geometry field, autodectect key field, simplify_geometries, row_limit")
+    SECTION("Mssql initialize dataset with persist_connection, schema, extent, geometry field, autodectect key field, simplify_geometries, row_limit")
     {
         mapnik::parameters params(base_params);
         params["persist_connection"] = "false";
@@ -153,7 +127,7 @@ TEST_CASE("mssql-2") {
         auto ds = mapnik::datasource_cache::instance().create(params);
     }
 
-    SECTION("Postgis dataset geometry type")
+    SECTION("Mssql dataset geometry type")
     {
         mapnik::parameters params(base_params);
         params["table"] = "(SELECT * FROM test WHERE gid=1) as data";
@@ -162,7 +136,7 @@ TEST_CASE("mssql-2") {
         CHECK(ds->get_geometry_type() == mapnik::datasource_geometry_t::Point);
     }
 
-    SECTION("Postgis query field names")
+    SECTION("Mssql query field names")
     {
         mapnik::parameters params(base_params);
         params["table"] = "test";
@@ -174,7 +148,7 @@ TEST_CASE("mssql-2") {
         require_field_types(fields, { mapnik::Integer, mapnik::Integer, mapnik::String, mapnik::String, mapnik::Boolean, mapnik::Double, mapnik::Integer, mapnik::Double, mapnik::Double, mapnik::String });
     }
 
-    SECTION("Postgis iterate features")
+    SECTION("Mssql iterate features")
     {
         mapnik::parameters params(base_params);
         params["table"] = "test";
@@ -195,17 +169,15 @@ TEST_CASE("mssql-2") {
 
         featureset = all_features(ds);
         feature = featureset->next();
-        //deactivate char tests for now: not yet implemented.
-        //add at postgis_datasource.cpp:423
-        //case 18:    // char
-        //REQUIRE("A" == feature->get("col-char").to_string());
+     
+        REQUIRE("A" == feature->get("col-char").to_string());
         feature = featureset->next();
-        //REQUIRE("B" == feature->get("col-char").to_string());
+        REQUIRE("B" == feature->get("col-char").to_string());
         feature = featureset->next();
         REQUIRE(false == feature->get("col+bool").to_bool());
     }
 
-    SECTION("Postgis cursorresultest")
+    SECTION("Mssql cursorresultest")
     {
         mapnik::parameters params(base_params);
         params["table"] = "(SELECT * FROM test) as data";
@@ -232,7 +204,7 @@ TEST_CASE("mssql-2") {
         require_geometry(featureset->next(), 3, mapnik::geometry::geometry_types::GeometryCollection);
     }
 
-    SECTION("Postgis bbox query")
+    SECTION("Mssql bbox query")
     {
         mapnik::parameters params(base_params);
         params["table"] = "(SELECT * FROM test as data WHERE geom.STIntersects(!bbox!) = 1) tmp";
@@ -247,7 +219,7 @@ TEST_CASE("mssql-2") {
         REQUIRE(ext.maxy() == 4);
     }
 
-    SECTION("Postgis query extent: full dataset")
+    SECTION("Mssql query extent: full dataset")
     {
         //include schema to increase coverage
         mapnik::parameters params(base_params);
@@ -263,7 +235,7 @@ TEST_CASE("mssql-2") {
         REQUIRE(ext.maxy() == 4);
     }
 /* deactivated for merging: still investigating a proper fix
-    SECTION("Postgis query extent from subquery")
+    SECTION("Mssql query extent from subquery")
     {
         mapnik::parameters params(base_params);
         params["table"] = "(SELECT * FROM test where gid=4) as data";
@@ -278,7 +250,7 @@ TEST_CASE("mssql-2") {
         REQUIRE(ext.maxy() == 2);
     }
 */
-    SECTION("Postgis query extent: from subquery with 'extent_from_subquery=true'")
+    SECTION("Mssql query extent: from subquery with 'extent_from_subquery=true'")
     {
         mapnik::parameters params(base_params);
         params["table"] = "(SELECT * FROM test where gid=4) as data";
@@ -294,7 +266,7 @@ TEST_CASE("mssql-2") {
         REQUIRE(ext.maxy() == 2);
     }
 /* deactivated for merging: still investigating a proper fix
-    SECTION("Postgis query extent: subset with 'extent_from_subquery=true' and 'scale_denominator'")
+    SECTION("Mssql query extent: subset with 'extent_from_subquery=true' and 'scale_denominator'")
     {
         mapnik::parameters params(base_params);
         // !!!! postgis-vt-util::z() returns 'null' when 'scale_denominator > 600000000'

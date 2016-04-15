@@ -13,11 +13,7 @@ static std::string MSSQL_PLUGIN_PATH = (std::getenv("MSSQL_PLUGIN_PATH") == null
 	"mssql.input" :
 	std::getenv("MSSQL_PLUGIN_PATH");
 
-TEST_CASE("mssql") {
-
-    //register plugin
-    std::string mssql_plugin = MSSQL_PLUGIN_PATH;
-    mapnik::datasource_cache::instance().register_datasource(mssql_plugin);
+TEST_CASE("mssql-datatypes") {
 
     SECTION("is registered")
     {
@@ -127,6 +123,9 @@ TEST_CASE("mssql") {
 
 int main (int argc, char* argv[])
 {
+    //register plugin
+    mapnik::datasource_cache::instance().register_datasource(MSSQL_PLUGIN_PATH);
+    
     int result = Catch::Session().run( argc, argv );
     return result;
 }
