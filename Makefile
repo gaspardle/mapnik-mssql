@@ -2,7 +2,7 @@
 
 CXXFLAGS = $(shell mapnik-config --cflags) -fPIC -DUNICODE -std=c++11 -w
 
-LIBS = $(shell mapnik-config --libs --ldflags --dep-libs) -lodbc 
+LIBS = $(shell mapnik-config --libs --ldflags --dep-libs) -lodbc -L$(HOME)/local/lib/
 
 SRC = $(wildcard mssql/*.cpp)
 
