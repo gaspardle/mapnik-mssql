@@ -76,9 +76,6 @@ class Connection
         {
             std::string err_msg = "Mssql Plugin: ";
             err_msg += getOdbcError(SQL_HANDLE_DBC, sqlconnectionhandle);
-            err_msg += "\nSQLDriverConnect Error, Connection string: '";
-            err_msg += connection_str;
-            err_msg += "'\n";
             close();
             throw mapnik::datasource_exception(err_msg);
         }
