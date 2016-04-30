@@ -71,6 +71,9 @@ feature_ptr mssql_featureset::next()
         unsigned pos = 1;
         feature_ptr feature;
 
+        //get the geometry
+        std::vector<char> data = rs_->getBinary(0);
+
         if (key_field_)
         {
             std::string name = rs_->getFieldName(pos);
@@ -102,7 +105,6 @@ feature_ptr mssql_featureset::next()
         }
 
         // parse geometry
-        std::vector<char> data = rs_->getBinary(0);
         size_t size = data.size();
 
         // null geometry is not acceptable
