@@ -139,68 +139,57 @@ feature_ptr mssql_featureset::next()
 
             // NOTE: we intentionally do not store null here
             // since it is equivalent to the attribute not existing
-            if (true /*!rs_->isNull(pos)*/)
+
+            const int oid = rs_->getTypeOID(pos);
+
+            switch (oid)
             {
-                const int oid = rs_->getTypeOID(pos);
-
-                switch (oid)
+            case SQL_BIT:
+            {
+                auto bit = rs_->getInt(pos);
+                if (bit)
                 {
-                case SQL_BIT:
-                {
-                    auto bit = rs_->getInt(pos);
-                    if (bit)
-                    {
-                        feature->put(name, *bit != 0);
-                    }
-                    break;
+                    feature->put(name, *bit != 0);
                 }
-                case SQL_SMALLINT:
-                case SQL_TINYINT:
-                case SQL_INTEGER:
-                    putIfNotNull(feature, name, rs_->getInt(pos));
-                    //feature->put<mapnik::value_integer>(name, rs_->getInt(pos));
-                    break;
-                case SQL_BIGINT:
-                    putIfNotNull(feature, name, rs_->getBigInt(pos));
-                    //feature->put<mapnik::value_integer>(name, rs_->getBigInt(pos));
-                    break;
-                case SQL_FLOAT:
-                case SQL_REAL:
-                    putIfNotNull(feature, name, (rs_->getFloat(pos)));
-                    //feature->put(name, static_cast<double>(rs_->getFloat(pos)));
-                    break;
-                case SQL_DOUBLE:
-                    putIfNotNull(feature, name, rs_->getDouble(pos));
-                    //feature->put(name, rs_->getDouble(pos));
-                    break;
-                case SQL_DECIMAL:
-                case SQL_NUMERIC:
-                    putIfNotNull(feature, name, rs_->getDouble(pos));
-                    //feature->put(name, rs_->getDouble(pos));
-                    break;
-                case SQL_CHAR:
-                case SQL_VARCHAR:
-                case SQL_LONGVARCHAR:
-                    feature->put(name, (UnicodeString)tr_->transcode(rs_->getString(pos).c_str()));
-                    break;
-                case SQL_WCHAR:
-                case SQL_WVARCHAR:
-                case SQL_WLONGVARCHAR:
-                {
-                    //feature->put(name, (UnicodeString)tr_->transcode(rs_->getString(pos).c_str()));
-
-                    //easier than to deal with wchar on each platforms
-                    auto stringbin = rs_->getBinary(pos);
-                    feature->put(name, (UnicodeString)tr_ucs2_->transcode(stringbin.data(), stringbin.size()));
-                    break;
-                }
-                default:
-                {
-                    MAPNIK_LOG_WARN(mssql) << "mssql_featureset: Unknown type=" << oid;
-
-                    break;
-                }
-                }
+                break;
+            }
+            case SQL_SMALLINT:
+            case SQL_TINYINT:
+            case SQL_INTEGER:
+                putIfNotNull(feature, name, rs_->getInt(pos));
+                break;
+            case SQL_BIGINT:
+                putIfNotNull(feature, name, rs_->getBigInt(pos));
+                break;
+            case SQL_FLOAT:
+            case SQL_REAL:
+                putIfNotNull(feature, name, (rs_->getFloat(pos)));
+                break;
+            case SQL_DOUBLE:
+                putIfNotNull(feature, name, rs_->getDouble(pos));
+                break;
+            case SQL_DECIMAL:
+            case SQL_NUMERIC:
+                putIfNotNull(feature, name, rs_->getDouble(pos));
+                break;
+            case SQL_CHAR:
+            case SQL_VARCHAR:
+            case SQL_LONGVARCHAR:
+                feature->put(name, (UnicodeString)tr_->transcode(rs_->getString(pos).c_str()));
+                break;
+            case SQL_WCHAR:
+            case SQL_WVARCHAR:
+            case SQL_WLONGVARCHAR:
+            {
+                auto stringbin = rs_->getBinary(pos);
+                feature->put(name, (UnicodeString)tr_ucs2_->transcode(stringbin.data(), stringbin.size()));
+                break;
+            }
+            default:
+            {
+                MAPNIK_LOG_WARN(mssql) << "mssql_featureset: Unknown type=" << oid;
+                break;
+            }
             }
         }
         return feature;
