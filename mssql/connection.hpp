@@ -32,6 +32,7 @@
 #include <iostream>
 #include <memory>
 #include <sstream>
+#include <thread>
 
 #include "odbc.hpp"
 #include <sql.h>
@@ -86,7 +87,7 @@ class Connection
         if (!closed_)
         {
 
-            SQLDisconnect(sqlconnectionhandle);
+            SQLRETURN retcode = SQLDisconnect(sqlconnectionhandle);
             SQLFreeHandle(SQL_HANDLE_DBC, sqlconnectionhandle);
 
             MAPNIK_LOG_DEBUG(mssql) << "mssql_connection: sql server connection closed";
@@ -155,7 +156,7 @@ class Connection
 
 #ifdef _WIN32
         //freetds does not seem to support async
-        SQLSetStmtAttr(async_hstmt, SQL_ATTR_ASYNC_ENABLE, (SQLPOINTER)SQL_ASYNC_ENABLE_ON, 0);
+        retcode = SQLSetStmtAttr(async_hstmt, SQL_ATTR_ASYNC_ENABLE, (SQLPOINTER)SQL_ASYNC_ENABLE_ON, 0);
 #endif
 
         retcode = SQLExecDirectA(async_hstmt, (SQLCHAR*)sql.c_str(), SQL_NTS);
@@ -192,6 +193,8 @@ class Connection
             {
                 break;
             }
+			std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            //Sleep(1);
         }
 
         SQLSetStmtAttr(async_hstmt, SQL_ATTR_ASYNC_ENABLE, (SQLPOINTER)SQL_ASYNC_ENABLE_OFF, 0);
@@ -270,7 +273,7 @@ class Connection
     {
         if (!closed_)
         {
-            SQLDisconnect(sqlconnectionhandle);
+            SQLRETURN retcode = SQLDisconnect(sqlconnectionhandle);
             SQLFreeHandle(SQL_HANDLE_DBC, sqlconnectionhandle);
             //SQLFreeHandle(SQL_HANDLE_ENV, sqlenvhandle);
 
