@@ -33,7 +33,7 @@ void Odbc::FreeOdbc()
 {
     if (sqlenvhandle_ != SQL_NULL_HANDLE)
     {
-        SQLFreeHandle(SQL_HANDLE_DBC, sqlenvhandle_);
+        SQLFreeHandle(SQL_HANDLE_ENV, sqlenvhandle_);
         sqlenvhandle_ = SQL_NULL_HANDLE;
     }
 }
