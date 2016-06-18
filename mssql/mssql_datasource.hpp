@@ -32,7 +32,7 @@
 #include <mapnik/feature_layer_desc.hpp>
 #include <mapnik/params.hpp>
 #include <mapnik/query.hpp>
-//#include <mapnik/unicode.hpp>
+#include <mapnik/unicode.hpp>
 #include <mapnik/value_types.hpp>
 
 // boost
@@ -40,8 +40,8 @@
 
 // stl
 #include <memory>
-//#include <string>
-//#include <vector>
+#include <string>
+#include <vector>
 
 #include "connection_manager.hpp"
 //#include "cursorresultset.hpp"
