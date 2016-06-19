@@ -1,8 +1,9 @@
 mapnik-mssql
 ============
 [![Build status](https://ci.appveyor.com/api/projects/status/mkkf90sypw0b8i82/branch/master?svg=true)](https://ci.appveyor.com/project/gaspardle/mapnik-mssql/branch/master)
+[![Build Status](https://travis-ci.org/gaspardle/mapnik-mssql.svg?branch=master)](https://travis-ci.org/gaspardle/mapnik-mssql)
 
-A mapnik datasource plugin for Microsoft Sql Server 2012/2014. Based on the PostGIS plugin.
+A mapnik datasource plugin for Microsoft Sql Server 2012/2014/2016. Based on the PostGIS plugin.
 
 Parameters
 ----------
@@ -45,6 +46,6 @@ Requirements and dependencies:
  - Visual Studio 2015 
  - Mapnik SDK >= 3.0
 
-### Linux / OS X (Tested with unixODBC / FreeTDS)
+### Linux / OS X (Tested with unixODBC / FreeTDS 0.95)
 make  
 make install

@@ -1,11 +1,9 @@
-USE master
-GO
 
-IF db_id('mapnik_tmp_mssql_db') IS NOT NULL
-    DROP DATABASE mapnik_tmp_mssql_db
+--IF db_id('mapnik_tmp_mssql_db') IS NOT NULL
+--    DROP DATABASE mapnik_tmp_mssql_db
 
-CREATE DATABASE mapnik_tmp_mssql_db
-GO
+--CREATE DATABASE mapnik_tmp_mssql_db
+--GO
 
 USE mapnik_tmp_mssql_db
 GO

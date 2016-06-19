@@ -9,11 +9,11 @@ static std::string MSSQL_CONNECTION_STRING = (std::getenv("MSSQL_CONNECTION_STRI
     "Driver={SQL Server Native Client 11.0};Server=.;Database=mapnik_tmp_mssql_db;Trusted_Connection=Yes;" :
     std::getenv("MSSQL_CONNECTION_STRING");
 
-TEST_CASE("mssql") {
+static std::string MSSQL_PLUGIN_PATH = (std::getenv("MSSQL_PLUGIN_PATH") == nullptr) ?
+	"mssql.input" :
+	std::getenv("MSSQL_PLUGIN_PATH");
 
-    //register plugin
-    std::string mssql_plugin = "mssql.input";
-    mapnik::datasource_cache::instance().register_datasource(mssql_plugin);
+TEST_CASE("mssql-datatypes") {
 
     SECTION("is registered")
     {
@@ -121,8 +121,11 @@ TEST_CASE("mssql") {
     }
 }
 
-int main (int argc, char* const argv[])
+int main (int argc, char* argv[])
 {
+    //register plugin
+    mapnik::datasource_cache::instance().register_datasource(MSSQL_PLUGIN_PATH);
+    
     int result = Catch::Session().run( argc, argv );
     return result;
 }

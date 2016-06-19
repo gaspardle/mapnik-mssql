@@ -23,8 +23,8 @@
 #ifndef MSSQL_ASYNCRESULTSET_HPP
 #define MSSQL_ASYNCRESULTSET_HPP
 
-#include <mapnik/debug.hpp>
 #include <mapnik/datasource.hpp>
+#include <mapnik/debug.hpp>
 
 #include "connection_manager.hpp"
 #include "resultset.hpp"
@@ -36,9 +36,9 @@ using mssql_processor_context_ptr = std::shared_ptr<mssql_processor_context>;
 
 class AsyncResultSet : public IResultSet, private mapnik::util::noncopyable
 {
-public:
+  public:
     AsyncResultSet(mssql_processor_context_ptr const& ctx,
-                   std::shared_ptr< Pool<Connection, ConnectionCreator> > const& pool,
+                   std::shared_ptr<Pool<Connection, ConnectionCreator>> const& pool,
                    std::shared_ptr<Connection> const& conn, std::string const& sql)
         : ctx_(ctx),
           pool_(pool),
@@ -57,7 +57,6 @@ public:
     {
         close();
     }
-
 
     void abort()
     {
@@ -148,11 +147,6 @@ public:
         return rs_->getTypeOID(name);
     }
 
-    virtual bool isNull(int index) const
-    {
-        return rs_->isNull(index);
-    }
-
     virtual const boost::optional<int> getInt(int index) const
     {
         return rs_->getInt(index);
@@ -183,10 +177,9 @@ public:
         return rs_->getBinary(index);
     }
 
-
-private:
+  private:
     mssql_processor_context_ptr ctx_;
-    std::shared_ptr< Pool<Connection, ConnectionCreator> > pool_;
+    std::shared_ptr<Pool<Connection, ConnectionCreator>> pool_;
     std::shared_ptr<Connection> conn_;
     std::string sql_;
     std::shared_ptr<ResultSet> rs_;
@@ -206,13 +199,11 @@ private:
     }
 
     void prepare_next();
-
 };
-
 
 class mssql_processor_context : public mapnik::IProcessorContext
 {
-public:
+  public:
     mssql_processor_context()
         : num_async_requests_(0) {}
     ~mssql_processor_context() {}
@@ -235,10 +226,9 @@ public:
 
     int num_async_requests_;
 
-private:
-    using async_queue = std::queue<std::shared_ptr<AsyncResultSet> >;
+  private:
+    using async_queue = std::queue<std::shared_ptr<AsyncResultSet>>;
     async_queue q_;
-
 };
 
 inline void AsyncResultSet::prepare_next()

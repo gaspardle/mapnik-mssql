@@ -20,35 +20,36 @@
 *
 *****************************************************************************/
 
-#include "stdafx.h"
+//#include "stdafx.h"
 
+#include "asyncresultset.hpp"
 #include "connection_manager.hpp"
+#include "cursorresultset.hpp"
 #include "mssql_datasource.hpp"
 #include "mssql_featureset.hpp"
-#include "asyncresultset.hpp"
-
+#include "resultset.hpp"
 
 // mapnik
-/*
-#include <mapnik/debug.hpp>
-#include <mapnik/global.hpp>
+
 #include <mapnik/boolean.hpp>
+#include <mapnik/debug.hpp>
+///#include <mapnik/global.hpp>
 #include <mapnik/sql_utils.hpp>
-#include <mapnik/util/conversions.hpp>
-#include <mapnik/timer.hpp>
+///#include <mapnik/timer.hpp>
+///#include <mapnik/util/conversions.hpp>
 #include <mapnik/value_types.hpp>
-*/
+
 // boost
 #include <boost/algorithm/string.hpp>
-#include <boost/tokenizer.hpp>
+///#include <boost/tokenizer.hpp>
 
 // stl
-#include <memory>
-#include <string>
 #include <algorithm>
+#include <iomanip>
+#include <memory>
 #include <set>
 #include <sstream>
-#include <iomanip>
+#include <string>
 
 DATASOURCE_PLUGIN(mssql_datasource)
 
@@ -95,6 +96,7 @@ mssql_datasource::mssql_datasource(parameters const& params)
       intersect_min_scale_(*params.get<mapnik::value_integer>("intersect_min_scale", 0)),
       intersect_max_scale_(*params.get<mapnik::value_integer>("intersect_max_scale", 0)),
       key_field_as_attribute_(*params.get<mapnik::boolean_type>("key_field_as_attribute", true)),
+
       wkb_(*params.get<mapnik::boolean_type>("wkb", false)),
       use_filter_(*params.get<mapnik::boolean_type>("use_filter", false)),
       trace_flag_4199_(*params.get<mapnik::boolean_type>("trace_flag_4199", false))
@@ -135,6 +137,8 @@ mssql_datasource::mssql_datasource(parameters const& params)
     boost::optional<mapnik::boolean_type> simplify_opt = params.get<mapnik::boolean_type>("simplify_geometries", false);
     simplify_geometries_ = simplify_opt && *simplify_opt;
 
+    Odbc::InitOdbc();
+
     ConnectionManager::instance().registerPool(creator_, *initial_size, pool_max_size_);
     CnxPool_ptr pool = ConnectionManager::instance().getPool(creator_.id());
     if (pool)
@@ -151,6 +155,7 @@ mssql_datasource::mssql_datasource(parameters const& params)
             if (geometry_table_.empty())
             {
                 geometry_table_ = mapnik::sql_utils::table_from_sql(table_);
+                boost::algorithm::replace_all(geometry_table_, "\r", " ");
             }
 
             std::string::size_type idx = geometry_table_.find_last_of('.');
@@ -179,10 +184,10 @@ mssql_datasource::mssql_datasource(parameters const& params)
                     s << "SELECT column_name, data_type";
                     if (check_srid)
                     {
-                        s << ", (SELECT TOP 1 \""
-                          << geometry_field_ << "\".STSrid FROM \"" << geometry_table_
-                          << "\" WHERE \""
-                          << geometry_field_ << "\" IS NOT NULL)";
+                        s << ", (SELECT TOP 1 ["
+                          << geometry_field_ << "].STSrid FROM [" << geometry_table_
+                          << "] WHERE ["
+                          << geometry_field_ << "] IS NOT NULL)";
                     }
                     s << " FROM "
                       << "information_schema.columns "
@@ -232,8 +237,8 @@ mssql_datasource::mssql_datasource(parameters const& params)
                 {
                     s.str("");
 
-                    s << "SELECT TOP 1 (\"" << geometryColumn_ << "\").STSrid AS srid FROM "
-                      << populate_tokens(table_) << " WHERE \"" << geometryColumn_ << "\" IS NOT NULL;";
+                    s << "SELECT TOP 1 ([" << geometryColumn_ << "]).STSrid AS srid FROM "
+                      << populate_tokens(table_) << " WHERE [" << geometryColumn_ << "] IS NOT NULL;";
 
                     shared_ptr<ResultSet> rs = conn->executeQuery(s.str());
                     if (rs->next())
@@ -247,21 +252,20 @@ mssql_datasource::mssql_datasource(parameters const& params)
             // detect primary key
             if (*autodetect_key_field && key_field_.empty())
             {
-                throw mapnik::datasource_exception("autodetect_key_field  detect key_field_: " + key_field_);
 #ifdef MAPNIK_STATS
                 mapnik::progress_timer __stats2__(std::clog, "mssql_datasource::bind(get_primary_key)");
 #endif
 
                 std::ostringstream s;
-                s << "SELECT kcu.COLUMN_NAME"
-                  "from INFORMATION_SCHEMA.TABLE_CONSTRAINTS as tc "
-                  "join INFORMATION_SCHEMA.KEY_COLUMN_USAGE as kcu "
-                  "on kcu.CONSTRAINT_SCHEMA = tc.CONSTRAINT_SCHEMA "
-                  "and kcu.CONSTRAINT_NAME = tc.CONSTRAINT_NAME "
-                  "and kcu.TABLE_SCHEMA = tc.TABLE_SCHEMA "
-                  "and kcu.TABLE_NAME = tc.TABLE_NAME "
-                  "WHERE tc.CONSTRAINT_TYPE = 'PRIMARY KEY' "
-                  "AND kcu.TABLE_NAME="
+                s << "SELECT kcu.COLUMN_NAME "
+                     "from INFORMATION_SCHEMA.TABLE_CONSTRAINTS as tc "
+                     "join INFORMATION_SCHEMA.KEY_COLUMN_USAGE as kcu "
+                     "on kcu.CONSTRAINT_SCHEMA = tc.CONSTRAINT_SCHEMA "
+                     "and kcu.CONSTRAINT_NAME = tc.CONSTRAINT_NAME "
+                     "and kcu.TABLE_SCHEMA = tc.TABLE_SCHEMA "
+                     "and kcu.TABLE_NAME = tc.TABLE_NAME "
+                     "WHERE tc.CONSTRAINT_TYPE = 'PRIMARY KEY' "
+                     "AND kcu.TABLE_NAME="
                   << "'" << mapnik::sql_utils::unquote_double(geometry_table_) << "' ";
 
                 if (!schema_.empty())
@@ -284,6 +288,10 @@ mssql_datasource::mssql_datasource(parameters const& params)
                                                 << key_field_ << "' on table '" << geometry_table_ << "'";
                     }
                 }
+                if (rs_key->next())
+                {
+                    throw mapnik::datasource_exception(std::string("MSSQL Plugin: Error: multi column primary key detected but is not supported"));
+                }
                 rs_key->close();
             }
 
@@ -291,8 +299,7 @@ mssql_datasource::mssql_datasource(parameters const& params)
             // but still not known at this point, then throw
             if (*autodetect_key_field && key_field_.empty())
             {
-                throw mapnik::datasource_exception(std::string("MSSQL Plugin: Error: primary key required")
-                                                   + " but could not be detected for table '" +
+                throw mapnik::datasource_exception(std::string("MSSQL Plugin: Error: primary key required") + " but could not be detected for table '" +
                                                    geometry_table_ + "', please supply 'key_field' option to specify field to use for primary key");
             }
 
@@ -308,7 +315,7 @@ mssql_datasource::mssql_datasource(parameters const& params)
             MAPNIK_LOG_DEBUG(mssql) << "mssql_datasource: Using SRID=" << srid_;
             MAPNIK_LOG_DEBUG(mssql) << "mssql_datasource: Using geometry_column=" << geometryColumn_;
 
-            // collect attribute desc
+// collect attribute desc
 #ifdef MAPNIK_STATS
             mapnik::progress_timer __stats2__(std::clog, "mssql_datasource::bind(get_column_description)");
 #endif
@@ -352,7 +359,7 @@ mssql_datasource::mssql_datasource(parameters const& params)
                 {
                     switch (type_oid)
                     {
-                    case SQL_BIT:    // bool
+                    case SQL_BIT: // bool
                         desc_.add_descriptor(attribute_descriptor(fld_name, mapnik::Boolean));
                         break;
                     case SQL_SMALLINT:
@@ -368,6 +375,9 @@ mssql_datasource::mssql_datasource(parameters const& params)
                     case SQL_DECIMAL:
                         desc_.add_descriptor(attribute_descriptor(fld_name, mapnik::Double));
                         break;
+
+                    case SQL_CHAR:
+                    case SQL_WCHAR:
                     case SQL_VARCHAR:
                     case SQL_LONGVARCHAR:
                     case SQL_WVARCHAR:
@@ -376,8 +386,8 @@ mssql_datasource::mssql_datasource(parameters const& params)
                         break;
                     default: // should not get here
 #ifdef MAPNIK_LOG
-                        MAPNIK_LOG_WARN(mssql) << "mssql_datasource: Unknown type=" <<
-                                               " (oid:" << type_oid << ")";
+                        MAPNIK_LOG_WARN(mssql) << "mssql_datasource: Unknown type="
+                                               << " (oid:" << type_oid << ")";
 #endif
                         break;
                     }
@@ -385,22 +395,19 @@ mssql_datasource::mssql_datasource(parameters const& params)
             }
 
             rs->close();
-
         }
 
         // Close explicitly the connection so we can 'fork()' without sharing open connections
         conn->close();
 
-
         // Finally, add unique metadata to layer descriptor
-        mapnik::parameters & extra_params = desc_.get_extra_parameters();
+        mapnik::parameters& extra_params = desc_.get_extra_parameters();
         // explicitly make copies of values due to https://github.com/mapnik/mapnik/issues/2651
         extra_params["srid"] = srid_;
         if (!key_field_.empty())
         {
             extra_params["key_field"] = key_field_;
         }
-
     }
 }
 
@@ -430,9 +437,11 @@ mssql_datasource::~mssql_datasource()
             }
         }
     }
+
+    Odbc::FreeOdbc();
 }
 
-const char * mssql_datasource::name()
+const char* mssql_datasource::name()
 {
     return "mssql";
 }
@@ -451,14 +460,21 @@ std::string mssql_datasource::sql_bbox(box2d<double> const& env) const
 {
     std::ostringstream b;
 
-
-    b << geometryColumnType_ << "::STGeomFromText('POLYGON((";
-    b << std::setprecision(16);
-    b << env.minx() << " " << env.miny() << ",";
-    b << env.maxx() << " " << env.miny() << ",";
-    b << env.maxx() << " " << env.maxy() << ",";
-    b << env.minx() << " " << env.maxy() << ",";
-    b << env.minx() << " " << env.miny() << "))', " << srid_ << ")";
+    if(env.minx() == env.maxx() && env.minx() == env.miny()){
+        b << geometryColumnType_ << "::STGeomFromText('POINT(";
+        b << std::setprecision(16);
+        b << env.minx() << " " << env.miny();       
+        b << ")', " << srid_ << ")";
+    }else{
+        b << geometryColumnType_ << "::STGeomFromText('POLYGON((";
+        b << std::setprecision(16);
+        b << env.minx() << " " << env.miny() << ",";
+        b << env.maxx() << " " << env.miny() << ",";
+        b << env.maxx() << " " << env.maxy() << ",";
+        b << env.minx() << " " << env.maxy() << ",";
+        b << env.minx() << " " << env.miny() << "))', " << srid_ << ")";
+    }
+   
 
     return b.str();
 }
@@ -536,33 +552,32 @@ std::string mssql_datasource::populate_tokens(
         std::ostringstream s;
 
         if ((intersect_min_scale_ > 0 && (scale_denom <= intersect_min_scale_)) ||
-            !(intersect_max_scale_ > 0 && (scale_denom >= intersect_max_scale_))
-            )
+            !(intersect_max_scale_ > 0 && (scale_denom >= intersect_max_scale_)))
         {
             s << " WHERE ";
             if (wkb_)
             {
-                s << "\"" << geometryColumn_ << "\".STIsValid() = 1 AND ";
+                s << "[" << geometryColumn_ << "].STIsValid() = 1 AND ";
             }
-            if (use_filter_) {
-                s << "\"" << geometryColumn_ << "\".Filter(" << box << ") = 1";
+            if (use_filter_)
+            {
+                s << "[" << geometryColumn_ << "].Filter(" << box << ") = 1";
             }
-            else {
-				s << "\"" << geometryColumn_ << "\".STIntersects(" << box << ") = 1";
-			}
-			
+            else
+            {
+                s << "[" << geometryColumn_ << "].STIntersects(" << box << ") = 1";
+            }
         }
         else
         {
             // do no bbox restriction
-        }       
+        }
 
         return populated_sql + s.str();
     }
 }
 
-
-shared_ptr<IResultSet> mssql_datasource::get_resultset(shared_ptr<Connection> &conn, std::string const& sql, CnxPool_ptr const& pool, processor_context_ptr ctx) const
+shared_ptr<IResultSet> mssql_datasource::get_resultset(shared_ptr<Connection>& conn, std::string const& sql, CnxPool_ptr const& pool, processor_context_ptr ctx) const
 {
 
     if (!ctx)
@@ -591,7 +606,7 @@ shared_ptr<IResultSet> mssql_datasource::get_resultset(shared_ptr<Connection> &c
     }
 }
 
-processor_context_ptr mssql_datasource::get_context(feature_style_context_map & ctx) const
+processor_context_ptr mssql_datasource::get_context(feature_style_context_map& ctx) const
 {
     if (!asynchronous_request_)
     {
@@ -630,7 +645,6 @@ featureset_ptr mssql_datasource::features_with_context(query const& q, processor
     mapnik::progress_timer __stats__(std::clog, "mssql_datasource::features_with_context");
 #endif
 
-
     box2d<double> const& box = q.get_bbox();
     double scale_denom = q.scale_denominator();
 
@@ -659,7 +673,6 @@ featureset_ptr mssql_datasource::features_with_context(query const& q, processor
             	throw mapnik::datasource_exception("Mssql Plugin: Null connection");
             }*/
         }
-
 
         if (geometryColumn_.empty())
         {
@@ -694,7 +707,7 @@ featureset_ptr mssql_datasource::features_with_context(query const& q, processor
             s << " TOP " << row_limit_;
         }
 
-        s << "\"" << geometryColumn_ << "\"";
+        s << "[" << geometryColumn_ << "]";
 
         if (simplify_geometries_)
         {
@@ -757,15 +770,13 @@ featureset_ptr mssql_datasource::features_with_context(query const& q, processor
         {
             s << " OPTION(QUERYTRACEON 4199)";
         }
-        
-        shared_ptr<IResultSet> rs = get_resultset(conn, s.str(), pool, proc_ctx);
-        return std::make_shared<mssql_featureset>(rs, ctx,  wkb_, geometryColumnType_ == "geography",  !key_field_.empty(), key_field_as_attribute_);
 
+        shared_ptr<IResultSet> rs = get_resultset(conn, s.str(), pool, proc_ctx);
+        return std::make_shared<mssql_featureset>(rs, ctx, wkb_, geometryColumnType_ == "geography", !key_field_.empty(), key_field_as_attribute_);
     }
 
     return featureset_ptr();
 }
-
 
 featureset_ptr mssql_datasource::features_at_point(coord2d const& pt, double tol) const
 {
@@ -812,7 +823,7 @@ featureset_ptr mssql_datasource::features_at_point(coord2d const& pt, double tol
             {
                 s << " TOP " << row_limit_;
             }
-            s << "\"" << geometryColumn_ << "\"";
+            s << "[" << geometryColumn_ << "]";
             if (wkb_)
             {
                 s << ".STAsBinary()";
@@ -828,7 +839,7 @@ featureset_ptr mssql_datasource::features_at_point(coord2d const& pt, double tol
                 {
                     ctx->push(key_field_);
                 }
-                
+
                 for (auto const& attr_info : desc)
                 {
                     std::string const& name = attr_info.get_name();
@@ -953,15 +964,19 @@ box2d<double> mssql_datasource::envelope() const
             }
 
             shared_ptr<ResultSet> rs = conn->executeQuery(s.str());
-            if (rs->next() && !rs->isNull(0))
+            if (rs->next())
             {
-                double lox, loy, hix, hiy;
-                if ((lox = *rs->getDouble(0)) &&
-                        (loy = *rs->getDouble(1)) &&
-                        (hix = *rs->getDouble(2)) &&
-                        (hiy = *rs->getDouble(3)))
+                boost::optional<double> lox = rs->getDouble(0);
+                boost::optional<double> loy = rs->getDouble(1);
+                boost::optional<double> hix = rs->getDouble(2);
+                boost::optional<double> hiy = rs->getDouble(3);
+                
+                if (lox &&
+                    loy &&
+                    hix &&
+                    hiy)
                 {
-                    extent_.init(lox, loy, hix, hiy);
+                    extent_.init(*lox, *loy, *hix, *hiy);
                     extent_initialized_ = true;
                 }
                 else
@@ -1011,12 +1026,11 @@ boost::optional<mapnik::datasource_geometry_t> mssql_datasource::get_geometry_ty
                     s << " TOP 5";
                 }
 
-                s << "\"" << geometryColumn_ << "\".STGeometryType() AS geom"
+                s << " lower([" << geometryColumn_ << "].STGeometryType()) AS type "
                   << " FROM " << populate_tokens(table_);
 
-
                 shared_ptr<ResultSet> rs = conn->executeQuery(s.str());
-                while (rs->next() && !rs->isNull(0))
+                while (rs->next())
                 {
                     std::string data = rs->getString(0);
 

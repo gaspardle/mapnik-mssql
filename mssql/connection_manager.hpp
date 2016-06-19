@@ -24,6 +24,7 @@
 #define MSSQL_CONNECTION_MANAGER_HPP
 
 #include "connection.hpp"
+#include "odbc.hpp"
 
 // mapnik
 #include <mapnik/pool.hpp>
@@ -33,9 +34,9 @@
 #include <boost/optional.hpp>
 
 // stl
-#include <string>
-#include <sstream>
 #include <memory>
+#include <sstream>
+#include <string>
 
 using mapnik::Pool;
 using mapnik::singleton;
@@ -45,7 +46,7 @@ template <typename T>
 class ConnectionCreator
 {
 
-public:
+  public:
     ConnectionCreator(boost::optional<std::string> const& connection_string,
                       boost::optional<std::string> const& driver,
                       boost::optional<std::string> const& host,
@@ -65,7 +66,7 @@ public:
 
     T* operator()() const
     {
-        return new T(connection_string_safe(), pass_);
+        return new T(Odbc::GetEnvHandle(), connection_string_safe(), pass_);
     }
 
     inline std::string id() const
@@ -76,7 +77,7 @@ public:
     inline std::string connection_string() const
     {
         std::string connect_str = connection_string_safe();
-        if (pass_   && !pass_->empty())
+        if (pass_ && !pass_->empty())
         {
             connect_str += "PWD=" + *pass_;
         }
@@ -86,24 +87,24 @@ public:
     inline std::string connection_string_safe() const
     {
         std::string connect_str;
-        if (connection_string_   && !connection_string_->empty())
+        if (connection_string_ && !connection_string_->empty())
         {
             connect_str += "" + *connection_string_;
         }
         else
         {
 
-            if (driver_   && !driver_->empty())
+            if (driver_ && !driver_->empty())
             {
                 //Tested with {ODBC Driver 11 for SQL Server}, {SQL Server Native Client 11.0}, FreeTDS
                 connect_str += "DRIVER=" + *driver_ + ";";
             }
 
-            if (host_   && !host_->empty())
+            if (host_ && !host_->empty())
             {
                 connect_str += "SERVER=" + *host_ + ";";
             }
-            if (port_   && !port_->empty())
+            if (port_ && !port_->empty())
             {
                 connect_str += "port=" + *port_ + ";";
             }
@@ -111,7 +112,7 @@ public:
             {
                 connect_str += "DATABASE=" + *dbname_ + ";";
             }
-            if (user_   && !user_->empty())
+            if (user_ && !user_->empty())
             {
                 connect_str += "UID=" + *user_ + ";";
             }
@@ -129,7 +130,7 @@ public:
         return connect_str;
     }
 
-private:
+  private:
     boost::optional<std::string> connection_string_;
     boost::optional<std::string> driver_;
     boost::optional<std::string> host_;
@@ -140,20 +141,20 @@ private:
     boost::optional<std::string> connect_timeout_;
 };
 
-class ConnectionManager : public singleton <ConnectionManager, CreateStatic>
+class ConnectionManager : public singleton<ConnectionManager, CreateStatic>
 {
 
-public:
+  public:
     using PoolType = Pool<Connection, ConnectionCreator>;
-private:
+
+  private:
     friend class CreateStatic<ConnectionManager>;
 
-    using ContType = std::map<std::string, std::shared_ptr<PoolType> >;
+    using ContType = std::map<std::string, std::shared_ptr<PoolType>>;
     using HolderType = std::shared_ptr<Connection>;
     ContType pools_;
 
-public:
-
+  public:
     bool registerPool(ConnectionCreator<Connection> const& creator, unsigned initialSize, unsigned maxSize)
     {
         ContType::const_iterator itr = pools_.find(creator.id());
@@ -166,11 +167,11 @@ public:
         else
         {
             return pools_.insert(
-                       std::make_pair(creator.id(),
-                                      std::make_shared<PoolType>(creator, initialSize, maxSize))).second;
+                             std::make_pair(creator.id(),
+                                            std::make_shared<PoolType>(creator, initialSize, maxSize)))
+                .second;
         }
         return false;
-
     }
 
     std::shared_ptr<PoolType> getPool(std::string const& key)
@@ -185,7 +186,7 @@ public:
     }
 
     ConnectionManager() {}
-private:
+  private:
     ConnectionManager(const ConnectionManager&);
     ConnectionManager& operator=(const ConnectionManager);
 };

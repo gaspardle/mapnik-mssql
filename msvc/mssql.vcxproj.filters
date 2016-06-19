@@ -27,9 +27,6 @@
     <ClInclude Include="..\mssql\mssql_datasource.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\mssql\stdafx.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\mssql\asyncresultset.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -56,10 +53,7 @@
     <ClCompile Include="..\mssql\mssql_featureset.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\mssql\stdafx.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\mssql\Odbc.cpp">
+    <ClCompile Include="..\mssql\odbc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\mssql\mssqlclrgeo.cpp">
