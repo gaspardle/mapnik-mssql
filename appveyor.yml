@@ -1,4 +1,6 @@
-version: v0.1.{build}-{branch}
+version: v0.2.{build}-{branch}
+pull_requests:
+  do_not_increment_build_number: true
 skip_tags: true
 os: Visual Studio 2015
 configuration: Release
