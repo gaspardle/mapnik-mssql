@@ -60,7 +60,11 @@ class Connection
         if (SQL_SUCCESS != retcode)
         {
             close();
-            throw mapnik::datasource_exception("Mssql Plugin: SQLAllocHandle SQL_HANDLE_DBC failed");
+
+            std::ostringstream out;
+            out << "mssql Plugin: SQLAllocHandle SQL_HANDLE_DBC  returncode: " << retcode << ", envhandle: " << sqlenvhandle;
+              
+            throw mapnik::datasource_exception(out.str());
         }
 
         SQLCHAR retconstring[1024];
