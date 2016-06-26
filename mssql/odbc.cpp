@@ -9,14 +9,9 @@
 #include <sstream>
 #include <stdexcept>
 
-void Odbc::InitOdbc()
-{
+Odbc::Odbc() {
     MAPNIK_LOG_DEBUG(mssql) << "mssql: InitOdbc";
 
-    if (sqlenvhandle_ != SQL_NULL_HANDLE)
-    {
-        return;
-    }
     if (SQL_SUCCESS != SQLSetEnvAttr(SQL_NULL_HANDLE, SQL_ATTR_CONNECTION_POOLING, (SQLPOINTER)SQL_CP_ONE_PER_HENV, 0))
     {
         throw std::runtime_error("Mssql Plugin: SQLSetEnvAttr SQL_ATTR_CONNECTION_POOLING failed");
@@ -33,8 +28,7 @@ void Odbc::InitOdbc()
     }
 }
 
-void Odbc::FreeOdbc()
-{
+Odbc::~Odbc() {   
     if (sqlenvhandle_ != SQL_NULL_HANDLE)
     {
         MAPNIK_LOG_DEBUG(mssql) << "mssql: SQLFreeHandle SQL_HANDLE_ENV";
@@ -43,12 +37,19 @@ void Odbc::FreeOdbc()
     }
 }
 
-SQLHANDLE Odbc::GetEnvHandle()
-{
-    return Odbc::sqlenvhandle_;
+std::shared_ptr<Odbc> Odbc::getInstance() {
+    static std::weak_ptr<Odbc> instance;
+    static std::mutex mutex;
+    const std::lock_guard<std::mutex> lock(mutex);
+    if (const auto result = instance.lock()) return result;
+    return (instance = std::make_shared<Odbc>()).lock();
 }
 
-SQLHANDLE Odbc::sqlenvhandle_;
+SQLHANDLE Odbc::getEnvHandle()
+{
+    return sqlenvhandle_;
+}
+
 
 std::string getOdbcError(unsigned int handletype, const SQLHANDLE& handle)
 {

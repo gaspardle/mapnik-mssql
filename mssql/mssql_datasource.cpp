@@ -75,7 +75,9 @@ mssql_datasource::mssql_datasource(parameters const& params)
       extent_initialized_(false),
       simplify_geometries_(false),
       desc_(mssql_datasource::name(), "utf-8"),
-      creator_(params.get<std::string>("connection_string"),
+      odbc_instance_(Odbc::getInstance()),
+      creator_(odbc_instance_, 
+               params.get<std::string>("connection_string"),
                params.get<std::string>("driver", "{SQL Server Native Client 11.0}"),
                params.get<std::string>("host"),
                params.get<std::string>("port"),
@@ -129,15 +131,13 @@ mssql_datasource::mssql_datasource(parameters const& params)
         }
         asynchronous_request_ = true;
     }
-
+    auto pp = odbc_instance_.use_count();
     boost::optional<mapnik::value_integer> initial_size = params.get<mapnik::value_integer>("initial_size", 1);
     boost::optional<mapnik::boolean_type> autodetect_key_field = params.get<mapnik::boolean_type>("autodetect_key_field", false);
     boost::optional<mapnik::boolean_type> estimate_extent = params.get<mapnik::boolean_type>("estimate_extent", false);
     estimate_extent_ = estimate_extent && *estimate_extent;
     boost::optional<mapnik::boolean_type> simplify_opt = params.get<mapnik::boolean_type>("simplify_geometries", false);
     simplify_geometries_ = simplify_opt && *simplify_opt;
-
-    Odbc::InitOdbc();
 
     ConnectionManager::instance().registerPool(creator_, *initial_size, pool_max_size_);
     CnxPool_ptr pool = ConnectionManager::instance().getPool(creator_.id());
@@ -438,7 +438,6 @@ mssql_datasource::~mssql_datasource()
         }
     }
 
-    Odbc::FreeOdbc();
 }
 
 const char* mssql_datasource::name()

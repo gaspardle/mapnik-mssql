@@ -47,7 +47,8 @@ class ConnectionCreator
 {
 
   public:
-    ConnectionCreator(boost::optional<std::string> const& connection_string,
+    ConnectionCreator(std::shared_ptr<Odbc> odbc,
+                      boost::optional<std::string> const& connection_string,
                       boost::optional<std::string> const& driver,
                       boost::optional<std::string> const& host,
                       boost::optional<std::string> const& port,
@@ -62,11 +63,12 @@ class ConnectionCreator
           dbname_(dbname),
           user_(user),
           pass_(pass),
-          connect_timeout_(connect_timeout) {}
+          connect_timeout_(connect_timeout),
+          odbc_(odbc) {}
 
     T* operator()() const
     {
-        return new T(Odbc::GetEnvHandle(), connection_string_safe(), pass_);
+        return new T(odbc_->getEnvHandle(), connection_string_safe(), pass_);
     }
 
     inline std::string id() const
@@ -139,6 +141,7 @@ class ConnectionCreator
     boost::optional<std::string> user_;
     boost::optional<std::string> pass_;
     boost::optional<std::string> connect_timeout_;
+    std::shared_ptr<Odbc> odbc_;
 };
 
 class ConnectionManager : public singleton<ConnectionManager, CreateStatic>
