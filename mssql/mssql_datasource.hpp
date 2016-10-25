@@ -109,6 +109,7 @@ class mssql_datasource : public datasource
     mutable mapnik::box2d<double> extent_;
     bool simplify_geometries_;
     layer_descriptor desc_;
+    std::shared_ptr<Odbc> odbc_instance_;
     ConnectionCreator<Connection> creator_;
     const std::string bbox_token_;
     const std::string scale_denom_token_;

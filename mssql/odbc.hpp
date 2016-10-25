@@ -3,16 +3,21 @@
 
 #include <sqlext.h>
 #include <string>
+#include <memory>
 
 class Odbc
 {
-  public:
-    static void InitOdbc();
-    static void FreeOdbc();
-    static SQLHANDLE GetEnvHandle();
+   
 
-  private:
-    static SQLHANDLE sqlenvhandle_;
+public:
+    Odbc();
+    ~Odbc();
+    SQLHANDLE getEnvHandle();
+    static std::shared_ptr<Odbc> getInstance();   
+  
+private: 
+    SQLHANDLE sqlenvhandle_;
+
 };
 
 std::string getOdbcError(unsigned int handletype, const SQLHANDLE& handle);
