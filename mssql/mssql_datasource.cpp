@@ -774,7 +774,7 @@ featureset_ptr mssql_datasource::features_with_context(query const& q, processor
         return std::make_shared<mssql_featureset>(rs, ctx, wkb_, geometryColumnType_ == "geography", !key_field_.empty(), key_field_as_attribute_);
     }
 
-    return featureset_ptr();
+    return mapnik::make_empty_featureset();
 }
 
 featureset_ptr mssql_datasource::features_at_point(coord2d const& pt, double tol) const
@@ -788,7 +788,7 @@ featureset_ptr mssql_datasource::features_at_point(coord2d const& pt, double tol
         shared_ptr<Connection> conn = pool->borrowObject();
         if (!conn)
         {
-            return featureset_ptr();
+            return mapnik::make_empty_featureset();
         }
 
         if (conn->isOK())
@@ -873,7 +873,7 @@ featureset_ptr mssql_datasource::features_at_point(coord2d const& pt, double tol
         }
     }
 
-    return featureset_ptr();
+    return mapnik::make_empty_featureset();
 }
 
 box2d<double> mssql_datasource::envelope() const
