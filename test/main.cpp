@@ -30,7 +30,7 @@ TEST_CASE("mssql-datatypes") {
         p["connection_string"] = MSSQL_CONNECTION_STRING;
         p["table"] = "table1";
         p["geometry_field"] = "geom";
-        p["srid"] = 900913;
+        p["srid"] = "900913";
         p["extent"] = "-20037508.34,-20037508.34,20037508.34,20037508.34";
         std::shared_ptr<mapnik::datasource> ds = mapnik::datasource_cache::instance().create(p);
         auto expected_type = mapnik::datasource::datasource_t::Vector;
