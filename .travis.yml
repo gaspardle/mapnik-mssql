@@ -4,8 +4,14 @@ cache:
   directories:
   - $HOME/unixodbc
   
-sudo: required
-dist: trusty
+os: linux
+sudo: false
+dist: precise
+
+addons:
+      apt:
+         sources: [ 'ubuntu-toolchain-r-test']
+         packages: [ 'libstdc++-5-dev', 'xutils-dev']
 
 env:
   global:
