@@ -4,41 +4,41 @@ cache:
   directories:
   - $HOME/unixodbc
   
-sudo: required
+os: linux
+addons:
+  apt:
+    sources: [ 'llvm-toolchain-trusty-5.0', 'ubuntu-toolchain-r-test' ]
+    packages: [ 'clang-5.0', 'libstdc++-5-dev' ]
+sudo: false
 dist: trusty
 
 env:
   global:
-   - LLVM_VERSION=3.8.0
-   - LLVM_ARCHIVE_PATH=$HOME/clang+llvm.tar.xz
-   - LD_LIBRARY_PATH=$HOME/clang-$LLVM_VERSION/lib:$LD_LIBRARY_PATH
    - MSSQL_CONNECTION_STRING: "'Driver=FreeTDS;Server=172.25.0.1;Database=mapnik_tmp_mssql_db;Uid=youruser;Pwd=xxx;TDS_Version=7.3;ClientCharset=UTF-8;'"
    - secure: "CkOmqmdXLwB7/Y69/aRuGKXiVdXaRxlWkku6EnrITVg9bzv/UY2vddkf/OIXfkL1byW4gb2SFP4NFD2Jv0J6/FaGhGYCSZtNWWrW3BO/umMw/Y1C/7PPvOhG4dHwlRApTI8yn9JyVNNYMWOkgiJxPlqzgIXEnwmVa7IDkaj29PS79zQoQubAZd4HWGhGJsikYFKI8jpMD4B1cBADPXVduKI3GJZNZ2TvTRqAcFqho9keMY2i0qoK/moot2qBSmY1dehHlB7r1ypAxdrkKGQhT42GzI+dhWiBqVFgcrJKl4NsjyuUZViDOVbeooP6LHDdboko16HpmNSokJKY+n46nTxE53BN63ugZG4kNMHkJsapaTJDyhN0pYcLjYTkMNj7VSprK73DRe5pg/R69g2dSLLJgzw3eVWXQspMkOF9gOcMTAiscFEjD9BfSjAO5p9ejwuOPaIMa0Sjuz7Huc21kIiHage6t1/bIsEwZQ9lNWnfvp/k6Lfn6PGAgjPc4QW87hcUotODjrSKJyq8w1f6P9wwH9+LU4snrQOZQG2fF5vMeq73BCz4YthXfR82e+cucZNI+YYgF0014YzFMcJ+qpIwntGwLhlo6qFWZrEd0vvh+gfZSTKd6Qjs6Wr6rNUsQgf3TjgsJvTJ2KQdAxB9iHdjm/Avmiz/ocG1h+jj63c="
    - MAPNIK_SDK: "mapnik-linux-sdk-v3.0.12"
 
 before_install:
-  - wget http://llvm.org/releases/$LLVM_VERSION/clang+llvm-$LLVM_VERSION-x86_64-linux-gnu-ubuntu-14.04.tar.xz -O $LLVM_ARCHIVE_PATH
-  - mkdir $HOME/clang-$LLVM_VERSION
-  - tar xf $LLVM_ARCHIVE_PATH -C $HOME/clang-$LLVM_VERSION --strip-components 1
-  - export PATH=$HOME/clang-$LLVM_VERSION/bin:$PATH
-  - export CC="clang"
-  - export CXX="clang++"
+ - export CC=clang-5.0
+ - export CXX=clang++-5.0
+ - clang-5.0 --version
+ - clang++-5.0 --version
   
 install:
  # install our own unixodbc because we cant change /etc/odbcinst.ini without root
  - if [ ! -d "$HOME/local/lib" ]; then
-     wget ftp://ftp.unixodbc.org/pub/unixODBC/unixODBC-2.3.4.tar.gz;
-     tar -xzf unixODBC-2.3.4.tar.gz;
-     cd unixODBC-2.3.4 && ./configure --prefix=${HOME}/local && make && make install;
+     wget ftp://ftp.unixodbc.org/pub/unixODBC/unixODBC-2.3.5.tar.gz;
+     tar -xzf unixODBC-2.3.5.tar.gz;
+     cd unixODBC-2.3.5 && ./configure --prefix=${HOME}/local && make && make install;
    else
      echo "Using cached directory.";
    fi
  - cd $HOME
  # install freetds
  - if [ ! -d "$HOME/local/etc/freetds.conf" ]; then
-     wget ftp://ftp.freetds.org/pub/freetds/stable/freetds-0.95.94.tar.gz;
-     tar -xzf freetds-0.95.94.tar.gz;
-     cd freetds-0.95.94 && ./configure --enable-msdblib --with-gnutls --with-unixodbc=${HOME}/local --prefix=${HOME}/local && make && make install;
+     wget ftp://ftp.freetds.org/pub/freetds/stable/freetds-1.00.80.tar.gz;
+     tar -xzf freetds-1.00.80.tar.gz;
+     cd freetds-1.00.80 && ./configure --enable-msdblib --with-gnutls --with-unixodbc=${HOME}/local --prefix=${HOME}/local && make && make install;
    else
      echo "Using cached directory.";
    fi
