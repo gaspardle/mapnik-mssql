@@ -29,18 +29,18 @@ before_install:
 install:
  # install our own unixodbc because we cant change /etc/odbcinst.ini without root
  - if [ ! -d "$HOME/local/lib" ]; then
-     wget ftp://ftp.unixodbc.org/pub/unixODBC/unixODBC-2.3.4.tar.gz;
-     tar -xzf unixODBC-2.3.4.tar.gz;
-     cd unixODBC-2.3.4 && ./configure --prefix=${HOME}/local && make && make install;
+     wget ftp://ftp.unixodbc.org/pub/unixODBC/unixODBC-2.3.5.tar.gz;
+     tar -xzf unixODBC-2.3.5.tar.gz;
+     cd unixODBC-2.3.5 && ./configure --prefix=${HOME}/local && make && make install;
    else
      echo "Using cached directory.";
    fi
  - cd $HOME
  # install freetds
  - if [ ! -d "$HOME/local/etc/freetds.conf" ]; then
-     wget ftp://ftp.freetds.org/pub/freetds/stable/freetds-0.95.94.tar.gz;
-     tar -xzf freetds-0.95.94.tar.gz;
-     cd freetds-0.95.94 && ./configure --enable-msdblib --with-gnutls --with-unixodbc=${HOME}/local --prefix=${HOME}/local && make && make install;
+     wget ftp://ftp.freetds.org/pub/freetds/stable/freetds-1.00.80.tar.gz;
+     tar -xzf freetds-1.00.80.tar.gz;
+     cd freetds-1.00.80 && ./configure --enable-msdblib --with-gnutls --with-unixodbc=${HOME}/local --prefix=${HOME}/local && make && make install;
    else
      echo "Using cached directory.";
    fi
