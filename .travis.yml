@@ -4,16 +4,13 @@ cache:
   directories:
   - $HOME/unixodbc
   
-- os: linux
-      addons:
-        apt:
-          sources:
-            - llvm-toolchain-trusty-5.0
-          packages:
-            - clang-5.0
+os: linux
+addons:
+  apt:
+    sources: [ 'llvm-toolchain-trusty-5.0' ]
+    packages: [ 'clang-5.0' ]
 sudo: false
 dist: trusty
-
 
 env:
   global:
