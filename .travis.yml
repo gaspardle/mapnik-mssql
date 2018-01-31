@@ -14,17 +14,15 @@ dist: trusty
 
 env:
   global:
-   - LLVM_VERSION=3.8.0
-   - LLVM_ARCHIVE_PATH=$HOME/clang+llvm.tar.xz
-   - LD_LIBRARY_PATH=$HOME/clang-$LLVM_VERSION/lib:$LD_LIBRARY_PATH
    - MSSQL_CONNECTION_STRING: "'Driver=FreeTDS;Server=172.25.0.1;Database=mapnik_tmp_mssql_db;Uid=youruser;Pwd=xxx;TDS_Version=7.3;ClientCharset=UTF-8;'"
    - secure: "CkOmqmdXLwB7/Y69/aRuGKXiVdXaRxlWkku6EnrITVg9bzv/UY2vddkf/OIXfkL1byW4gb2SFP4NFD2Jv0J6/FaGhGYCSZtNWWrW3BO/umMw/Y1C/7PPvOhG4dHwlRApTI8yn9JyVNNYMWOkgiJxPlqzgIXEnwmVa7IDkaj29PS79zQoQubAZd4HWGhGJsikYFKI8jpMD4B1cBADPXVduKI3GJZNZ2TvTRqAcFqho9keMY2i0qoK/moot2qBSmY1dehHlB7r1ypAxdrkKGQhT42GzI+dhWiBqVFgcrJKl4NsjyuUZViDOVbeooP6LHDdboko16HpmNSokJKY+n46nTxE53BN63ugZG4kNMHkJsapaTJDyhN0pYcLjYTkMNj7VSprK73DRe5pg/R69g2dSLLJgzw3eVWXQspMkOF9gOcMTAiscFEjD9BfSjAO5p9ejwuOPaIMa0Sjuz7Huc21kIiHage6t1/bIsEwZQ9lNWnfvp/k6Lfn6PGAgjPc4QW87hcUotODjrSKJyq8w1f6P9wwH9+LU4snrQOZQG2fF5vMeq73BCz4YthXfR82e+cucZNI+YYgF0014YzFMcJ+qpIwntGwLhlo6qFWZrEd0vvh+gfZSTKd6Qjs6Wr6rNUsQgf3TjgsJvTJ2KQdAxB9iHdjm/Avmiz/ocG1h+jj63c="
    - MAPNIK_SDK: "mapnik-linux-sdk-v3.0.12"
-   - CC=clang-5.0
-   - CXX=clang++-5.0
 
 before_install:
- - cc --version
+ - export CC=clang-5.0
+ - export CXX=clang++-5.0
+ - clang-5.0 --version
+ - clang++-5.0 --version
   
 install:
  # install our own unixodbc because we cant change /etc/odbcinst.ini without root
